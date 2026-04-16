@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# kicklight.
 
-## Getting Started
+A locally-hosted web app that syncs a Philips Hue gradient light strip with live football match statistics. The strip splits into two team colours — the proportion mirrors a chosen stat (possession, shots, corners, or goals) in real time. Built with Next.js, powered by football-data.org and the Philips Hue local API.
 
-First, run the development server:
+## Prerequisites
+
+- Node.js 18+ (or Bun)
+- A Philips Hue Bridge on your local network
+- A gradient-capable Hue light strip (Hue Flux, Hue Ambiance Gradient, or Hue Play Gradient)
+- A free API key from football-data.org
+
+## Getting a football-data.org API key
+
+1. Register at [football-data.org](https://www.football-data.org/client/register)
+2. A free API key will be emailed to you immediately
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Install dependencies
+bun install
+
+# Add your API key
+echo "FOOTBALL_DATA_API_KEY=your_key_here" > .env.local
+
+# Start the dev server
+bun run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## First run
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+On first load, the in-app setup wizard will guide you through:
 
-## Learn More
+1. **Discover** your Hue Bridge on the local network
+2. **Connect** by pressing the physical link button on the bridge
+3. **Select** a gradient-capable light strip
+4. **Configure** the polling interval (30–300 seconds, default 60s)
 
-To learn more about Next.js, take a look at the following resources:
+Your machine and Hue Bridge must be on the same network.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Supported light strips
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Only gradient-capable strips will appear in the setup wizard:
 
-## Deploy on Vercel
+- Philips Hue Flux gradient strip
+- Philips Hue Ambiance Gradient lightstrip
+- Philips Hue Play Gradient light tube / bar
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Single-colour lights are not supported.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Polling interval
+
+The app polls football-data.org at a configurable interval (default: 60 seconds). This can be adjusted during setup. The free API tier has rate limits — the app automatically slows down when approaching the limit.

@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# kicklight config (contains Hue bridge credentials)
+kicklight.config.json
