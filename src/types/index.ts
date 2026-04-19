@@ -58,6 +58,19 @@ export interface Match {
 export interface LiveMatch extends Match {
   minute: number | null;
   possession: { home: number; away: number } | null;
+  shots: { home: number; away: number } | null;
+  shotsOnGoal: { home: number; away: number } | null;
+  shotsOffGoal: { home: number; away: number } | null;
+  cornerKicks: { home: number; away: number } | null;
+  freeKicks: { home: number; away: number } | null;
+  goalKicks: { home: number; away: number } | null;
+  throwIns: { home: number; away: number } | null;
+  offsides: { home: number; away: number } | null;
+  fouls: { home: number; away: number } | null;
+  saves: { home: number; away: number } | null;
+  yellowCards: { home: number; away: number } | null;
+  yellowRedCards: { home: number; away: number } | null;
+  redCards: { home: number; away: number } | null;
 }
 
 export interface RateLimitInfo {

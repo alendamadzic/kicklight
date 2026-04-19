@@ -9,26 +9,11 @@ import {
   updateLightGradient,
 } from "@/actions/hue";
 import { Button } from "@/components/ui/button";
-import { calculateGoalSplit, calculatePossessionSplit } from "@/lib/football";
+import { ALL_STATS, type StatKey } from "@/lib/football";
 import { clubColorToHex } from "@/lib/teamColors";
 import type { KicklightConfig, LiveMatch, Match } from "@/types";
 import { ScoreDisplay } from "./ScoreDisplay";
 import { StatBar } from "./StatBar";
-
-const STATS = [
-  {
-    key: "possession" as const,
-    label: "Possession",
-    calculate: calculatePossessionSplit,
-  },
-  {
-    key: "goals" as const,
-    label: "Goals",
-    calculate: calculateGoalSplit,
-  },
-];
-
-type StatKey = (typeof STATS)[number]["key"];
 
 // Statuses where we should stop polling entirely
 const TERMINAL_STATUSES = new Set([
@@ -60,8 +45,8 @@ export function ActiveMatch({
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hueError, setHueError] = useState<string | null>(null);
-  const [activeStatKey, setActiveStatKey] = useState<StatKey>("possession");
-  const activeStatKeyRef = useRef<StatKey>("possession");
+  const [activeStatKey, setActiveStatKey] = useState<StatKey>("goals");
+  const activeStatKeyRef = useRef<StatKey>("goals");
   const previousScoreRef = useRef<string>("");
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isStoppedRef = useRef(false);
@@ -171,7 +156,7 @@ export function ActiveMatch({
 
     // Update light gradient for active match statuses — driven by selected stat
     if (data.status === "IN_PLAY" || data.status === "EXTRA_TIME") {
-      const activeStat = STATS.find((s) => s.key === activeStatKeyRef.current)!;
+      const activeStat = ALL_STATS.find((s) => s.key === activeStatKeyRef.current)!;
       const { homePct } = activeStat.calculate(data);
       const lightResult = await updateLightGradient(homeHex, awayHex, homePct);
       if (lightResult.error) {
@@ -244,17 +229,6 @@ export function ActiveMatch({
     startPolling();
   }, [liveData?.status, startPolling, liveData]);
 
-  const { homePct: goalHomePct, isFallback: goalsFallback } = liveData
-    ? calculateGoalSplit(liveData)
-    : { homePct: 50, isFallback: true };
-
-  const homeGoals = liveData ? (liveData.score.fullTime.home ?? 0) : null;
-  const awayGoals = liveData ? (liveData.score.fullTime.away ?? 0) : null;
-
-  const { homePct: possessionHomePct, isFallback: possessionFallback } =
-    liveData
-      ? calculatePossessionSplit(liveData)
-      : { homePct: 50, isFallback: true };
 
   return (
     <div
@@ -276,41 +250,32 @@ export function ActiveMatch({
       )}
 
       <div className="flex w-full flex-col gap-6">
-        <StatBar
-          label="Goals"
-          homePct={goalHomePct}
-          awayPct={100 - goalHomePct}
-          homeValue={homeGoals !== null ? String(homeGoals) : undefined}
-          awayValue={awayGoals !== null ? String(awayGoals) : undefined}
-          homeTeam={match.homeTeam}
-          awayTeam={match.awayTeam}
-          homeHex={homeHex}
-          awayHex={awayHex}
-          isActive={activeStatKey === "goals"}
-          onActivate={() => setActiveStatKey("goals")}
-          footerText={
-            goalsFallback
-              ? "No goals yet — showing 50/50"
-              : "Split by goals scored"
-          }
-        />
-        <StatBar
-          label="Possession"
-          homePct={possessionHomePct}
-          awayPct={100 - possessionHomePct}
-          homeTeam={match.homeTeam}
-          awayTeam={match.awayTeam}
-          homeHex={homeHex}
-          awayHex={awayHex}
-          isActive={activeStatKey === "possession"}
-          onActivate={() => setActiveStatKey("possession")}
-          footerText={
-            possessionFallback
-              ? "No possession data yet — showing 50/50"
-              : "Live possession"
-          }
-          showTeamLabels={false}
-        />
+        {ALL_STATS.map((stat) => {
+          const { homePct, isFallback } = liveData
+            ? stat.calculate(liveData)
+            : { homePct: 50, isFallback: true };
+          const values = liveData
+            ? stat.getValues(liveData)
+            : { home: null, away: null };
+          return (
+            <StatBar
+              key={stat.key}
+              label={stat.label}
+              homePct={homePct}
+              awayPct={100 - homePct}
+              homeValue={values.home ?? undefined}
+              awayValue={values.away ?? undefined}
+              homeTeam={match.homeTeam}
+              awayTeam={match.awayTeam}
+              homeHex={homeHex}
+              awayHex={awayHex}
+              isActive={activeStatKey === stat.key}
+              onActivate={() => setActiveStatKey(stat.key)}
+              footerText={isFallback ? stat.fallbackText : stat.activeText}
+              showTeamLabels={stat.showTeamLabels}
+            />
+          );
+        })}
       </div>
 
       <div className="flex items-center gap-3">

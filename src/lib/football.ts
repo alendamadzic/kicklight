@@ -69,7 +69,22 @@ interface FootballTeamRaw {
   name: string;
   crest: string;
   clubColors: string | null;
-  statistics?: { ball_possession?: number | null };
+  statistics?: {
+    ball_possession?: number | null;
+    shots?: number | null;
+    shots_on_goal?: number | null;
+    shots_off_goal?: number | null;
+    corner_kicks?: number | null;
+    free_kicks?: number | null;
+    goal_kicks?: number | null;
+    throw_ins?: number | null;
+    offsides?: number | null;
+    fouls?: number | null;
+    saves?: number | null;
+    yellow_cards?: number | null;
+    yellow_red_cards?: number | null;
+    red_cards?: number | null;
+  };
 }
 
 interface FootballMatchRaw {
@@ -158,6 +173,14 @@ export async function fetchTodaysMatches(): Promise<{
   return { matches: allMatches, rateLimit: lastRateLimit };
 }
 
+function pairStat(
+  home: number | null | undefined,
+  away: number | null | undefined,
+): { home: number; away: number } | null {
+  if (home == null && away == null) return null;
+  return { home: home ?? 0, away: away ?? 0 };
+}
+
 export async function fetchLiveMatch(
   matchId: number,
 ): Promise<{ match: LiveMatch; rateLimit: RateLimitInfo }> {
@@ -166,8 +189,10 @@ export async function fetchLiveMatch(
     { "X-Unfold-Goals": "true" },
   );
   const base = mapMatch(data);
-  const homePoss = data.homeTeam.statistics?.ball_possession;
-  const awayPoss = data.awayTeam.statistics?.ball_possession;
+  const hs = data.homeTeam.statistics;
+  const as_ = data.awayTeam.statistics;
+  const homePoss = hs?.ball_possession;
+  const awayPoss = as_?.ball_possession;
   const possession =
     homePoss != null
       ? { home: homePoss, away: awayPoss ?? 100 - homePoss }
@@ -178,6 +203,19 @@ export async function fetchLiveMatch(
     ...base,
     minute: data.minute ?? null,
     possession,
+    shots: pairStat(hs?.shots, as_?.shots),
+    shotsOnGoal: pairStat(hs?.shots_on_goal, as_?.shots_on_goal),
+    shotsOffGoal: pairStat(hs?.shots_off_goal, as_?.shots_off_goal),
+    cornerKicks: pairStat(hs?.corner_kicks, as_?.corner_kicks),
+    freeKicks: pairStat(hs?.free_kicks, as_?.free_kicks),
+    goalKicks: pairStat(hs?.goal_kicks, as_?.goal_kicks),
+    throwIns: pairStat(hs?.throw_ins, as_?.throw_ins),
+    offsides: pairStat(hs?.offsides, as_?.offsides),
+    fouls: pairStat(hs?.fouls, as_?.fouls),
+    saves: pairStat(hs?.saves, as_?.saves),
+    yellowCards: pairStat(hs?.yellow_cards, as_?.yellow_cards),
+    yellowRedCards: pairStat(hs?.yellow_red_cards, as_?.yellow_red_cards),
+    redCards: pairStat(hs?.red_cards, as_?.red_cards),
   };
   return { match: liveMatch, rateLimit };
 }
@@ -205,6 +243,180 @@ export function calculatePossessionSplit(match: LiveMatch): {
   }
   return { homePct: 50, isFallback: true };
 }
+
+function makeCountSplit(field: keyof LiveMatch) {
+  return function (match: LiveMatch): { homePct: number; isFallback: boolean } {
+    const stat = match[field] as { home: number; away: number } | null;
+    const h = stat?.home ?? 0;
+    const a = stat?.away ?? 0;
+    const total = h + a;
+    if (total === 0) return { homePct: 50, isFallback: true };
+    return { homePct: Math.round((h / total) * 100), isFallback: false };
+  };
+}
+
+function makeCountValues(field: keyof LiveMatch) {
+  return function (match: LiveMatch): { home: string | null; away: string | null } {
+    const stat = match[field] as { home: number; away: number } | null;
+    return {
+      home: String(stat?.home ?? 0),
+      away: String(stat?.away ?? 0),
+    };
+  };
+}
+
+export interface StatConfig {
+  key: string;
+  label: string;
+  calculate: (match: LiveMatch) => { homePct: number; isFallback: boolean };
+  getValues: (match: LiveMatch) => { home: string | null; away: string | null };
+  fallbackText: string;
+  activeText: string;
+  showTeamLabels: boolean;
+}
+
+export const ALL_STATS = [
+  {
+    key: "goals" as const,
+    label: "Goals",
+    calculate: calculateGoalSplit,
+    getValues: (match: LiveMatch) => ({
+      home: String(match.score.fullTime.home ?? 0),
+      away: String(match.score.fullTime.away ?? 0),
+    }),
+    fallbackText: "No goals yet — showing 50/50",
+    activeText: "Split by goals scored",
+    showTeamLabels: true,
+  },
+  {
+    key: "possession" as const,
+    label: "Possession",
+    calculate: calculatePossessionSplit,
+    getValues: () => ({ home: null, away: null }),
+    fallbackText: "No possession data yet — showing 50/50",
+    activeText: "Live possession",
+    showTeamLabels: false,
+  },
+  {
+    key: "shots" as const,
+    label: "Shots",
+    calculate: makeCountSplit("shots"),
+    getValues: makeCountValues("shots"),
+    fallbackText: "No shots data yet — showing 50/50",
+    activeText: "Split by shots",
+    showTeamLabels: false,
+  },
+  {
+    key: "shotsOnGoal" as const,
+    label: "Shots on Goal",
+    calculate: makeCountSplit("shotsOnGoal"),
+    getValues: makeCountValues("shotsOnGoal"),
+    fallbackText: "No shots on goal data yet — showing 50/50",
+    activeText: "Split by shots on goal",
+    showTeamLabels: false,
+  },
+  {
+    key: "shotsOffGoal" as const,
+    label: "Shots off Goal",
+    calculate: makeCountSplit("shotsOffGoal"),
+    getValues: makeCountValues("shotsOffGoal"),
+    fallbackText: "No shots off goal data yet — showing 50/50",
+    activeText: "Split by shots off goal",
+    showTeamLabels: false,
+  },
+  {
+    key: "cornerKicks" as const,
+    label: "Corner Kicks",
+    calculate: makeCountSplit("cornerKicks"),
+    getValues: makeCountValues("cornerKicks"),
+    fallbackText: "No corner kicks data yet — showing 50/50",
+    activeText: "Split by corner kicks",
+    showTeamLabels: false,
+  },
+  {
+    key: "freeKicks" as const,
+    label: "Free Kicks",
+    calculate: makeCountSplit("freeKicks"),
+    getValues: makeCountValues("freeKicks"),
+    fallbackText: "No free kicks data yet — showing 50/50",
+    activeText: "Split by free kicks",
+    showTeamLabels: false,
+  },
+  {
+    key: "goalKicks" as const,
+    label: "Goal Kicks",
+    calculate: makeCountSplit("goalKicks"),
+    getValues: makeCountValues("goalKicks"),
+    fallbackText: "No goal kicks data yet — showing 50/50",
+    activeText: "Split by goal kicks",
+    showTeamLabels: false,
+  },
+  {
+    key: "throwIns" as const,
+    label: "Throw-ins",
+    calculate: makeCountSplit("throwIns"),
+    getValues: makeCountValues("throwIns"),
+    fallbackText: "No throw-ins data yet — showing 50/50",
+    activeText: "Split by throw-ins",
+    showTeamLabels: false,
+  },
+  {
+    key: "offsides" as const,
+    label: "Offsides",
+    calculate: makeCountSplit("offsides"),
+    getValues: makeCountValues("offsides"),
+    fallbackText: "No offsides data yet — showing 50/50",
+    activeText: "Split by offsides",
+    showTeamLabels: false,
+  },
+  {
+    key: "fouls" as const,
+    label: "Fouls",
+    calculate: makeCountSplit("fouls"),
+    getValues: makeCountValues("fouls"),
+    fallbackText: "No fouls data yet — showing 50/50",
+    activeText: "Split by fouls",
+    showTeamLabels: false,
+  },
+  {
+    key: "saves" as const,
+    label: "Saves",
+    calculate: makeCountSplit("saves"),
+    getValues: makeCountValues("saves"),
+    fallbackText: "No saves data yet — showing 50/50",
+    activeText: "Split by saves",
+    showTeamLabels: false,
+  },
+  {
+    key: "yellowCards" as const,
+    label: "Yellow Cards",
+    calculate: makeCountSplit("yellowCards"),
+    getValues: makeCountValues("yellowCards"),
+    fallbackText: "No yellow cards data yet — showing 50/50",
+    activeText: "Split by yellow cards",
+    showTeamLabels: false,
+  },
+  {
+    key: "yellowRedCards" as const,
+    label: "Yellow-Red Cards",
+    calculate: makeCountSplit("yellowRedCards"),
+    getValues: makeCountValues("yellowRedCards"),
+    fallbackText: "No yellow-red cards data yet — showing 50/50",
+    activeText: "Split by yellow-red cards",
+    showTeamLabels: false,
+  },
+  {
+    key: "redCards" as const,
+    label: "Red Cards",
+    calculate: makeCountSplit("redCards"),
+    getValues: makeCountValues("redCards"),
+    fallbackText: "No red cards data yet — showing 50/50",
+    activeText: "Split by red cards",
+    showTeamLabels: false,
+  },
+] satisfies StatConfig[];
+
+export type StatKey = (typeof ALL_STATS)[number]["key"];
 
 interface TeamDetailRaw {
   clubColors: string | null;
