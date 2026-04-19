@@ -15,6 +15,21 @@ import type { KicklightConfig, LiveMatch, Match } from "@/types";
 import { ScoreDisplay } from "./ScoreDisplay";
 import { StatBar } from "./StatBar";
 
+const STATS = [
+  {
+    key: "possession" as const,
+    label: "Possession",
+    calculate: calculatePossessionSplit,
+  },
+  {
+    key: "goals" as const,
+    label: "Goals",
+    calculate: calculateGoalSplit,
+  },
+];
+
+type StatKey = (typeof STATS)[number]["key"];
+
 // Statuses where we should stop polling entirely
 const TERMINAL_STATUSES = new Set([
   "SUSPENDED",
@@ -45,10 +60,14 @@ export function ActiveMatch({
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hueError, setHueError] = useState<string | null>(null);
+  const [activeStatKey, setActiveStatKey] = useState<StatKey>("possession");
+  const activeStatKeyRef = useRef<StatKey>("possession");
   const previousScoreRef = useRef<string>("");
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isStoppedRef = useRef(false);
   const rateLimitMultiplier = useRef(1);
+
+  activeStatKeyRef.current = activeStatKey;
 
   const homeHex = clubColorToHex(teamColors.home);
   const awayHex = clubColorToHex(teamColors.away);
@@ -150,9 +169,10 @@ export function ActiveMatch({
       return;
     }
 
-    // Update light gradient for active match statuses — driven by possession
+    // Update light gradient for active match statuses — driven by selected stat
     if (data.status === "IN_PLAY" || data.status === "EXTRA_TIME") {
-      const { homePct } = calculatePossessionSplit(data);
+      const activeStat = STATS.find((s) => s.key === activeStatKeyRef.current)!;
+      const { homePct } = activeStat.calculate(data);
       const lightResult = await updateLightGradient(homeHex, awayHex, homePct);
       if (lightResult.error) {
         onBridgeStatusChange(false);
@@ -266,6 +286,8 @@ export function ActiveMatch({
           awayTeam={match.awayTeam}
           homeHex={homeHex}
           awayHex={awayHex}
+          isActive={activeStatKey === "goals"}
+          onActivate={() => setActiveStatKey("goals")}
           footerText={
             goalsFallback
               ? "No goals yet — showing 50/50"
@@ -280,10 +302,12 @@ export function ActiveMatch({
           awayTeam={match.awayTeam}
           homeHex={homeHex}
           awayHex={awayHex}
+          isActive={activeStatKey === "possession"}
+          onActivate={() => setActiveStatKey("possession")}
           footerText={
             possessionFallback
               ? "No possession data yet — showing 50/50"
-              : "Live possession · controls the lights"
+              : "Live possession"
           }
           showTeamLabels={false}
         />

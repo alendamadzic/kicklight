@@ -19,7 +19,9 @@ import {
   type ShowcaseScenario,
 } from "./data";
 
-function calcSplit(homeGoals: number, awayGoals: number) {
+type StatKey = "possession" | "goals";
+
+function calcGoalSplit(homeGoals: number, awayGoals: number) {
   const total = homeGoals + awayGoals;
   const homePct = total === 0 ? 50 : Math.round((homeGoals / total) * 100);
   return { homePct, awayPct: 100 - homePct, isFallback: total === 0 };
@@ -33,13 +35,14 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
   const [status, setStatus] = useState<MatchStatus>("IN_PLAY");
   const [minute, setMinute] = useState<number | null>(null);
   const [homePossession, setHomePossession] = useState(50);
+  const [activeStatKey, setActiveStatKey] = useState<StatKey>("possession");
   const [lightError, setLightError] = useState<string | null>(null);
 
-  const penaltyIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
-    null,
-  );
+  const penaltyIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const matchupRef = useRef<ShowcaseMatchup | null>(null);
+  const activeStatKeyRef = useRef<StatKey>("possession");
   matchupRef.current = matchup;
+  activeStatKeyRef.current = activeStatKey;
 
   const stopPenalty = useCallback(() => {
     if (penaltyIntervalRef.current) {
@@ -67,7 +70,7 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
   }, [stopPenalty]);
 
   const pushLights = useCallback(
-    async (m: ShowcaseMatchup, st: MatchStatus, hPossession: number) => {
+    async (m: ShowcaseMatchup, st: MatchStatus, lightPct: number) => {
       if (st === "PENALTY_SHOOTOUT") {
         startPenalty();
         return;
@@ -77,11 +80,7 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
         setTimeout(() => resetLight(), 5000);
         return;
       }
-      const result = await updateLightGradient(
-        m.homeHex,
-        m.awayHex,
-        hPossession,
-      );
+      const result = await updateLightGradient(m.homeHex, m.awayHex, lightPct);
       if (result.error) setLightError(result.error);
       else setLightError(null);
     },
@@ -92,10 +91,12 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
     async (m: ShowcaseMatchup) => {
       setMatchup(m);
       if (activeScenarioId) {
-        await pushLights(m, status, homePossession);
+        const { homePct: goalPct } = calcGoalSplit(homeGoals, awayGoals);
+        const pct = activeStatKeyRef.current === "possession" ? homePossession : goalPct;
+        await pushLights(m, status, pct);
       }
     },
-    [activeScenarioId, status, homePossession, pushLights],
+    [activeScenarioId, status, homePossession, homeGoals, awayGoals, pushLights],
   );
 
   const handleSelectScenario = useCallback(
@@ -107,7 +108,9 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
       setMinute(s.minute);
       setHomePossession(s.homePossession);
       if (matchup) {
-        await pushLights(matchup, s.status, s.homePossession);
+        const { homePct: goalPct } = calcGoalSplit(s.homeGoals, s.awayGoals);
+        const pct = activeStatKeyRef.current === "possession" ? s.homePossession : goalPct;
+        await pushLights(matchup, s.status, pct);
       }
     },
     [matchup, pushLights],
@@ -123,17 +126,11 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
       setMinute((m) => (m !== null ? Math.min(m + 7, 90) : 55));
       const scoringHex = side === "home" ? matchup.homeHex : matchup.awayHex;
       await flashGoalAction(scoringHex);
-      await pushLights(matchup, status, homePossession);
+      const { homePct: goalPct } = calcGoalSplit(newHome, newAway);
+      const pct = activeStatKeyRef.current === "possession" ? homePossession : goalPct;
+      await pushLights(matchup, status, pct);
     },
-    [
-      matchup,
-      activeScenarioId,
-      homeGoals,
-      awayGoals,
-      status,
-      homePossession,
-      pushLights,
-    ],
+    [matchup, activeScenarioId, homeGoals, awayGoals, status, homePossession, pushLights],
   );
 
   const handlePossessionChange = useCallback(
@@ -142,18 +139,30 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
         ? (values as number[])[0]
         : (values as number);
       setHomePossession(newPossession);
-      if (matchup && activeScenarioId) {
+      if (matchup && activeScenarioId && activeStatKeyRef.current === "possession") {
         await pushLights(matchup, status, newPossession);
       }
     },
     [matchup, activeScenarioId, status, pushLights],
   );
 
+  const handleActivateStat = useCallback(
+    async (key: StatKey) => {
+      setActiveStatKey(key);
+      activeStatKeyRef.current = key;
+      if (!matchup || !activeScenarioId) return;
+      const { homePct: goalPct } = calcGoalSplit(homeGoals, awayGoals);
+      const pct = key === "possession" ? homePossession : goalPct;
+      await pushLights(matchup, status, pct);
+    },
+    [matchup, activeScenarioId, homeGoals, awayGoals, homePossession, status, pushLights],
+  );
+
   const {
     homePct: goalHomePct,
     awayPct: goalAwayPct,
     isFallback: goalsFallback,
-  } = calcSplit(homeGoals, awayGoals);
+  } = calcGoalSplit(homeGoals, awayGoals);
   const awayPossession = 100 - homePossession;
   const isActive = !!matchup && !!activeScenarioId;
   const canAddGoals =
@@ -298,6 +307,8 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
                   awayTeam={matchup.awayTeam}
                   homeHex={matchup.homeHex}
                   awayHex={matchup.awayHex}
+                  isActive={activeStatKey === "goals"}
+                  onActivate={() => handleActivateStat("goals")}
                   footerText={
                     goalsFallback
                       ? "No goals yet — showing 50/50"
@@ -305,7 +316,6 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
                   }
                 />
 
-                {/* Possession stat + slider */}
                 <div className="flex flex-col gap-3">
                   <StatBar
                     label="Possession"
@@ -315,17 +325,25 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
                     awayTeam={matchup.awayTeam}
                     homeHex={matchup.homeHex}
                     awayHex={matchup.awayHex}
-                    footerText="Controls the lights · drag to adjust"
+                    isActive={activeStatKey === "possession"}
+                    onActivate={() => handleActivateStat("possession")}
+                    footerText={
+                      activeStatKey === "possession"
+                        ? "Drag to adjust"
+                        : undefined
+                    }
                     showTeamLabels={false}
                   />
 
-                  <Slider
-                    value={[homePossession]}
-                    min={1}
-                    max={99}
-                    onValueChange={handlePossessionChange}
-                    aria-label="Home possession percentage"
-                  />
+                  {activeStatKey === "possession" && (
+                    <Slider
+                      value={[homePossession]}
+                      min={1}
+                      max={99}
+                      onValueChange={handlePossessionChange}
+                      aria-label="Home possession percentage"
+                    />
+                  )}
                 </div>
 
                 {canAddGoals && (

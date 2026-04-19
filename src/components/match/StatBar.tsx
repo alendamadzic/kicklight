@@ -1,5 +1,6 @@
 "use client";
 
+import { Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Team } from "@/types";
 
@@ -15,6 +16,8 @@ export function StatBar({
   awayHex,
   footerText,
   showTeamLabels = true,
+  isActive = false,
+  onActivate,
   className,
 }: {
   label: string;
@@ -28,14 +31,32 @@ export function StatBar({
   awayHex: string;
   footerText?: string;
   showTeamLabels?: boolean;
+  isActive?: boolean;
+  onActivate?: () => void;
   className?: string;
 }) {
   return (
     <div className={cn("flex flex-col gap-3", className)}>
-      {/* Stat label */}
-      <p className="text-center text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-        {label}
-      </p>
+      {/* Label row — doubles as activation control */}
+      <div className="flex items-center justify-between px-0.5">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+          {label}
+        </p>
+        {isActive ? (
+          <span className="flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-400 ring-1 ring-amber-500/25">
+            <Zap className="size-2.5 fill-amber-400 stroke-amber-400" />
+            Lights
+          </span>
+        ) : onActivate ? (
+          <button
+            onClick={onActivate}
+            className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium text-muted-foreground/40 ring-1 ring-foreground/10 transition-all hover:text-muted-foreground hover:ring-foreground/25"
+          >
+            <Zap className="size-2.5" />
+            Use for lights
+          </button>
+        ) : null}
+      </div>
 
       {/* Team labels */}
       {showTeamLabels && (
@@ -64,11 +85,13 @@ export function StatBar({
       {/* Bar */}
       <div
         className={cn(
-          "relative flex h-20 w-full overflow-hidden rounded-xl",
-          "ring-1 ring-foreground/10",
+          "relative flex h-20 w-full overflow-hidden rounded-xl transition-shadow duration-500",
+          isActive ? "ring-2 ring-white/15" : "ring-1 ring-foreground/10",
         )}
         style={{
-          boxShadow: `0 0 60px -12px ${homeHex}60, 0 0 60px -12px ${awayHex}60`,
+          boxShadow: isActive
+            ? `0 0 80px -8px ${homeHex}90, 0 0 80px -8px ${awayHex}90`
+            : `0 0 60px -12px ${homeHex}60, 0 0 60px -12px ${awayHex}60`,
         }}
       >
         {/* Home side */}
@@ -127,9 +150,7 @@ export function StatBar({
       </div>
 
       {footerText && (
-        <p className="text-center text-xs text-muted-foreground">
-          {footerText}
-        </p>
+        <p className="text-center text-xs text-muted-foreground">{footerText}</p>
       )}
     </div>
   );
