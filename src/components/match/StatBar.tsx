@@ -7,6 +7,8 @@ export function StatBar({
   label,
   homePct,
   awayPct,
+  homeValue,
+  awayValue,
   homeTeam,
   awayTeam,
   homeHex,
@@ -18,6 +20,8 @@ export function StatBar({
   label: string;
   homePct: number;
   awayPct: number;
+  homeValue?: string;
+  awayValue?: string;
   homeTeam: Team;
   awayTeam: Team;
   homeHex: string;
@@ -76,7 +80,7 @@ export function StatBar({
           }}
         >
           <span className="relative z-10 font-display text-2xl font-bold tracking-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]">
-            {homePct}%
+            {homeValue ?? `${homePct}%`}
           </span>
           <div
             className="pointer-events-none absolute inset-0"
@@ -106,7 +110,7 @@ export function StatBar({
           }}
         >
           <span className="relative z-10 font-display text-2xl font-bold tracking-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]">
-            {awayPct}%
+            {awayValue ?? `${awayPct}%`}
           </span>
           <div
             className="pointer-events-none absolute inset-0"

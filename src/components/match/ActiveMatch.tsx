@@ -228,6 +228,9 @@ export function ActiveMatch({
     ? calculateGoalSplit(liveData)
     : { homePct: 50, isFallback: true };
 
+  const homeGoals = liveData ? (liveData.score.fullTime.home ?? 0) : null;
+  const awayGoals = liveData ? (liveData.score.fullTime.away ?? 0) : null;
+
   const { homePct: possessionHomePct, isFallback: possessionFallback } =
     liveData
       ? calculatePossessionSplit(liveData)
@@ -257,6 +260,8 @@ export function ActiveMatch({
           label="Goals"
           homePct={goalHomePct}
           awayPct={100 - goalHomePct}
+          homeValue={homeGoals !== null ? String(homeGoals) : undefined}
+          awayValue={awayGoals !== null ? String(awayGoals) : undefined}
           homeTeam={match.homeTeam}
           awayTeam={match.awayTeam}
           homeHex={homeHex}
