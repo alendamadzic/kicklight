@@ -10,6 +10,7 @@ import {
 import { ScoreDisplay } from "@/components/match/ScoreDisplay";
 import { StatBar } from "@/components/match/StatBar";
 import { Slider } from "@/components/ui/slider";
+import { ALL_STATS, type StatKey } from "@/lib/football";
 import { cn } from "@/lib/utils";
 import type { LiveMatch, MatchStatus } from "@/types";
 import {
@@ -17,14 +18,45 @@ import {
   SHOWCASE_SCENARIOS,
   type ShowcaseMatchup,
   type ShowcaseScenario,
+  type ShowcaseStats,
 } from "./data";
 
-type StatKey = "possession" | "goals";
-
-function calcGoalSplit(homeGoals: number, awayGoals: number) {
-  const total = homeGoals + awayGoals;
-  const homePct = total === 0 ? 50 : Math.round((homeGoals / total) * 100);
-  return { homePct, awayPct: 100 - homePct, isFallback: total === 0 };
+function buildLiveMatchSnapshot(
+  matchup: ShowcaseMatchup,
+  status: MatchStatus,
+  homeGoals: number,
+  awayGoals: number,
+  homePossession: number,
+  minute: number | null,
+  stats: ShowcaseStats | null,
+): LiveMatch {
+  return {
+    id: 0,
+    homeTeam: matchup.homeTeam,
+    awayTeam: matchup.awayTeam,
+    competition: { name: matchup.competition, emblem: "" },
+    status,
+    score: {
+      fullTime: { home: homeGoals, away: awayGoals },
+      halfTime: { home: null, away: null },
+    },
+    utcDate: new Date().toISOString(),
+    minute,
+    possession: { home: homePossession, away: 100 - homePossession },
+    shots: stats?.shots ?? null,
+    shotsOnGoal: stats?.shotsOnGoal ?? null,
+    shotsOffGoal: stats?.shotsOffGoal ?? null,
+    cornerKicks: stats?.cornerKicks ?? null,
+    freeKicks: stats?.freeKicks ?? null,
+    goalKicks: stats?.goalKicks ?? null,
+    throwIns: stats?.throwIns ?? null,
+    offsides: stats?.offsides ?? null,
+    fouls: stats?.fouls ?? null,
+    saves: stats?.saves ?? null,
+    yellowCards: stats?.yellowCards ?? null,
+    yellowRedCards: stats?.yellowRedCards ?? null,
+    redCards: stats?.redCards ?? null,
+  };
 }
 
 export function ShowcaseModal({ onClose }: { onClose: () => void }) {
@@ -35,12 +67,13 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
   const [status, setStatus] = useState<MatchStatus>("IN_PLAY");
   const [minute, setMinute] = useState<number | null>(null);
   const [homePossession, setHomePossession] = useState(50);
-  const [activeStatKey, setActiveStatKey] = useState<StatKey>("possession");
+  const [scenarioStats, setScenarioStats] = useState<ShowcaseStats | null>(null);
+  const [activeStatKey, setActiveStatKey] = useState<StatKey>("goals");
   const [lightError, setLightError] = useState<string | null>(null);
 
   const penaltyIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const matchupRef = useRef<ShowcaseMatchup | null>(null);
-  const activeStatKeyRef = useRef<StatKey>("possession");
+  const activeStatKeyRef = useRef<StatKey>("goals");
   matchupRef.current = matchup;
   activeStatKeyRef.current = activeStatKey;
 
@@ -91,12 +124,32 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
     async (m: ShowcaseMatchup) => {
       setMatchup(m);
       if (activeScenarioId) {
-        const { homePct: goalPct } = calcGoalSplit(homeGoals, awayGoals);
-        const pct = activeStatKeyRef.current === "possession" ? homePossession : goalPct;
-        await pushLights(m, status, pct);
+        const activeStat = ALL_STATS.find(
+          (s) => s.key === activeStatKeyRef.current,
+        )!;
+        const snap = buildLiveMatchSnapshot(
+          m,
+          status,
+          homeGoals,
+          awayGoals,
+          homePossession,
+          minute,
+          scenarioStats,
+        );
+        const { homePct } = activeStat.calculate(snap);
+        await pushLights(m, status, homePct);
       }
     },
-    [activeScenarioId, status, homePossession, homeGoals, awayGoals, pushLights],
+    [
+      activeScenarioId,
+      status,
+      homePossession,
+      homeGoals,
+      awayGoals,
+      minute,
+      scenarioStats,
+      pushLights,
+    ],
   );
 
   const handleSelectScenario = useCallback(
@@ -107,10 +160,22 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
       setStatus(s.status);
       setMinute(s.minute);
       setHomePossession(s.homePossession);
+      setScenarioStats(s.stats);
       if (matchup) {
-        const { homePct: goalPct } = calcGoalSplit(s.homeGoals, s.awayGoals);
-        const pct = activeStatKeyRef.current === "possession" ? s.homePossession : goalPct;
-        await pushLights(matchup, s.status, pct);
+        const activeStat = ALL_STATS.find(
+          (st) => st.key === activeStatKeyRef.current,
+        )!;
+        const snap = buildLiveMatchSnapshot(
+          matchup,
+          s.status,
+          s.homeGoals,
+          s.awayGoals,
+          s.homePossession,
+          s.minute,
+          s.stats,
+        );
+        const { homePct } = activeStat.calculate(snap);
+        await pushLights(matchup, s.status, homePct);
       }
     },
     [matchup, pushLights],
@@ -126,11 +191,32 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
       setMinute((m) => (m !== null ? Math.min(m + 7, 90) : 55));
       const scoringHex = side === "home" ? matchup.homeHex : matchup.awayHex;
       await flashGoalAction(scoringHex);
-      const { homePct: goalPct } = calcGoalSplit(newHome, newAway);
-      const pct = activeStatKeyRef.current === "possession" ? homePossession : goalPct;
-      await pushLights(matchup, status, pct);
+      const activeStat = ALL_STATS.find(
+        (st) => st.key === activeStatKeyRef.current,
+      )!;
+      const snap = buildLiveMatchSnapshot(
+        matchup,
+        status,
+        newHome,
+        newAway,
+        homePossession,
+        minute,
+        scenarioStats,
+      );
+      const { homePct } = activeStat.calculate(snap);
+      await pushLights(matchup, status, homePct);
     },
-    [matchup, activeScenarioId, homeGoals, awayGoals, status, homePossession, pushLights],
+    [
+      matchup,
+      activeScenarioId,
+      homeGoals,
+      awayGoals,
+      status,
+      homePossession,
+      minute,
+      scenarioStats,
+      pushLights,
+    ],
   );
 
   const handlePossessionChange = useCallback(
@@ -139,7 +225,11 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
         ? (values as number[])[0]
         : (values as number);
       setHomePossession(newPossession);
-      if (matchup && activeScenarioId && activeStatKeyRef.current === "possession") {
+      if (
+        matchup &&
+        activeScenarioId &&
+        activeStatKeyRef.current === "possession"
+      ) {
         await pushLights(matchup, status, newPossession);
       }
     },
@@ -151,39 +241,48 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
       setActiveStatKey(key);
       activeStatKeyRef.current = key;
       if (!matchup || !activeScenarioId) return;
-      const { homePct: goalPct } = calcGoalSplit(homeGoals, awayGoals);
-      const pct = key === "possession" ? homePossession : goalPct;
-      await pushLights(matchup, status, pct);
+      const activeStat = ALL_STATS.find((s) => s.key === key)!;
+      const snap = buildLiveMatchSnapshot(
+        matchup,
+        status,
+        homeGoals,
+        awayGoals,
+        homePossession,
+        minute,
+        scenarioStats,
+      );
+      const { homePct } = activeStat.calculate(snap);
+      await pushLights(matchup, status, homePct);
     },
-    [matchup, activeScenarioId, homeGoals, awayGoals, homePossession, status, pushLights],
+    [
+      matchup,
+      activeScenarioId,
+      homeGoals,
+      awayGoals,
+      homePossession,
+      status,
+      minute,
+      scenarioStats,
+      pushLights,
+    ],
   );
 
-  const {
-    homePct: goalHomePct,
-    awayPct: goalAwayPct,
-    isFallback: goalsFallback,
-  } = calcGoalSplit(homeGoals, awayGoals);
-  const awayPossession = 100 - homePossession;
   const isActive = !!matchup && !!activeScenarioId;
   const canAddGoals =
     isActive && (status === "IN_PLAY" || status === "EXTRA_TIME");
 
-  const fakeMatch: LiveMatch | null = matchup
-    ? {
-        id: 0,
-        homeTeam: matchup.homeTeam,
-        awayTeam: matchup.awayTeam,
-        competition: { name: matchup.competition, emblem: "" },
-        status,
-        score: {
-          fullTime: { home: homeGoals, away: awayGoals },
-          halfTime: { home: null, away: null },
-        },
-        utcDate: new Date().toISOString(),
-        minute,
-        possession: { home: homePossession, away: awayPossession },
-      }
-    : null;
+  const fakeMatch =
+    isActive && matchup
+      ? buildLiveMatchSnapshot(
+          matchup,
+          status,
+          homeGoals,
+          awayGoals,
+          homePossession,
+          minute,
+          scenarioStats,
+        )
+      : null;
 
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: modal backdrop — click-outside-to-close is a standard pattern
@@ -279,7 +378,7 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
           )}
 
           {/* Active view */}
-          {isActive && fakeMatch && (
+          {isActive && fakeMatch && matchup && (
             <>
               <div className="border-t" />
               <div
@@ -297,54 +396,46 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
                   awayHex={matchup.awayHex}
                 />
 
-                <StatBar
-                  label="Goals"
-                  homePct={goalHomePct}
-                  awayPct={goalAwayPct}
-                  homeValue={String(homeGoals)}
-                  awayValue={String(awayGoals)}
-                  homeTeam={matchup.homeTeam}
-                  awayTeam={matchup.awayTeam}
-                  homeHex={matchup.homeHex}
-                  awayHex={matchup.awayHex}
-                  isActive={activeStatKey === "goals"}
-                  onActivate={() => handleActivateStat("goals")}
-                  footerText={
-                    goalsFallback
-                      ? "No goals yet — showing 50/50"
-                      : "Split by goals scored"
-                  }
-                />
-
-                <div className="flex flex-col gap-3">
-                  <StatBar
-                    label="Possession"
-                    homePct={homePossession}
-                    awayPct={awayPossession}
-                    homeTeam={matchup.homeTeam}
-                    awayTeam={matchup.awayTeam}
-                    homeHex={matchup.homeHex}
-                    awayHex={matchup.awayHex}
-                    isActive={activeStatKey === "possession"}
-                    onActivate={() => handleActivateStat("possession")}
-                    footerText={
-                      activeStatKey === "possession"
-                        ? "Drag to adjust"
-                        : undefined
-                    }
-                    showTeamLabels={false}
-                  />
-
-                  {activeStatKey === "possession" && (
-                    <Slider
-                      value={[homePossession]}
-                      min={1}
-                      max={99}
-                      onValueChange={handlePossessionChange}
-                      aria-label="Home possession percentage"
-                    />
-                  )}
-                </div>
+                {ALL_STATS.map((stat) => {
+                  const { homePct, isFallback } = stat.calculate(fakeMatch);
+                  const values = stat.getValues(fakeMatch);
+                  return (
+                    <div key={stat.key} className="flex flex-col gap-3">
+                      <StatBar
+                        label={stat.label}
+                        homePct={homePct}
+                        awayPct={100 - homePct}
+                        homeValue={values.home ?? undefined}
+                        awayValue={values.away ?? undefined}
+                        homeTeam={matchup.homeTeam}
+                        awayTeam={matchup.awayTeam}
+                        homeHex={matchup.homeHex}
+                        awayHex={matchup.awayHex}
+                        isActive={activeStatKey === stat.key}
+                        onActivate={() => handleActivateStat(stat.key)}
+                        footerText={
+                          stat.key === "possession" &&
+                          activeStatKey === "possession"
+                            ? "Drag to adjust"
+                            : isFallback
+                              ? stat.fallbackText
+                              : stat.activeText
+                        }
+                        showTeamLabels={stat.showTeamLabels}
+                      />
+                      {stat.key === "possession" &&
+                        activeStatKey === "possession" && (
+                          <Slider
+                            value={[homePossession]}
+                            min={1}
+                            max={99}
+                            onValueChange={handlePossessionChange}
+                            aria-label="Home possession percentage"
+                          />
+                        )}
+                    </div>
+                  );
+                })}
 
                 {canAddGoals && (
                   <div className="grid grid-cols-2 gap-3">
