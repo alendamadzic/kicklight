@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ALL_STATS, type StatKey } from "@/lib/football";
 import { clubColorToHex } from "@/lib/teamColors";
 import type { KicklightConfig, LiveMatch, Match } from "@/types";
+import { FeaturedStat } from "./FeaturedStat";
 import { ScoreDisplay } from "./ScoreDisplay";
 import { StatBar } from "./StatBar";
 
@@ -249,7 +250,32 @@ export function ActiveMatch({
         </div>
       )}
 
-      <div className="flex w-full flex-col gap-6">
+      {/* Featured active stat — donut ring */}
+      {(() => {
+        const activeStat = ALL_STATS.find((s) => s.key === activeStatKey)!;
+        const { homePct, isFallback } = liveData
+          ? activeStat.calculate(liveData)
+          : { homePct: 50, isFallback: true };
+        const values = liveData
+          ? activeStat.getValues(liveData)
+          : { home: null, away: null };
+        return (
+          <FeaturedStat
+            label={activeStat.label}
+            homePct={homePct}
+            homeValue={values.home ?? undefined}
+            awayValue={values.away ?? undefined}
+            homeTeam={match.homeTeam}
+            awayTeam={match.awayTeam}
+            homeHex={homeHex}
+            awayHex={awayHex}
+            footerText={isFallback ? activeStat.fallbackText : activeStat.activeText}
+          />
+        );
+      })()}
+
+      {/* Compact stat rows */}
+      <div className="flex w-full flex-col">
         {ALL_STATS.map((stat) => {
           const { homePct, isFallback } = liveData
             ? stat.calculate(liveData)

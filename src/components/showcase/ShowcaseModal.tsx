@@ -7,6 +7,7 @@ import {
   resetLight,
   updateLightGradient,
 } from "@/actions/hue";
+import { FeaturedStat } from "@/components/match/FeaturedStat";
 import { ScoreDisplay } from "@/components/match/ScoreDisplay";
 import { StatBar } from "@/components/match/StatBar";
 import { Slider } from "@/components/ui/slider";
@@ -396,46 +397,81 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
                   awayHex={matchup.awayHex}
                 />
 
-                {ALL_STATS.map((stat) => {
-                  const { homePct, isFallback } = stat.calculate(fakeMatch);
-                  const values = stat.getValues(fakeMatch);
+                {/* Featured active stat */}
+                {(() => {
+                  const activeStat = ALL_STATS.find(
+                    (s) => s.key === activeStatKey,
+                  )!;
+                  const { homePct, isFallback } =
+                    activeStat.calculate(fakeMatch);
+                  const values = activeStat.getValues(fakeMatch);
                   return (
-                    <div key={stat.key} className="flex flex-col gap-3">
-                      <StatBar
-                        label={stat.label}
-                        homePct={homePct}
-                        awayPct={100 - homePct}
-                        homeValue={values.home ?? undefined}
-                        awayValue={values.away ?? undefined}
-                        homeTeam={matchup.homeTeam}
-                        awayTeam={matchup.awayTeam}
-                        homeHex={matchup.homeHex}
-                        awayHex={matchup.awayHex}
-                        isActive={activeStatKey === stat.key}
-                        onActivate={() => handleActivateStat(stat.key)}
-                        footerText={
-                          stat.key === "possession" &&
-                          activeStatKey === "possession"
-                            ? "Drag to adjust"
-                            : isFallback
-                              ? stat.fallbackText
-                              : stat.activeText
-                        }
-                        showTeamLabels={stat.showTeamLabels}
-                      />
-                      {stat.key === "possession" &&
-                        activeStatKey === "possession" && (
-                          <Slider
-                            value={[homePossession]}
-                            min={1}
-                            max={99}
-                            onValueChange={handlePossessionChange}
-                            aria-label="Home possession percentage"
-                          />
-                        )}
-                    </div>
+                    <FeaturedStat
+                      label={activeStat.label}
+                      homePct={homePct}
+                      homeValue={values.home ?? undefined}
+                      awayValue={values.away ?? undefined}
+                      homeTeam={matchup.homeTeam}
+                      awayTeam={matchup.awayTeam}
+                      homeHex={matchup.homeHex}
+                      awayHex={matchup.awayHex}
+                      footerText={
+                        activeStat.key === "possession" &&
+                        activeStatKey === "possession"
+                          ? "Drag to adjust"
+                          : isFallback
+                            ? activeStat.fallbackText
+                            : activeStat.activeText
+                      }
+                    />
                   );
-                })}
+                })()}
+
+                {/* Compact stat rows */}
+                <div className="flex flex-col">
+                  {ALL_STATS.map((stat) => {
+                    const { homePct, isFallback } = stat.calculate(fakeMatch);
+                    const values = stat.getValues(fakeMatch);
+                    return (
+                      <div key={stat.key}>
+                        <StatBar
+                          label={stat.label}
+                          homePct={homePct}
+                          awayPct={100 - homePct}
+                          homeValue={values.home ?? undefined}
+                          awayValue={values.away ?? undefined}
+                          homeTeam={matchup.homeTeam}
+                          awayTeam={matchup.awayTeam}
+                          homeHex={matchup.homeHex}
+                          awayHex={matchup.awayHex}
+                          isActive={activeStatKey === stat.key}
+                          onActivate={() => handleActivateStat(stat.key)}
+                          footerText={
+                            stat.key === "possession" &&
+                            activeStatKey === "possession"
+                              ? "Drag to adjust"
+                              : isFallback
+                                ? stat.fallbackText
+                                : stat.activeText
+                          }
+                          showTeamLabels={stat.showTeamLabels}
+                        />
+                        {stat.key === "possession" &&
+                          activeStatKey === "possession" && (
+                            <div className="px-3 pb-2">
+                              <Slider
+                                value={[homePossession]}
+                                min={1}
+                                max={99}
+                                onValueChange={handlePossessionChange}
+                                aria-label="Home possession percentage"
+                              />
+                            </div>
+                          )}
+                      </div>
+                    );
+                  })}
+                </div>
 
                 {canAddGoals && (
                   <div className="grid grid-cols-2 gap-3">

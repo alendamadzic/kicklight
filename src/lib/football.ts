@@ -191,6 +191,8 @@ export async function fetchLiveMatch(
   const base = mapMatch(data);
   const hs = data.homeTeam.statistics;
   const as_ = data.awayTeam.statistics;
+  console.log("[kicklight] raw stats homeTeam:", JSON.stringify(hs));
+  console.log("[kicklight] raw stats awayTeam:", JSON.stringify(as_));
   const homePoss = hs?.ball_possession;
   const awayPoss = as_?.ball_possession;
   const possession =
