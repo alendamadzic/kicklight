@@ -86,7 +86,7 @@ export function FeaturedStat({
               strokeLinecap="butt"
               strokeDasharray={`${awayPct} ${homePct}`}
               strokeDashoffset={100 - homePct}
-              transform={`rotate(-90 ${CX} ${CY})`}
+              transform={`rotate(90 ${CX} ${CY})`}
               style={{
                 transition:
                   "stroke-dasharray 700ms ease-in-out, stroke-dashoffset 700ms ease-in-out",
@@ -104,7 +104,7 @@ export function FeaturedStat({
               strokeLinecap="butt"
               strokeDasharray={`${homePct} ${awayPct}`}
               strokeDashoffset="0"
-              transform={`rotate(-90 ${CX} ${CY})`}
+              transform={`rotate(90 ${CX} ${CY})`}
               style={{
                 transition: "stroke-dasharray 700ms ease-in-out",
               }}
