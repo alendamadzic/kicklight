@@ -17,7 +17,13 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **(you)** needs the own
 - [ ] ESPN: record 2–3 live matches as fixtures; catalogue event type slugs; measure lag vs `wallclock`
 - [ ] **(you)** Register a Hue Remote API app on developers.meethue.com (client id, secret, callback URL)
 - [ ] Hue remote: confirm OAuth + remote linkbutton + `route/clip/v2`, remote `signaling` / `gradient.mode`, throttle limits
-- [ ] Hue local: `GET light/{id}` on the strip for `points_capable`, `mode_values`, `signal_values`, entertainment channels
+- [x] Hue local: read the strip (13 Oct 2026). Findings:
+  - Device: Hue Flux strip light (929004610403), fw 1.163.5, archetype `hue_lightstrip`, gamut C
+  - `gradient`: `points_capable: 5`, `pixel_count: 27`, `mode_values`: interpolated_palette, interpolated_palette_mirrored, random_pixelated, **segmented_palette**
+  - `signaling.signal_values`: no_signal, on_off, on_off_color, **alternating** (so the cloud fallback is viable)
+  - `effects_v2`: candle, fire, prism, sparkle, opal, glisten, underwater, cosmos, sunbeam, enchant
+  - Entertainment: no `entertainment_configuration` exists yet; the light's entertainment service has `max_segments: 10` and fixed segments (3,3,5,5,5…), so ~10 channels, not 27. The configuration has to be created (needs an area for the strip)
+  - Bridge time zone Europe/London
 - [ ] DTLS-PSK library works under Bun (otherwise local mode runs under Node)
 
 ## Phase 1: Engine core
@@ -35,11 +41,11 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **(you)** needs the own
 
 ## Phase 2: Platform contracts
 
-- [ ] Supabase project, migrations, RLS, magic-link auth
+- [~] Supabase project `kicklight` created (ref `nblzexgtutfxrxadcwav`, eu-west-2, free); migrations, RLS, magic-link auth pending
 - [ ] Supabase client helpers + `proxy.ts`
 - [ ] `LightTransport` interface + command queue
 - [ ] `/api/cron/tick` + pg_cron job
-- [ ] Vercel project + env vars
+- [ ] **(you)** Vercel project `kicklight`: the Vercel connector got 403 on create and there's no CLI here. Create it (dashboard or `vercel project add kicklight`), then env vars
 - [ ] Replace file config with DB config
 
 ## Phase 3: Parallel tracks
