@@ -41,8 +41,8 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **(you)** needs the own
 - [x] `src/engine/effects/` 14 effects + nerves (frames + signaling fallback)
 - [x] `src/engine/scheduler.ts` wallclock + TV delay
 - [x] `src/engine/runner.ts` `tick()` (replayed a real match end to end)
-- [~] `src/engine/feed/` espn, replay, leagues done; footballData fallback pending. League slugs other than eng.1 are unverified (Phase 0)
-- [~] Scripted scenarios done (3); recorder + `scripts/export-recording.ts` need the Supabase `recordings` table
+- [x] `src/engine/feed/` espn, replay, leagues, recorder. football-data.org fallback dropped: its free tier has no stats or events, so it can't back the modes (reconsider only for fixture lists). League slugs other than eng.1 are unverified
+- [x] Scripted scenarios (3); recorder: `KICKLIGHT_RECORD=1` captures payloads, `src/engine/feed/recorder.ts` + `scripts/export-recording.ts` turn them into replays (tested on the real fixture; the live capture path itself has not run yet)
 - [ ] Remove global TLS override, old stat code, debug logs, colour-name deps (do at UI merge, so the app keeps running until then)
 
 ## Phase 2: Platform contracts

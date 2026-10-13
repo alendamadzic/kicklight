@@ -236,14 +236,26 @@ export function parseEspnSummary(json: Json, league: string): ParsedMatch {
   return { snapshot, events };
 }
 
+/** The raw ESPN summary payload, for parsing and for the opt-in recorder. */
+export async function fetchEspnRaw(
+  league: string,
+  eventId: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<unknown> {
+  const res = await fetchImpl(espnSummaryUrl(league, eventId), {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`ESPN summary ${res.status}`);
+  return res.json();
+}
+
 export async function fetchEspnMatch(
   league: string,
   eventId: string,
   fetchImpl: typeof fetch = fetch,
 ): Promise<ParsedMatch> {
-  const res = await fetchImpl(espnSummaryUrl(league, eventId), {
-    cache: "no-store",
-  });
-  if (!res.ok) throw new Error(`ESPN summary ${res.status}`);
-  return parseEspnSummary(await res.json(), league);
+  return parseEspnSummary(
+    await fetchEspnRaw(league, eventId, fetchImpl),
+    league,
+  );
 }

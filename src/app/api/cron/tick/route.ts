@@ -1,10 +1,10 @@
 import { timingSafeEqual } from "node:crypto";
 import type { NextRequest } from "next/server";
-import { fetchEspnMatch } from "@/engine/feed/espn";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { HueRemoteError } from "@/lights/remote";
 import { apiError, json } from "@/server/auth";
 import { remoteTransportFor } from "@/server/hue-link";
+import { liveFeed } from "@/server/recording";
 import { runDueSessions } from "@/server/tick";
 
 // Called every ~10 s by Supabase Cron (pg_cron + pg_net). The work itself is in
@@ -29,7 +29,7 @@ async function handle(request: NextRequest) {
       mode: "remote",
       transportFor: async (userId) =>
         (await remoteTransportFor(admin, userId))?.transport ?? null,
-      fetchMatch: (league, id) => fetchEspnMatch(league, id),
+      fetchMatch: liveFeed(admin),
       isUnauthorized: (e) => e instanceof HueRemoteError && e.unauthorized,
     });
     return json(summary);

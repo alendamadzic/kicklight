@@ -1,7 +1,7 @@
 import "server-only";
-import { fetchEspnMatch } from "@/engine/feed/espn";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { localTransportWithStreaming } from "./local-streaming";
+import { liveFeed } from "./recording";
 import { runDueSessions } from "./tick";
 
 // Local mode has no cron: the server process itself drives due sessions every few seconds.
@@ -21,7 +21,7 @@ export function startLocalLoop(): void {
       await runDueSessions(admin, {
         mode: "local",
         transportFor: (userId) => localTransportWithStreaming(admin, userId),
-        fetchMatch: (league, id) => fetchEspnMatch(league, id),
+        fetchMatch: liveFeed(admin),
       });
     } catch (e) {
       console.error("local loop", (e as Error).message);
