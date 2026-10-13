@@ -3,7 +3,12 @@
 
 import type { Rgb } from "@/engine/colors";
 import type { EffectKey } from "@/engine/effects";
-import type { MatchEvent, MatchPhase, MatchSnapshot, Side } from "@/engine/model";
+import type {
+  MatchEvent,
+  MatchPhase,
+  MatchSnapshot,
+  Side,
+} from "@/engine/model";
 import type { StatKey } from "@/engine/stats";
 
 export type AppMode = "cloud" | "local";
@@ -15,8 +20,20 @@ export interface MatchListItem {
   kickoff: string;
   phase: MatchPhase;
   minute: number | null;
-  home: { id: string; name: string; short: string; color: string; crest?: string };
-  away: { id: string; name: string; short: string; color: string; crest?: string };
+  home: {
+    id: string;
+    name: string;
+    short: string;
+    color: string;
+    crest?: string;
+  };
+  away: {
+    id: string;
+    name: string;
+    short: string;
+    color: string;
+    crest?: string;
+  };
   score: { home: number; away: number };
 }
 
@@ -127,7 +144,11 @@ export interface PairBody {
 }
 export type PairResponse =
   | { ok: true; bridgeId: string | null }
-  | { ok: false; error: "link_button_not_pressed" | "unreachable" | "failed"; message?: string };
+  | {
+      ok: false;
+      error: "link_button_not_pressed" | "unreachable" | "failed";
+      message?: string;
+    };
 
 export interface ApiError {
   error: string;

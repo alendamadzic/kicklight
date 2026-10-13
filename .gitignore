@@ -50,3 +50,6 @@ skills-lock.json
 
 # Hue Remote API spike tokens
 .hue-remote-spike.json
+
+# Sub-agent worktrees
+.claude/worktrees/

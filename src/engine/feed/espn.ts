@@ -36,7 +36,7 @@ export function parseMinute(display: string | undefined | null): number | null {
   return Number.parseInt(m[1], 10) + (m[2] ? Number.parseInt(m[2], 10) : 0);
 }
 
-function phaseFrom(statusName: string | undefined): MatchPhase {
+export function phaseFrom(statusName: string | undefined): MatchPhase {
   const s = (statusName ?? "").toUpperCase();
   if (s.includes("SCHEDULED") || s.includes("PRE")) return "scheduled";
   if (s.includes("HALFTIME")) return "half_time";
@@ -224,6 +224,7 @@ export function parseEspnSummary(json: Json, league: string): ParsedMatch {
     league,
     phase,
     minute,
+    kickoff: kickoffMs || undefined,
     home,
     away,
     score: { home: num(homeC?.score), away: num(awayC?.score) },

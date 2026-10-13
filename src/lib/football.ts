@@ -247,7 +247,7 @@ export function calculatePossessionSplit(match: LiveMatch): {
 }
 
 function makeCountSplit(field: keyof LiveMatch) {
-  return function (match: LiveMatch): { homePct: number; isFallback: boolean } {
+  return (match: LiveMatch): { homePct: number; isFallback: boolean } => {
     const stat = match[field] as { home: number; away: number } | null;
     const h = stat?.home ?? 0;
     const a = stat?.away ?? 0;
@@ -258,7 +258,7 @@ function makeCountSplit(field: keyof LiveMatch) {
 }
 
 function makeCountValues(field: keyof LiveMatch) {
-  return function (match: LiveMatch): { home: string | null; away: string | null } {
+  return (match: LiveMatch): { home: string | null; away: string | null } => {
     const stat = match[field] as { home: number; away: number } | null;
     return {
       home: String(stat?.home ?? 0),

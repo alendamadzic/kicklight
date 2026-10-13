@@ -73,6 +73,8 @@ export interface MatchSnapshot {
   league: string;
   phase: MatchPhase;
   minute: number | null;
+  /** Scheduled kick-off, ms since epoch, when the feed knows it. */
+  kickoff?: number;
   home: TeamInfo;
   away: TeamInfo;
   score: { home: number; away: number };
