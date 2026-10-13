@@ -132,6 +132,98 @@ if (cmd === "url") {
       [...lights.headers].filter(([k]) => /rate|limit|retry/i.test(k)),
     ),
   );
+} else if (cmd === "write-test") {
+  const s = load();
+  if (!s.access_token || !s.username) throw new Error("run exchange first");
+  const lightId = JSON.parse(readFileSync("kicklight.config.json", "utf8"))
+    .lightId as string;
+  const path = `/route/clip/v2/resource/light/${lightId}`;
+  const opt = { token: s.access_token, key: s.username };
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  const { rgbToXy } = await import("../src/lights/xy");
+  const home = rgbToXy([108, 171, 221]);
+  const away = rgbToXy([200, 16, 46]);
+  const pts = (n: number) =>
+    [...Array(5)].map((_, i) => ({ color: { xy: i < n ? home : away } }));
+
+  const before = await call(path, opt);
+  show("GET light", before.status, before.text.slice(0, 120));
+  console.log(`  latency ${before.ms} ms`);
+  const orig = JSON.parse(before.text).data[0];
+  const restore = {
+    on: { on: orig.on.on },
+    dimming: { brightness: orig.dimming.brightness },
+    gradient: { points: orig.gradient.points, mode: orig.gradient.mode },
+  };
+
+  try {
+    const seg = await call(path, {
+      ...opt,
+      method: "PUT",
+      body: JSON.stringify({
+        on: { on: true },
+        dimming: { brightness: 100 },
+        gradient: { mode: "segmented_palette", points: pts(3) },
+        dynamics: { duration: 1000 },
+      }),
+    });
+    show("PUT segmented_palette 3/2", seg.status, seg.text);
+    console.log(`  latency ${seg.ms} ms`);
+    await sleep(2000);
+    const chk = JSON.parse((await call(path, opt)).text).data[0];
+    console.log(
+      `  readback: mode=${chk.gradient?.mode} points=${chk.gradient?.points?.length}`,
+    );
+
+    const sig = await call(path, {
+      ...opt,
+      method: "PUT",
+      body: JSON.stringify({
+        signaling: {
+          signal: "alternating",
+          duration: 3000,
+          colors: [{ xy: home }, { xy: { x: 0.3227, y: 0.329 } }],
+        },
+      }),
+    });
+    show("PUT signaling alternating 3s", sig.status, sig.text);
+    console.log(`  latency ${sig.ms} ms`);
+    await sleep(3600);
+
+    // Burst: how hard can we push the remote path before it pushes back?
+    const results: string[] = [];
+    const t0 = performance.now();
+    for (let i = 0; i < 12; i++) {
+      const r = await call(path, {
+        ...opt,
+        method: "PUT",
+        body: JSON.stringify({
+          gradient: { mode: "segmented_palette", points: pts(1 + (i % 4)) },
+        }),
+      });
+      results.push(`${r.status}/${r.ms}ms`);
+      if (r.status === 429) {
+        console.log(
+          "  rate-limit headers:",
+          Object.fromEntries(
+            [...r.headers].filter(([k]) => /rate|limit|retry/i.test(k)),
+          ),
+        );
+        break;
+      }
+    }
+    console.log(
+      `  burst of 12 sequential PUTs in ${Math.round(performance.now() - t0)} ms:`,
+      results.join(" "),
+    );
+  } finally {
+    const r = await call(path, {
+      ...opt,
+      method: "PUT",
+      body: JSON.stringify({ ...restore, dynamics: { duration: 500 } }),
+    });
+    show("restore original state", r.status, r.text);
+  }
 } else {
-  console.log("usage: url | exchange <code> | probe");
+  console.log("usage: url | exchange <code> | probe | write-test");
 }

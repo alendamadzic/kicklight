@@ -16,7 +16,13 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **(you)** needs the own
 
 - [ ] ESPN: record 2–3 live matches as fixtures; catalogue event type slugs; measure lag vs `wallclock`
 - [x] **(you)** Hue Remote API app registered. Callback `https://kicklight.alen.world/api/hue/oauth/callback`; credentials in `.env.local` (gitignored)
-- [~] Hue remote (`scripts/hue-remote-spike.ts`; needs you to authorize once): confirm OAuth + remote linkbutton + `route/clip/v2`, remote `signaling` / `gradient.mode`, throttle limits
+- [x] Hue remote (`scripts/hue-remote-spike.ts`, run 13 Oct 2026). Verified end to end on the real strip:
+  - OAuth: authorize at `api.meethue.com/v2/oauth2/authorize`, token at `/v2/oauth2/token` with Basic auth + `redirect_uri`. Codes are single-use and expire fast. Tokens last ~7 days (`expires_in` 604790), `scope: offline bridge`, refresh token supplied
+  - Linking: `PUT /route/api/0/config {linkbutton:true}` then `POST /route/api` returns an app key, no physical button needed
+  - CLIP v2 works remotely at `/route/clip/v2/resource/...` with `Authorization: Bearer` + `hue-application-key`
+  - `gradient.mode: segmented_palette` with 5 points, `signaling: alternating`, and `dynamics.duration` all work remotely; readback confirmed
+  - Latency ~120-220 ms per call. 12 back-to-back PUTs all 200 in 1.8 s (~7/s), no 429 and no rate-limit headers seen
+  - Side effect: the bridge now has an app key named `kicklight#spike` (remove in the Hue app if unwanted)
 - [x] Hue local: read the strip (13 Oct 2026). Findings:
   - Device: Hue Flux strip light (929004610403), fw 1.163.5, archetype `hue_lightstrip`, gamut C
   - `gradient`: `points_capable: 5`, `pixel_count: 27`, `mode_values`: interpolated_palette, interpolated_palette_mirrored, random_pixelated, **segmented_palette**
