@@ -100,6 +100,13 @@ describe("processSession (replay)", () => {
     expect(r.update.snapshot.match.score).toEqual({ home: 0, away: 0 });
   });
 
+  test("a replay still in its lead-in is polled again in one window, not five minutes", async () => {
+    const h = harness();
+    const r = await processSession(base(h.now() - 500), h.deps); // before match minute 0
+    expect(r.update.snapshot.match.phase).toBe("scheduled");
+    expect(r.update.next_due_at).toBe(h.now() + 10_000);
+  });
+
   test("the final whistle holds, then restores the strip and ends the session", async () => {
     const h = harness();
     const created = h.now() - 100_000; // past full time (95 min → 97 s)

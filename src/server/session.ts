@@ -215,7 +215,9 @@ export async function processSession(
       status,
       next_due_at: ended
         ? after
-        : nextDue(parsed.snapshot, after, result.state.pending.length > 0),
+        : row.league === "replay"
+          ? after + HORIZON_MS
+          : nextDue(parsed.snapshot, after, result.state.pending.length > 0),
       ended,
     },
     executed: result.commands,
