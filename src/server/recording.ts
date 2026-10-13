@@ -5,6 +5,7 @@ import {
   type ParsedMatch,
   parseEspnSummary,
 } from "@/engine/feed/espn";
+import { trimEspnPayload } from "@/engine/feed/recorder";
 
 // Opt-in capture of raw feed payloads (KICKLIGHT_RECORD=1) so great matches can be
 // exported as replays. Throttled per match; failures never affect the lights.
