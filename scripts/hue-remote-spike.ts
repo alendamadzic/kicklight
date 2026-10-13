@@ -82,6 +82,7 @@ if (cmd === "url") {
     body: new URLSearchParams({
       grant_type: "authorization_code",
       code,
+      redirect_uri: `${process.env.NEXT_PUBLIC_SITE_URL}/api/hue/oauth/callback`,
     }).toString(),
   });
   show("token exchange", r.status, r.text);
