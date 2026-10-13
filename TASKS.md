@@ -72,7 +72,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **(you)** needs the own
 - [~] Merge tracks: done (both tracks merged, v1 code removed, build/tsc/biome/188 tests green). e2e on the real strip:
   - [x] Cloud, replay: full Derby day through `/api/cron/tick`, strip followed and restored (auto-director switched to Scoreline at 86')
   - [x] Cloud, live: Lens v Sporting (Champions League, half time) through the real ESPN feed
-  - [ ] Signed-in UI flow (magic link, Realtime mirror, start/stop) — next
+  - [x] Signed-in UI flow against real Supabase auth + Realtime, driving the real strip: magic-link callback, preferences write under RLS, not-linked error path, Start from the UI, goal/yellow/possession mirrored live to the page, Stop restored the strip (checked on the bridge)
   - [ ] Local mode on the LAN, incl. Entertainment (needs bridge re-pair + a supervised run)
 - [x] README rewrite
 - [ ] **(you)** Production deploy: Vercel env vars, Supabase auth URLs, then apply the cron migration (docs/deploy.md). The Vercel connector can't create/deploy here, so this is yours
