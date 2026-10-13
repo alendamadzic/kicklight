@@ -1,0 +1,3128 @@
+{
+  "header": {
+    "id": "401879267",
+    "uid": "s:600~l:700~e:401879267",
+    "season": {
+      "year": 2026,
+      "current": true,
+      "type": 14308,
+      "name": "2026-27 English Premier League"
+    },
+    "timeValid": true,
+    "competitions": [
+      {
+        "id": "401879267",
+        "uid": "s:600~l:700~e:401879267~c:401879267",
+        "date": "2026-10-12T19:00Z",
+        "neutralSite": false,
+        "conferenceCompetition": false,
+        "boxscoreAvailable": true,
+        "commentaryAvailable": true,
+        "liveAvailable": false,
+        "onWatchESPN": false,
+        "recent": false,
+        "wallclockAvailable": true,
+        "boxscoreSource": "full",
+        "playByPlaySource": "full",
+        "competitors": [
+          {
+            "id": "388",
+            "uid": "s:600~t:388",
+            "order": 0,
+            "homeAway": "home",
+            "winner": true,
+            "team": {
+              "id": "388",
+              "guid": "05650a8f-d953-4acc-dd85-260d59aa4c8f",
+              "uid": "s:600~t:388",
+              "location": "Coventry City",
+              "name": "Coventry City",
+              "nickname": "Sky Blues",
+              "abbreviation": "COV",
+              "displayName": "Coventry City",
+              "shortDisplayName": "Coventry",
+              "color": "87cced",
+              "alternateColor": "ffffff",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/soccer/500/388.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": ["full", "default"],
+                  "lastUpdated": "2018-06-05T12:14Z"
+                }
+              ],
+              "groups": { "name": "2026-27 English Premier League" },
+              "links": [
+                {
+                  "rel": ["clubhouse", "desktop", "team"],
+                  "href": "https://www.espn.com/soccer/club/_/id/388/coventry-city",
+                  "text": "Clubhouse"
+                }
+              ],
+              "form": "DWLLL"
+            },
+            "score": "4",
+            "linescores": [{ "displayValue": "1" }, { "displayValue": "3" }],
+            "record": [
+              { "type": "total", "summary": "2-0-4", "displayValue": "2-0-4" },
+              { "type": "points", "summary": "6", "displayValue": "6" }
+            ],
+            "possession": false
+          },
+          {
+            "id": "361",
+            "uid": "s:600~t:361",
+            "order": 1,
+            "homeAway": "away",
+            "winner": false,
+            "team": {
+              "id": "361",
+              "guid": "ec6b4352-98d3-424d-6214-778d79b47a01",
+              "uid": "s:600~t:361",
+              "location": "Newcastle United",
+              "name": "Newcastle United",
+              "nickname": "Magpies/Toon",
+              "abbreviation": "NEW",
+              "displayName": "Newcastle United",
+              "shortDisplayName": "Newcastle",
+              "color": "000000",
+              "alternateColor": "0B1B3D",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/soccer/500/361.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": ["full", "default"],
+                  "lastUpdated": "2024-01-04T17:49Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/soccer/500-dark/361.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": ["full", "dark"],
+                  "lastUpdated": "2024-01-04T17:52Z"
+                }
+              ],
+              "groups": { "name": "2026-27 English Premier League" },
+              "links": [
+                {
+                  "rel": ["clubhouse", "desktop", "team"],
+                  "href": "https://www.espn.com/soccer/club/_/id/361/newcastle-united",
+                  "text": "Clubhouse"
+                }
+              ],
+              "form": "DWLWD"
+            },
+            "score": "1",
+            "linescores": [{ "displayValue": "0" }, { "displayValue": "1" }],
+            "record": [
+              { "type": "total", "summary": "2-2-2", "displayValue": "2-2-2" },
+              { "type": "points", "summary": "8", "displayValue": "8" }
+            ],
+            "possession": false
+          }
+        ],
+        "notes": [],
+        "status": {
+          "type": {
+            "id": "28",
+            "name": "STATUS_FULL_TIME",
+            "state": "post",
+            "completed": true,
+            "description": "Full Time",
+            "detail": "FT",
+            "shortDetail": "FT"
+          }
+        },
+        "broadcasts": [
+          {
+            "type": { "id": "1", "shortName": "TV" },
+            "market": {},
+            "media": { "shortName": "USA Net" },
+            "lang": "en",
+            "region": "us",
+            "isNational": false
+          }
+        ],
+        "details": [
+          {
+            "clock": { "value": 340.0, "displayValue": "6'" },
+            "scoringPlay": true,
+            "team": {
+              "id": "388",
+              "uid": "s:600~t:388",
+              "location": "Coventry City",
+              "name": "Coventry City",
+              "nickname": "Sky Blues",
+              "abbreviation": "COV",
+              "displayName": "Coventry City"
+            },
+            "participants": [
+              {
+                "athlete": {
+                  "id": "286967",
+                  "displayName": "Jack Rudoni",
+                  "shortName": "J. Rudoni",
+                  "links": [
+                    {
+                      "language": "en-US",
+                      "rel": ["playercard", "desktop", "athlete"],
+                      "href": "https://www.espn.com/soccer/player/_/id/286967/jack-rudoni",
+                      "text": "Player Card",
+                      "shortText": "Player Card"
+                    }
+                  ]
+                }
+              }
+            ],
+            "addedClock": { "value": 0.0, "displayValue": "" },
+            "redCard": false,
+            "penaltyKick": true,
+            "ownGoal": false
+          },
+          {
+            "clock": { "value": 2875.0, "displayValue": "48'" },
+            "scoringPlay": true,
+            "team": {
+              "id": "388",
+              "uid": "s:600~t:388",
+              "location": "Coventry City",
+              "name": "Coventry City",
+              "nickname": "Sky Blues",
+              "abbreviation": "COV",
+              "displayName": "Coventry City"
+            },
+            "participants": [
+              {
+                "athlete": {
+                  "id": "366817",
+                  "displayName": "Sidiki Cherif",
+                  "shortName": "S. Cherif",
+                  "links": [
+                    {
+                      "language": "en-US",
+                      "rel": ["playercard", "desktop", "athlete"],
+                      "href": "https://www.espn.com/soccer/player/_/id/366817/sidiki-cherif",
+                      "text": "Player Card",
+                      "shortText": "Player Card"
+                    }
+                  ]
+                }
+              }
+            ],
+            "addedClock": { "value": 0.0, "displayValue": "" },
+            "redCard": false,
+            "penaltyKick": false,
+            "ownGoal": false
+          },
+          {
+            "clock": { "value": 4168.0, "displayValue": "70'" },
+            "scoringPlay": true,
+            "team": {
+              "id": "361",
+              "uid": "s:600~t:361",
+              "location": "Newcastle United",
+              "name": "Newcastle United",
+              "nickname": "Magpies/Toon",
+              "abbreviation": "NEW",
+              "displayName": "Newcastle United"
+            },
+            "participants": [
+              {
+                "athlete": {
+                  "id": "274633",
+                  "displayName": "Sven Botman",
+                  "shortName": "S. Botman",
+                  "links": [
+                    {
+                      "language": "en-US",
+                      "rel": ["playercard", "desktop", "athlete"],
+                      "href": "https://www.espn.com/soccer/player/_/id/274633/sven-botman",
+                      "text": "Player Card",
+                      "shortText": "Player Card"
+                    }
+                  ]
+                }
+              },
+              {
+                "athlete": {
+                  "id": "323986",
+                  "displayName": "Nico Gonz\u00e1lez",
+                  "shortName": "N. Gonz\u00e1lez",
+                  "links": [
+                    {
+                      "language": "en-US",
+                      "rel": ["playercard", "desktop", "athlete"],
+                      "href": "https://www.espn.com/soccer/player/_/id/323986/nico-gonzalez",
+                      "text": "Player Card",
+                      "shortText": "Player Card"
+                    }
+                  ]
+                }
+              }
+            ],
+            "addedClock": { "value": 0.0, "displayValue": "" },
+            "redCard": false,
+            "penaltyKick": false,
+            "ownGoal": false
+          },
+          {
+            "clock": { "value": 4837.0, "displayValue": "81'" },
+            "scoringPlay": true,
+            "team": {
+              "id": "388",
+              "uid": "s:600~t:388",
+              "location": "Coventry City",
+              "name": "Coventry City",
+              "nickname": "Sky Blues",
+              "abbreviation": "COV",
+              "displayName": "Coventry City"
+            },
+            "participants": [
+              {
+                "athlete": {
+                  "id": "282647",
+                  "displayName": "Ellis Simms",
+                  "shortName": "E. Simms",
+                  "links": [
+                    {
+                      "language": "en-US",
+                      "rel": ["playercard", "desktop", "athlete"],
+                      "href": "https://www.espn.com/soccer/player/_/id/282647/ellis-simms",
+                      "text": "Player Card",
+                      "shortText": "Player Card"
+                    }
+                  ]
+                }
+              },
+              {
+                "athlete": {
+                  "id": "240495",
+                  "displayName": "Brandon Thomas-Asante",
+                  "shortName": "B. Thomas-Asante",
+                  "links": [
+                    {
+                      "language": "en-US",
+                      "rel": ["playercard", "desktop", "athlete"],
+                      "href": "https://www.espn.com/soccer/player/_/id/240495/brandon-thomas-asante",
+                      "text": "Player Card",
+                      "shortText": "Player Card"
+                    }
+                  ]
+                }
+              }
+            ],
+            "addedClock": { "value": 0.0, "displayValue": "" },
+            "redCard": false,
+            "penaltyKick": false,
+            "ownGoal": false
+          },
+          {
+            "clock": { "value": 5150.0, "displayValue": "86'" },
+            "scoringPlay": true,
+            "team": {
+              "id": "388",
+              "uid": "s:600~t:388",
+              "location": "Coventry City",
+              "name": "Coventry City",
+              "nickname": "Sky Blues",
+              "abbreviation": "COV",
+              "displayName": "Coventry City"
+            },
+            "participants": [
+              {
+                "athlete": {
+                  "id": "374220",
+                  "displayName": "Stephen Mfuni",
+                  "shortName": "S. Mfuni",
+                  "links": [
+                    {
+                      "language": "en-US",
+                      "rel": ["playercard", "desktop", "athlete"],
+                      "href": "https://www.espn.com/soccer/player/_/id/374220/stephen-mfuni",
+                      "text": "Player Card",
+                      "shortText": "Player Card"
+                    }
+                  ]
+                }
+              },
+              {
+                "athlete": {
+                  "id": "206172",
+                  "displayName": "Jay Da Silva",
+                  "shortName": "J. Da Silva",
+                  "links": [
+                    {
+                      "language": "en-US",
+                      "rel": ["playercard", "desktop", "athlete"],
+                      "href": "https://www.espn.com/soccer/player/_/id/206172/jay-da-silva",
+                      "text": "Player Card",
+                      "shortText": "Player Card"
+                    }
+                  ]
+                }
+              }
+            ],
+            "addedClock": { "value": 0.0, "displayValue": "" },
+            "redCard": false,
+            "penaltyKick": false,
+            "ownGoal": false
+          }
+        ],
+        "groups": {
+          "id": "1",
+          "name": "English Premiership 2001-2002",
+          "abbreviation": "2001-2002"
+        },
+        "isFinal": false,
+        "isThirdPlace": false,
+        "altGameNote": "Premier League",
+        "boxscoreMinutes": false,
+        "shotMapAvailable": true
+      }
+    ],
+    "links": [
+      {
+        "rel": ["summary", "desktop", "event"],
+        "href": "https://www.espn.com/soccer/match/_/gameId/401879267/newcastle-united-coventry-city",
+        "text": "Summary",
+        "shortText": "Summary",
+        "isExternal": false,
+        "isPremium": false
+      },
+      {
+        "rel": ["recap", "desktop", "event"],
+        "href": "https://www.espn.com/soccer/report/_/gameId/401879267",
+        "text": "Report",
+        "shortText": "Report",
+        "isExternal": false,
+        "isPremium": false
+      },
+      {
+        "rel": ["commentary", "desktop", "event"],
+        "href": "https://www.espn.com/soccer/commentary/_/gameId/401879267",
+        "text": "Commentary",
+        "shortText": "Commentary",
+        "isExternal": false,
+        "isPremium": false
+      }
+    ],
+    "league": {
+      "id": "700",
+      "uid": "s:600~l:700",
+      "name": "English Premier League",
+      "abbreviation": "Premier League",
+      "shortName": "Premier League",
+      "midsizeName": "ENG.1",
+      "slug": "eng.1",
+      "isTournament": false,
+      "links": [
+        {
+          "rel": ["index", "desktop", "league"],
+          "href": "https://www.espn.com/soccer/league/_/name/eng.1",
+          "text": "Index"
+        },
+        {
+          "rel": ["index", "sportscenter", "app", "league"],
+          "href": "sportscenter://x-callback-url/showClubhouse?uid=s:600~l:700",
+          "text": "Index"
+        },
+        {
+          "rel": ["schedule", "desktop", "league"],
+          "href": "https://www.espn.com/soccer/schedule/_/league/eng.1",
+          "text": "Schedule"
+        },
+        {
+          "rel": ["schedule", "sportscenter", "app", "league"],
+          "href": "sportscenter://x-callback-url/showClubhouse?uid=s:600~l:700&section=scores",
+          "text": "Schedule"
+        },
+        {
+          "rel": ["standings", "desktop", "league"],
+          "href": "https://www.espn.com/soccer/table/_/league/eng.1",
+          "text": "Standings"
+        },
+        {
+          "rel": ["standings", "sportscenter", "app", "league"],
+          "href": "sportscenter://x-callback-url/showClubhouse?uid=s:600~l:700&section=standings",
+          "text": "Standings"
+        },
+        {
+          "rel": ["scores", "desktop", "league"],
+          "href": "https://www.espn.com/soccer/scoreboard/_/league/eng.1",
+          "text": "Scores"
+        },
+        {
+          "rel": ["scores", "sportscenter", "app", "league"],
+          "href": "sportscenter://x-callback-url/showClubhouse?uid=s:600~l:700&section=scores",
+          "text": "Scores"
+        },
+        {
+          "rel": ["stats", "desktop", "league"],
+          "href": "https://www.espn.com/soccer/stats/_/league/eng.1",
+          "text": "Stats"
+        },
+        {
+          "rel": ["stats", "sportscenter", "app", "league"],
+          "href": "sportscenter://x-callback-url/showClubhouse?uid=s:600~l:700&section=stats",
+          "text": "Stats"
+        },
+        {
+          "rel": ["teams", "desktop", "league"],
+          "href": "https://www.espn.com/soccer/teams/_/league/eng.1",
+          "text": "Teams"
+        }
+      ],
+      "logos": [
+        {
+          "href": "https://a.espncdn.com/i/leaguelogos/soccer/500/23.png",
+          "rel": ["full", "default"]
+        },
+        {
+          "href": "https://a.espncdn.com/i/leaguelogos/soccer/500-dark/23.png",
+          "rel": ["full", "dark"]
+        }
+      ]
+    },
+    "linksv4": [
+      {
+        "rel": ["summary", "desktop", "event"],
+        "href": "https://www.espn.com/soccer/match/_/gameId/401879267/newcastle-united-coventry-city",
+        "text": "Gamecast",
+        "shortText": "Summary",
+        "isExternal": false,
+        "isPremium": false
+      },
+      {
+        "rel": ["recap", "desktop", "event"],
+        "href": "https://www.espn.com/soccer/report/_/gameId/401879267",
+        "text": "Recap",
+        "shortText": "Recap",
+        "isExternal": false,
+        "isPremium": false
+      },
+      {
+        "rel": ["teamstats", "desktop", "event"],
+        "href": "https://www.espn.com/soccer/team-stats/_/gameId/401879267",
+        "text": "Team Stats",
+        "shortText": "Team Stats",
+        "isExternal": false,
+        "isPremium": false
+      },
+      {
+        "rel": ["playerstats", "desktop", "event"],
+        "href": "https://www.espn.com/soccer/player-stats/_/gameId/401879267",
+        "text": "Player Stats",
+        "shortText": "Player Stats",
+        "isExternal": false,
+        "isPremium": false
+      },
+      {
+        "rel": ["commentary", "desktop", "event"],
+        "href": "https://www.espn.com/soccer/commentary/_/gameId/401879267",
+        "text": "Commentary",
+        "shortText": "Commentary",
+        "isExternal": false,
+        "isPremium": false
+      }
+    ]
+  },
+  "boxscore": {
+    "teams": [
+      {
+        "team": {
+          "id": "388",
+          "displayName": "Coventry City",
+          "shortDisplayName": "Coventry",
+          "abbreviation": "COV",
+          "color": "87cced",
+          "alternateColor": "ffffff",
+          "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/388.png"
+        },
+        "statistics": [
+          { "name": "foulsCommitted", "displayValue": "3", "label": "Fouls" },
+          {
+            "name": "yellowCards",
+            "displayValue": "1",
+            "label": "Yellow Cards"
+          },
+          { "name": "redCards", "displayValue": "0", "label": "Red Cards" },
+          { "name": "offsides", "displayValue": "2", "label": "Offsides" },
+          {
+            "name": "wonCorners",
+            "displayValue": "2",
+            "label": "Corner Kicks"
+          },
+          { "name": "saves", "displayValue": "4", "label": "Saves" },
+          {
+            "name": "possessionPct",
+            "displayValue": "33.3",
+            "label": "Possession"
+          },
+          { "name": "totalShots", "displayValue": "9", "label": "SHOTS" },
+          { "name": "shotsOnTarget", "displayValue": "6", "label": "ON GOAL" },
+          { "name": "shotPct", "displayValue": "0.7", "label": "On Target %" },
+          {
+            "name": "penaltyKickGoals",
+            "displayValue": "0",
+            "label": "Penalty Goals"
+          },
+          {
+            "name": "penaltyKickShots",
+            "displayValue": "1",
+            "label": "Penalty Kicks Taken"
+          },
+          {
+            "name": "accuratePasses",
+            "displayValue": "185",
+            "label": "Accurate Passes"
+          },
+          { "name": "totalPasses", "displayValue": "261", "label": "Passes" },
+          {
+            "name": "passPct",
+            "displayValue": "0.7",
+            "label": "Pass Completion %"
+          },
+          {
+            "name": "accurateCrosses",
+            "displayValue": "2",
+            "label": "Accurate Crosses"
+          },
+          { "name": "totalCrosses", "displayValue": "9", "label": "Crosses" },
+          { "name": "crossPct", "displayValue": "0.2", "label": "Cross %" },
+          {
+            "name": "totalLongBalls",
+            "displayValue": "68",
+            "label": "Long Balls"
+          },
+          {
+            "name": "accurateLongBalls",
+            "displayValue": "29",
+            "label": "Accurate Long Balls"
+          },
+          {
+            "name": "longballPct",
+            "displayValue": "0.4",
+            "label": "Long Balls %"
+          },
+          {
+            "name": "blockedShots",
+            "displayValue": "3",
+            "label": "Blocked Shots"
+          },
+          {
+            "name": "effectiveTackles",
+            "displayValue": "8",
+            "label": "Effective Tackles"
+          },
+          { "name": "totalTackles", "displayValue": "13", "label": "Tackles" },
+          { "name": "tacklePct", "displayValue": "0.6", "label": "Tackle %" },
+          {
+            "name": "interceptions",
+            "displayValue": "8",
+            "label": "Interceptions"
+          },
+          {
+            "name": "effectiveClearance",
+            "displayValue": "32",
+            "label": "Effective Clearances"
+          },
+          {
+            "name": "totalClearance",
+            "displayValue": "32",
+            "label": "Clearances"
+          }
+        ],
+        "displayOrder": 1,
+        "homeAway": "home"
+      },
+      {
+        "team": {
+          "id": "361",
+          "displayName": "Newcastle United",
+          "shortDisplayName": "Newcastle",
+          "abbreviation": "NEW",
+          "color": "000000",
+          "alternateColor": "0B1B3D",
+          "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/361.png"
+        },
+        "statistics": [
+          { "name": "foulsCommitted", "displayValue": "10", "label": "Fouls" },
+          {
+            "name": "yellowCards",
+            "displayValue": "1",
+            "label": "Yellow Cards"
+          },
+          { "name": "redCards", "displayValue": "0", "label": "Red Cards" },
+          { "name": "offsides", "displayValue": "5", "label": "Offsides" },
+          {
+            "name": "wonCorners",
+            "displayValue": "6",
+            "label": "Corner Kicks"
+          },
+          { "name": "saves", "displayValue": "2", "label": "Saves" },
+          {
+            "name": "possessionPct",
+            "displayValue": "66.7",
+            "label": "Possession"
+          },
+          { "name": "totalShots", "displayValue": "19", "label": "SHOTS" },
+          { "name": "shotsOnTarget", "displayValue": "6", "label": "ON GOAL" },
+          { "name": "shotPct", "displayValue": "0.3", "label": "On Target %" },
+          {
+            "name": "penaltyKickGoals",
+            "displayValue": "0",
+            "label": "Penalty Goals"
+          },
+          {
+            "name": "penaltyKickShots",
+            "displayValue": "0",
+            "label": "Penalty Kicks Taken"
+          },
+          {
+            "name": "accuratePasses",
+            "displayValue": "451",
+            "label": "Accurate Passes"
+          },
+          { "name": "totalPasses", "displayValue": "527", "label": "Passes" },
+          {
+            "name": "passPct",
+            "displayValue": "0.9",
+            "label": "Pass Completion %"
+          },
+          {
+            "name": "accurateCrosses",
+            "displayValue": "3",
+            "label": "Accurate Crosses"
+          },
+          { "name": "totalCrosses", "displayValue": "17", "label": "Crosses" },
+          { "name": "crossPct", "displayValue": "0.2", "label": "Cross %" },
+          {
+            "name": "totalLongBalls",
+            "displayValue": "39",
+            "label": "Long Balls"
+          },
+          {
+            "name": "accurateLongBalls",
+            "displayValue": "21",
+            "label": "Accurate Long Balls"
+          },
+          {
+            "name": "longballPct",
+            "displayValue": "0.5",
+            "label": "Long Balls %"
+          },
+          {
+            "name": "blockedShots",
+            "displayValue": "6",
+            "label": "Blocked Shots"
+          },
+          {
+            "name": "effectiveTackles",
+            "displayValue": "9",
+            "label": "Effective Tackles"
+          },
+          { "name": "totalTackles", "displayValue": "14", "label": "Tackles" },
+          { "name": "tacklePct", "displayValue": "0.6", "label": "Tackle %" },
+          {
+            "name": "interceptions",
+            "displayValue": "8",
+            "label": "Interceptions"
+          },
+          {
+            "name": "effectiveClearance",
+            "displayValue": "25",
+            "label": "Effective Clearances"
+          },
+          {
+            "name": "totalClearance",
+            "displayValue": "25",
+            "label": "Clearances"
+          }
+        ],
+        "displayOrder": 2,
+        "homeAway": "away"
+      }
+    ]
+  },
+  "keyEvents": [
+    {
+      "id": "53551559",
+      "type": { "id": "80", "text": "Kickoff", "type": "kickoff" },
+      "text": "First Half begins.",
+      "period": { "number": 1 },
+      "clock": { "value": 0.0, "displayValue": "" },
+      "scoringPlay": false,
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T19:00:12Z",
+      "shootout": false
+    },
+    {
+      "id": "53551972",
+      "type": {
+        "id": "98",
+        "text": "Penalty - Scored",
+        "type": "penalty---scored"
+      },
+      "text": "Goal! Coventry City 1, Newcastle United 0. Jack Rudoni (Coventry City) converts the penalty with a left footed shot to the bottom right corner.",
+      "shortText": "Jack Rudoni Penalty - Scored",
+      "period": { "number": 1 },
+      "clock": { "value": 340.0, "displayValue": "6'" },
+      "scoringPlay": true,
+      "team": { "id": "388", "displayName": "Coventry City" },
+      "participants": [
+        { "athlete": { "id": "286967", "displayName": "Jack Rudoni" } }
+      ],
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T19:05:52Z",
+      "shootout": false,
+      "goalPositionY": 47.4,
+      "fieldPositionX": 88.5,
+      "fieldPositionY": 50.0,
+      "fieldPosition2X": 100.0,
+      "fieldPosition2Y": 47.4
+    },
+    {
+      "id": "53556572",
+      "type": { "id": "81", "text": "Halftime", "type": "halftime" },
+      "text": "First Half ends, Coventry City 1, Newcastle United 0.",
+      "period": { "number": 1 },
+      "clock": { "value": 2700.0, "displayValue": "45'+3'" },
+      "scoringPlay": false,
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T19:47:13Z",
+      "shootout": false
+    },
+    {
+      "id": "53558013",
+      "type": {
+        "id": "82",
+        "text": "Start 2nd Half",
+        "type": "start-2nd-half"
+      },
+      "period": { "number": 2 },
+      "clock": { "value": 2700.0, "displayValue": "45'" },
+      "scoringPlay": false,
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:02:57Z",
+      "shootout": false
+    },
+    {
+      "id": "53558074",
+      "type": { "id": "129", "text": "Start Delay", "type": "start-delay" },
+      "text": "Delay in match because of an injury Joe Willock (Newcastle United).",
+      "period": { "number": 2 },
+      "clock": { "value": 2732.0, "displayValue": "46'" },
+      "scoringPlay": false,
+      "team": { "id": "361", "displayName": "Newcastle United" },
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:03:29Z",
+      "shootout": false
+    },
+    {
+      "id": "53558075",
+      "type": { "id": "129", "text": "Start Delay", "type": "start-delay" },
+      "period": { "number": 2 },
+      "clock": { "value": 2732.0, "displayValue": "46'" },
+      "scoringPlay": false,
+      "team": { "id": "388", "displayName": "Coventry City" },
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:03:30Z",
+      "shootout": false
+    },
+    {
+      "id": "53558230",
+      "type": { "id": "130", "text": "End Delay", "type": "end-delay" },
+      "text": "Delay over. They are ready to continue.",
+      "period": { "number": 2 },
+      "clock": { "value": 2821.0, "displayValue": "48'" },
+      "scoringPlay": false,
+      "team": { "id": "361", "displayName": "Newcastle United" },
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:04:59Z",
+      "shootout": false
+    },
+    {
+      "id": "53558231",
+      "type": { "id": "130", "text": "End Delay", "type": "end-delay" },
+      "period": { "number": 2 },
+      "clock": { "value": 2821.0, "displayValue": "48'" },
+      "scoringPlay": false,
+      "team": { "id": "388", "displayName": "Coventry City" },
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:04:59Z",
+      "shootout": false
+    },
+    {
+      "id": "53558245",
+      "type": { "id": "70", "text": "Goal", "type": "goal" },
+      "text": "Goal! Coventry City 2, Newcastle United 0. Sidiki Cherif (Coventry City) right footed shot from outside the box to the bottom right corner.",
+      "shortText": "Sidiki Cherif Goal",
+      "period": { "number": 2 },
+      "clock": { "value": 2875.0, "displayValue": "48'" },
+      "scoringPlay": true,
+      "team": { "id": "388", "displayName": "Coventry City" },
+      "participants": [
+        { "athlete": { "id": "366817", "displayName": "Sidiki Cherif" } }
+      ],
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:05:52Z",
+      "shootout": false,
+      "goalPositionY": 46.1,
+      "fieldPositionX": 81.2,
+      "fieldPositionY": 50.8,
+      "fieldPosition2X": 100.0,
+      "fieldPosition2Y": 46.1
+    },
+    {
+      "id": "53559639",
+      "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+      "text": "Substitution, Newcastle United. Amar Dedic replaces Lewis Miley.",
+      "shortText": "Amar Dedic Substitution",
+      "period": { "number": 2 },
+      "clock": { "value": 3505.0, "displayValue": "59'" },
+      "scoringPlay": false,
+      "team": { "id": "361", "displayName": "Newcastle United" },
+      "participants": [
+        { "athlete": { "id": "308979", "displayName": "Amar Dedic" } },
+        { "athlete": { "id": "349078", "displayName": "Lewis Miley" } }
+      ],
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:16:22Z",
+      "shootout": false
+    },
+    {
+      "id": "53559640",
+      "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+      "text": "Substitution, Newcastle United. Bazoumana Tour\u00e9 replaces Jacob Murphy.",
+      "shortText": "Bazoumana Tour\u00e9 Substitution",
+      "period": { "number": 2 },
+      "clock": { "value": 3523.0, "displayValue": "59'" },
+      "scoringPlay": false,
+      "team": { "id": "361", "displayName": "Newcastle United" },
+      "participants": [
+        {
+          "athlete": { "id": "359108", "displayName": "Bazoumana Tour\u00e9" }
+        },
+        { "athlete": { "id": "172836", "displayName": "Jacob Murphy" } }
+      ],
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:16:40Z",
+      "shootout": false
+    },
+    {
+      "id": "53559641",
+      "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+      "text": "Substitution, Newcastle United. Joelinton replaces Joe Willock.",
+      "shortText": "Joelinton Substitution",
+      "period": { "number": 2 },
+      "clock": { "value": 3527.0, "displayValue": "59'" },
+      "scoringPlay": false,
+      "team": { "id": "361", "displayName": "Newcastle United" },
+      "participants": [
+        { "athlete": { "id": "202232", "displayName": "Joelinton" } },
+        { "athlete": { "id": "259517", "displayName": "Joe Willock" } }
+      ],
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:16:44Z",
+      "shootout": false
+    },
+    {
+      "id": "53559700",
+      "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+      "text": "Substitution, Coventry City. Tatsuhiro Sakamoto replaces Ephron Mason-Clark.",
+      "shortText": "Tatsuhiro Sakamoto Substitution",
+      "period": { "number": 2 },
+      "clock": { "value": 3620.0, "displayValue": "61'" },
+      "scoringPlay": false,
+      "team": { "id": "388", "displayName": "Coventry City" },
+      "participants": [
+        { "athlete": { "id": "302002", "displayName": "Tatsuhiro Sakamoto" } },
+        { "athlete": { "id": "246954", "displayName": "Ephron Mason-Clark" } }
+      ],
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:18:17Z",
+      "shootout": false
+    },
+    {
+      "id": "53560148",
+      "type": { "id": "94", "text": "Yellow Card", "type": "yellow-card" },
+      "text": "Milan van Ewijk (Coventry City) is shown the yellow card.",
+      "shortText": "Milan van Ewijk Yellow Card",
+      "period": { "number": 2 },
+      "clock": { "value": 3902.0, "displayValue": "66'" },
+      "scoringPlay": false,
+      "team": { "id": "388", "displayName": "Coventry City" },
+      "participants": [
+        { "athlete": { "id": "281139", "displayName": "Milan van Ewijk" } }
+      ],
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:22:59Z",
+      "shootout": false
+    },
+    {
+      "id": "53560705",
+      "type": { "id": "70", "text": "Goal", "type": "goal" },
+      "text": "Goal! Coventry City 2, Newcastle United 1. Sven Botman (Newcastle United) left footed shot from outside the box to the top left corner. Assisted by Nico Gonz\u00e1lez.",
+      "shortText": "Sven Botman Goal",
+      "period": { "number": 2 },
+      "clock": { "value": 4168.0, "displayValue": "70'" },
+      "scoringPlay": true,
+      "team": { "id": "361", "displayName": "Newcastle United" },
+      "participants": [
+        { "athlete": { "id": "274633", "displayName": "Sven Botman" } },
+        { "athlete": { "id": "323986", "displayName": "Nico Gonz\u00e1lez" } }
+      ],
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:27:25Z",
+      "shootout": false,
+      "goalPositionY": 53.9,
+      "fieldPositionX": 81.6,
+      "fieldPositionY": 72.3,
+      "fieldPosition2X": 100.0,
+      "fieldPosition2Y": 53.9
+    },
+    {
+      "id": "53561735",
+      "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+      "text": "Substitution, Coventry City. Frank Onyeka replaces Caleb Yirenkyi.",
+      "shortText": "Frank Onyeka Substitution",
+      "period": { "number": 2 },
+      "clock": { "value": 4628.0, "displayValue": "78'" },
+      "scoringPlay": false,
+      "team": { "id": "388", "displayName": "Coventry City" },
+      "participants": [
+        { "athlete": { "id": "258491", "displayName": "Frank Onyeka" } },
+        { "athlete": { "id": "387659", "displayName": "Caleb Yirenkyi" } }
+      ],
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:35:06Z",
+      "shootout": false
+    },
+    {
+      "id": "53561888",
+      "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+      "text": "Substitution, Coventry City. Ellis Simms replaces Sidiki Cherif.",
+      "shortText": "Ellis Simms Substitution",
+      "period": { "number": 2 },
+      "clock": { "value": 4642.0, "displayValue": "78'" },
+      "scoringPlay": false,
+      "team": { "id": "388", "displayName": "Coventry City" },
+      "participants": [
+        { "athlete": { "id": "282647", "displayName": "Ellis Simms" } },
+        { "athlete": { "id": "366817", "displayName": "Sidiki Cherif" } }
+      ],
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:35:19Z",
+      "shootout": false
+    },
+    {
+      "id": "53561890",
+      "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+      "text": "Substitution, Newcastle United. William Osula replaces Yoane Wissa.",
+      "shortText": "William Osula Substitution",
+      "period": { "number": 2 },
+      "clock": { "value": 4657.0, "displayValue": "78'" },
+      "scoringPlay": false,
+      "team": { "id": "361", "displayName": "Newcastle United" },
+      "participants": [
+        { "athlete": { "id": "319431", "displayName": "William Osula" } },
+        { "athlete": { "id": "224077", "displayName": "Yoane Wissa" } }
+      ],
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:35:34Z",
+      "shootout": false
+    },
+    {
+      "id": "53562133",
+      "type": { "id": "70", "text": "Goal", "type": "goal" },
+      "text": "Goal! Coventry City 3, Newcastle United 1. Ellis Simms (Coventry City) right footed shot from the centre of the box to the bottom right corner. Assisted by Brandon Thomas-Asante.",
+      "shortText": "Ellis Simms Goal",
+      "period": { "number": 2 },
+      "clock": { "value": 4837.0, "displayValue": "81'" },
+      "scoringPlay": true,
+      "team": { "id": "388", "displayName": "Coventry City" },
+      "participants": [
+        { "athlete": { "id": "282647", "displayName": "Ellis Simms" } },
+        {
+          "athlete": { "id": "240495", "displayName": "Brandon Thomas-Asante" }
+        }
+      ],
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:38:34Z",
+      "shootout": false,
+      "goalPositionY": 45.9,
+      "fieldPositionX": 86.4,
+      "fieldPositionY": 60.1,
+      "fieldPosition2X": 100.0,
+      "fieldPosition2Y": 45.9
+    },
+    {
+      "id": "53562294",
+      "type": { "id": "94", "text": "Yellow Card", "type": "yellow-card" },
+      "text": "Joelinton (Newcastle United) is shown the yellow card for a bad foul.",
+      "shortText": "Joelinton Yellow Card",
+      "period": { "number": 2 },
+      "clock": { "value": 4840.0, "displayValue": "81'" },
+      "scoringPlay": false,
+      "team": { "id": "361", "displayName": "Newcastle United" },
+      "participants": [
+        { "athlete": { "id": "202232", "displayName": "Joelinton" } }
+      ],
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:38:38Z",
+      "shootout": false
+    },
+    {
+      "id": "53562296",
+      "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+      "text": "Substitution, Coventry City. Victor Torp replaces Jack Rudoni.",
+      "shortText": "Victor Torp Substitution",
+      "period": { "number": 2 },
+      "clock": { "value": 4932.0, "displayValue": "83'" },
+      "scoringPlay": false,
+      "team": { "id": "388", "displayName": "Coventry City" },
+      "participants": [
+        { "athlete": { "id": "256015", "displayName": "Victor Torp" } },
+        { "athlete": { "id": "286967", "displayName": "Jack Rudoni" } }
+      ],
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:40:09Z",
+      "shootout": false
+    },
+    {
+      "id": "53562297",
+      "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+      "text": "Substitution, Coventry City. Stephen Mfuni replaces Matt Grimes.",
+      "shortText": "Stephen Mfuni Substitution",
+      "period": { "number": 2 },
+      "clock": { "value": 4939.0, "displayValue": "83'" },
+      "scoringPlay": false,
+      "team": { "id": "388", "displayName": "Coventry City" },
+      "participants": [
+        { "athlete": { "id": "374220", "displayName": "Stephen Mfuni" } },
+        { "athlete": { "id": "191337", "displayName": "Matt Grimes" } }
+      ],
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:40:16Z",
+      "shootout": false
+    },
+    {
+      "id": "53562744",
+      "type": { "id": "70", "text": "Goal", "type": "goal" },
+      "text": "Goal! Coventry City 4, Newcastle United 1. Stephen Mfuni (Coventry City) left footed shot from the left side of the box to the bottom right corner. Assisted by Jay Dasilva.",
+      "shortText": "Stephen Mfuni Goal",
+      "period": { "number": 2 },
+      "clock": { "value": 5150.0, "displayValue": "86'" },
+      "scoringPlay": true,
+      "team": { "id": "388", "displayName": "Coventry City" },
+      "participants": [
+        { "athlete": { "id": "374220", "displayName": "Stephen Mfuni" } },
+        { "athlete": { "id": "206172", "displayName": "Jay Da Silva" } }
+      ],
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:43:47Z",
+      "shootout": false,
+      "goalPositionY": 45.4,
+      "fieldPositionX": 84.4,
+      "fieldPositionY": 64.2,
+      "fieldPosition2X": 100.0,
+      "fieldPosition2Y": 45.4
+    },
+    {
+      "id": "53563200",
+      "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+      "text": "Substitution, Newcastle United. Dan Burn replaces Bazoumana Tour\u00e9 because of an injury.",
+      "shortText": "Dan Burn Substitution",
+      "period": { "number": 2 },
+      "clock": { "value": 5400.0, "displayValue": "90'" },
+      "scoringPlay": false,
+      "team": { "id": "361", "displayName": "Newcastle United" },
+      "participants": [
+        { "athlete": { "id": "198138", "displayName": "Dan Burn" } },
+        { "athlete": { "id": "359108", "displayName": "Bazoumana Tour\u00e9" } }
+      ],
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:47:57Z",
+      "shootout": false
+    },
+    {
+      "id": "53563517",
+      "type": {
+        "id": "83",
+        "text": "End Regular Time",
+        "type": "end-regular-time"
+      },
+      "text": "Second Half ends, Coventry City 4, Newcastle United 1.",
+      "period": { "number": 2 },
+      "clock": { "value": 5400.0, "displayValue": "90'+5'" },
+      "scoringPlay": false,
+      "source": { "id": "38", "description": "SA.ENVOY" },
+      "wallclock": "2026-10-12T20:52:01Z",
+      "shootout": false
+    }
+  ],
+  "commentary": [
+    {
+      "sequence": 0,
+      "time": { "value": 0.0, "displayValue": "" },
+      "text": "Lineups are announced and players are warming up."
+    },
+    {
+      "sequence": 1,
+      "time": { "value": 0.0, "displayValue": "" },
+      "text": "First Half begins.",
+      "play": {
+        "id": "53551559",
+        "type": { "id": "80", "text": "Kickoff", "type": "kickoff" },
+        "text": "First Half begins.",
+        "period": { "number": 1 },
+        "clock": { "value": 0.0, "displayValue": "" },
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:00:12Z"
+      }
+    },
+    {
+      "sequence": 2,
+      "time": { "value": 40.0, "displayValue": "1'" },
+      "text": "Jack Rudoni (Coventry City) wins a free kick on the left wing.",
+      "play": {
+        "id": "53551587",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Foul by Jacob Murphy (Newcastle United).",
+        "shortText": "Jacob Murphy Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 40.0, "displayValue": "1'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Jacob Murphy" } },
+          { "athlete": { "displayName": "Jack Rudoni" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:00:52Z",
+        "fieldPositionX": 46.8,
+        "fieldPositionY": 2.2
+      }
+    },
+    {
+      "sequence": 3,
+      "time": { "value": 40.0, "displayValue": "1'" },
+      "text": "Foul by Jacob Murphy (Newcastle United).",
+      "play": {
+        "id": "53551587",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Foul by Jacob Murphy (Newcastle United).",
+        "shortText": "Jacob Murphy Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 40.0, "displayValue": "1'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Jacob Murphy" } },
+          { "athlete": { "displayName": "Jack Rudoni" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:00:52Z",
+        "fieldPositionX": 46.8,
+        "fieldPositionY": 2.2
+      }
+    },
+    {
+      "sequence": 4,
+      "time": { "value": 63.0, "displayValue": "2'" },
+      "text": "Jack Rudoni (Coventry City) wins a free kick in the attacking half.",
+      "play": {
+        "id": "53551592",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Foul by Yoane Wissa (Newcastle United).",
+        "shortText": "Yoane Wissa Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 63.0, "displayValue": "2'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Yoane Wissa" } },
+          { "athlete": { "displayName": "Jack Rudoni" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:01:15Z",
+        "fieldPositionX": 38.6,
+        "fieldPositionY": 46.4
+      }
+    },
+    {
+      "sequence": 5,
+      "time": { "value": 63.0, "displayValue": "2'" },
+      "text": "Foul by Yoane Wissa (Newcastle United).",
+      "play": {
+        "id": "53551592",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Foul by Yoane Wissa (Newcastle United).",
+        "shortText": "Yoane Wissa Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 63.0, "displayValue": "2'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Yoane Wissa" } },
+          { "athlete": { "displayName": "Jack Rudoni" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:01:15Z",
+        "fieldPositionX": 38.6,
+        "fieldPositionY": 46.4
+      }
+    },
+    {
+      "sequence": 6,
+      "time": { "value": 235.0, "displayValue": "4'" },
+      "text": "Penalty Coventry City. Sidiki Cherif draws a foul in the penalty area.",
+      "play": {
+        "id": "53551912",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Penalty conceded by Luk\u00e1s Horn\u00edcek (Newcastle United) after a foul in the penalty area.",
+        "shortText": "Luk\u00e1s Horn\u00edcek Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 235.0, "displayValue": "4'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Luk\u00e1s Horn\u00edcek" } },
+          { "athlete": { "displayName": "Sidiki Cherif" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:04:08Z",
+        "fieldPositionX": 9.4,
+        "fieldPositionY": 63.0
+      }
+    },
+    {
+      "sequence": 7,
+      "time": { "value": 235.0, "displayValue": "4'" },
+      "text": "Penalty conceded by Luk\u00e1s Horn\u00edcek (Newcastle United) after a foul in the penalty area.",
+      "play": {
+        "id": "53551912",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Penalty conceded by Luk\u00e1s Horn\u00edcek (Newcastle United) after a foul in the penalty area.",
+        "shortText": "Luk\u00e1s Horn\u00edcek Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 235.0, "displayValue": "4'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Luk\u00e1s Horn\u00edcek" } },
+          { "athlete": { "displayName": "Sidiki Cherif" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:04:08Z",
+        "fieldPositionX": 9.4,
+        "fieldPositionY": 63.0
+      }
+    },
+    {
+      "sequence": 8,
+      "time": { "value": 340.0, "displayValue": "6'" },
+      "text": "Goal! Coventry City 1, Newcastle United 0. Jack Rudoni (Coventry City) converts the penalty with a left footed shot to the bottom right corner.",
+      "play": {
+        "id": "53551972",
+        "type": {
+          "id": "98",
+          "text": "Penalty - Scored",
+          "type": "penalty---scored"
+        },
+        "text": "Goal! Coventry City 1, Newcastle United 0. Jack Rudoni (Coventry City) converts the penalty with a left footed shot to the bottom right corner.",
+        "shortText": "Jack Rudoni Penalty - Scored",
+        "period": { "number": 1 },
+        "clock": { "value": 340.0, "displayValue": "6'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [{ "athlete": { "displayName": "Jack Rudoni" } }],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:05:52Z",
+        "goalPositionY": 47.4,
+        "fieldPositionX": 88.5,
+        "fieldPositionY": 50.0,
+        "fieldPosition2X": 100.0,
+        "fieldPosition2Y": 47.4
+      }
+    },
+    {
+      "sequence": 9,
+      "time": { "value": 454.0, "displayValue": "8'" },
+      "text": "Brandon Thomas-Asante (Coventry City) wins a free kick in the attacking half.",
+      "play": {
+        "id": "53552252",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Foul by Nico Gonz\u00e1lez (Newcastle United).",
+        "shortText": "Nico Gonz\u00e1lez Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 454.0, "displayValue": "8'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Nico Gonz\u00e1lez" } },
+          { "athlete": { "displayName": "Brandon Thomas-Asante" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:07:46Z",
+        "fieldPositionX": 43.6,
+        "fieldPositionY": 68.0
+      }
+    },
+    {
+      "sequence": 10,
+      "time": { "value": 454.0, "displayValue": "8'" },
+      "text": "Foul by Nico Gonz\u00e1lez (Newcastle United).",
+      "play": {
+        "id": "53552252",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Foul by Nico Gonz\u00e1lez (Newcastle United).",
+        "shortText": "Nico Gonz\u00e1lez Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 454.0, "displayValue": "8'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Nico Gonz\u00e1lez" } },
+          { "athlete": { "displayName": "Brandon Thomas-Asante" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:07:46Z",
+        "fieldPositionX": 43.6,
+        "fieldPositionY": 68.0
+      }
+    },
+    {
+      "sequence": 11,
+      "time": { "value": 545.0, "displayValue": "10'" },
+      "text": "Offside, Coventry City. Sidiki Cherif is caught offside.",
+      "play": {
+        "id": "53552344",
+        "type": { "id": "68", "text": "Offside", "type": "offside" },
+        "text": "Offside, Coventry City. Sidiki Cherif is caught offside.",
+        "shortText": "Milan van Ewijk Offside",
+        "period": { "number": 1 },
+        "clock": { "value": 545.0, "displayValue": "10'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [{ "athlete": { "displayName": "Milan van Ewijk" } }],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:09:18Z",
+        "fieldPositionX": 59.1,
+        "fieldPositionY": 93.0,
+        "fieldPosition2X": 62.0,
+        "fieldPosition2Y": 91.6
+      }
+    },
+    {
+      "sequence": 12,
+      "time": { "value": 599.0, "displayValue": "10'" },
+      "text": "Attempt blocked. Harvey Barnes (Newcastle United) right footed shot from outside the box is blocked. Assisted by Nico Gonz\u00e1lez.",
+      "play": {
+        "id": "53552356",
+        "type": { "id": "135", "text": "Shot Blocked", "type": "shot-blocked" },
+        "text": "Attempt blocked. Harvey Barnes (Newcastle United) right footed shot from outside the box is blocked. Assisted by Nico Gonz\u00e1lez.",
+        "shortText": "Harvey Barnes Shot Blocked",
+        "period": { "number": 1 },
+        "clock": { "value": 599.0, "displayValue": "10'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Harvey Barnes" } },
+          { "athlete": { "displayName": "Nico Gonz\u00e1lez" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:10:12Z",
+        "goalPositionY": 51.3,
+        "fieldPositionX": 81.7,
+        "fieldPositionY": 53.6,
+        "fieldPosition2X": 84.5,
+        "fieldPosition2Y": 53.2
+      }
+    },
+    {
+      "sequence": 13,
+      "time": { "value": 624.0, "displayValue": "11'" },
+      "text": "Offside, Newcastle United. Harvey Barnes is caught offside.",
+      "play": {
+        "id": "53552483",
+        "type": { "id": "68", "text": "Offside", "type": "offside" },
+        "text": "Offside, Newcastle United. Harvey Barnes is caught offside.",
+        "shortText": "Lewis Hall Offside",
+        "period": { "number": 1 },
+        "clock": { "value": 624.0, "displayValue": "11'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [{ "athlete": { "displayName": "Lewis Hall" } }],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:10:36Z",
+        "fieldPositionX": 67.2,
+        "fieldPositionY": 96.6,
+        "fieldPosition2X": 97.1,
+        "fieldPosition2Y": 76.2
+      }
+    },
+    {
+      "sequence": 14,
+      "time": { "value": 771.0, "displayValue": "13'" },
+      "text": "Attempt saved. Harvey Barnes (Newcastle United) right footed shot from the centre of the box is saved in the centre of the goal by Carl Rushworth (Coventry City). Assisted by Joe Willock.",
+      "play": {
+        "id": "53552664",
+        "type": {
+          "id": "106",
+          "text": "Shot On Target",
+          "type": "shot-on-target"
+        },
+        "text": "Attempt saved. Harvey Barnes (Newcastle United) right footed shot from the centre of the box is saved in the centre of the goal by Carl Rushworth (Coventry City). Assisted by Joe Willock.",
+        "shortText": "Harvey Barnes Shot On Target",
+        "period": { "number": 1 },
+        "clock": { "value": 771.0, "displayValue": "13'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Harvey Barnes" } },
+          { "athlete": { "displayName": "Joe Willock" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:13:04Z",
+        "goalPositionY": 51.5,
+        "fieldPositionX": 85.6,
+        "fieldPositionY": 58.7,
+        "fieldPosition2X": 99.0,
+        "fieldPosition2Y": 52.5
+      }
+    },
+    {
+      "sequence": 15,
+      "time": { "value": 808.0, "displayValue": "14'" },
+      "text": "Foul by Milan van Ewijk (Coventry City).",
+      "play": {
+        "id": "53552776",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Harvey Barnes (Newcastle United) wins a free kick in the defensive half.",
+        "shortText": "Milan van Ewijk Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 808.0, "displayValue": "14'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [
+          { "athlete": { "displayName": "Milan van Ewijk" } },
+          { "athlete": { "displayName": "Harvey Barnes" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:13:41Z",
+        "fieldPositionX": 58.4,
+        "fieldPositionY": 3.2
+      }
+    },
+    {
+      "sequence": 16,
+      "time": { "value": 808.0, "displayValue": "14'" },
+      "text": "Harvey Barnes (Newcastle United) wins a free kick in the defensive half.",
+      "play": {
+        "id": "53552776",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Harvey Barnes (Newcastle United) wins a free kick in the defensive half.",
+        "shortText": "Milan van Ewijk Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 808.0, "displayValue": "14'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [
+          { "athlete": { "displayName": "Milan van Ewijk" } },
+          { "athlete": { "displayName": "Harvey Barnes" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:13:41Z",
+        "fieldPositionX": 58.4,
+        "fieldPositionY": 3.2
+      }
+    },
+    {
+      "sequence": 17,
+      "time": { "value": 901.0, "displayValue": "16'" },
+      "text": "Offside, Newcastle United. Joe Willock is caught offside.",
+      "play": {
+        "id": "53552841",
+        "type": { "id": "68", "text": "Offside", "type": "offside" },
+        "text": "Offside, Newcastle United. Joe Willock is caught offside.",
+        "shortText": "Lewis Hall Offside",
+        "period": { "number": 1 },
+        "clock": { "value": 901.0, "displayValue": "16'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [{ "athlete": { "displayName": "Lewis Hall" } }],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:15:13Z",
+        "fieldPositionX": 34.3,
+        "fieldPositionY": 91.9,
+        "fieldPosition2X": 71.1,
+        "fieldPosition2Y": 80.5
+      }
+    },
+    {
+      "sequence": 18,
+      "time": { "value": 1144.0, "displayValue": "20'" },
+      "text": "Offside, Newcastle United. Jacob Murphy is caught offside.",
+      "play": {
+        "id": "53553269",
+        "type": { "id": "68", "text": "Offside", "type": "offside" },
+        "text": "Offside, Newcastle United. Jacob Murphy is caught offside.",
+        "shortText": "Nico Gonz\u00e1lez Offside",
+        "period": { "number": 1 },
+        "clock": { "value": 1144.0, "displayValue": "20'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Nico Gonz\u00e1lez" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:19:16Z",
+        "fieldPositionX": 53.0,
+        "fieldPositionY": 68.2,
+        "fieldPosition2X": 81.3,
+        "fieldPosition2Y": 13.5
+      }
+    },
+    {
+      "sequence": 19,
+      "time": { "value": 1333.0, "displayValue": "23'" },
+      "text": "Attempt blocked. Joe Willock (Newcastle United) right footed shot from the left side of the box is blocked. Assisted by Lewis Hall.",
+      "play": {
+        "id": "53553571",
+        "type": { "id": "135", "text": "Shot Blocked", "type": "shot-blocked" },
+        "text": "Attempt blocked. Joe Willock (Newcastle United) right footed shot from the left side of the box is blocked. Assisted by Lewis Hall.",
+        "shortText": "Joe Willock Shot Blocked",
+        "period": { "number": 1 },
+        "clock": { "value": 1333.0, "displayValue": "23'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Joe Willock" } },
+          { "athlete": { "displayName": "Lewis Hall" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:22:25Z",
+        "goalPositionY": 51.7,
+        "fieldPositionX": 86.0,
+        "fieldPositionY": 75.2,
+        "fieldPosition2X": 87.5,
+        "fieldPosition2Y": 72.8
+      }
+    },
+    {
+      "sequence": 20,
+      "time": { "value": 1336.0, "displayValue": "23'" },
+      "text": "Attempt missed. Harvey Barnes (Newcastle United) right footed shot from the centre of the box misses to the left.",
+      "play": {
+        "id": "53553575",
+        "type": {
+          "id": "117",
+          "text": "Shot Off Target",
+          "type": "shot-off-target"
+        },
+        "text": "Attempt missed. Harvey Barnes (Newcastle United) right footed shot from the centre of the box misses to the left.",
+        "shortText": "Harvey Barnes Shot Off Target",
+        "period": { "number": 1 },
+        "clock": { "value": 1336.0, "displayValue": "23'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [{ "athlete": { "displayName": "Harvey Barnes" } }],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:22:29Z",
+        "goalPositionY": 65.0,
+        "fieldPositionX": 91.7,
+        "fieldPositionY": 53.4,
+        "fieldPosition2X": 100.0,
+        "fieldPosition2Y": 65.0
+      }
+    },
+    {
+      "sequence": 21,
+      "time": { "value": 1368.0, "displayValue": "23'" },
+      "text": "Offside, Coventry City. Ephron Mason-Clark is caught offside.",
+      "play": {
+        "id": "53553702",
+        "type": { "id": "68", "text": "Offside", "type": "offside" },
+        "text": "Offside, Coventry City. Ephron Mason-Clark is caught offside.",
+        "shortText": "Jack Rudoni Offside",
+        "period": { "number": 1 },
+        "clock": { "value": 1368.0, "displayValue": "23'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [{ "athlete": { "displayName": "Jack Rudoni" } }],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:23:01Z",
+        "fieldPositionX": 67.4,
+        "fieldPositionY": 96.1,
+        "fieldPosition2X": 79.1,
+        "fieldPosition2Y": 82.0
+      }
+    },
+    {
+      "sequence": 22,
+      "time": { "value": 1427.0, "displayValue": "24'" },
+      "text": "Foul by Matt Grimes (Coventry City).",
+      "play": {
+        "id": "53553848",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Jacob Murphy (Newcastle United) wins a free kick in the attacking half.",
+        "shortText": "Matt Grimes Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 1427.0, "displayValue": "24'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [
+          { "athlete": { "displayName": "Matt Grimes" } },
+          { "athlete": { "displayName": "Jacob Murphy" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:24:00Z",
+        "fieldPositionX": 32.0,
+        "fieldPositionY": 52.0
+      }
+    },
+    {
+      "sequence": 23,
+      "time": { "value": 1427.0, "displayValue": "24'" },
+      "text": "Jacob Murphy (Newcastle United) wins a free kick in the attacking half.",
+      "play": {
+        "id": "53553848",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Jacob Murphy (Newcastle United) wins a free kick in the attacking half.",
+        "shortText": "Matt Grimes Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 1427.0, "displayValue": "24'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [
+          { "athlete": { "displayName": "Matt Grimes" } },
+          { "athlete": { "displayName": "Jacob Murphy" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:24:00Z",
+        "fieldPositionX": 32.0,
+        "fieldPositionY": 52.0
+      }
+    },
+    {
+      "sequence": 24,
+      "time": { "value": 1697.0, "displayValue": "29'" },
+      "text": "Attempt saved. Sidiki Cherif (Coventry City) right footed shot from the right side of the box is saved in the bottom right corner by Luk\u00e1s Horn\u00edcek (Newcastle United). Assisted by Milan van Ewijk.",
+      "play": {
+        "id": "53554301",
+        "type": {
+          "id": "106",
+          "text": "Shot On Target",
+          "type": "shot-on-target"
+        },
+        "text": "Attempt saved. Sidiki Cherif (Coventry City) right footed shot from the right side of the box is saved in the bottom right corner by Luk\u00e1s Horn\u00edcek (Newcastle United). Assisted by Milan van Ewijk.",
+        "shortText": "Sidiki Cherif Shot On Target",
+        "period": { "number": 1 },
+        "clock": { "value": 1697.0, "displayValue": "29'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [
+          { "athlete": { "displayName": "Sidiki Cherif" } },
+          { "athlete": { "displayName": "Milan van Ewijk" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:28:29Z",
+        "goalPositionY": 47.0,
+        "fieldPositionX": 86.1,
+        "fieldPositionY": 32.4,
+        "fieldPosition2X": 98.6,
+        "fieldPosition2Y": 47.5
+      }
+    },
+    {
+      "sequence": 25,
+      "time": { "value": 1767.0, "displayValue": "30'" },
+      "text": "Attempt missed. Jacob Murphy (Newcastle United) right footed shot from outside the box is too high.",
+      "play": {
+        "id": "53554470",
+        "type": {
+          "id": "117",
+          "text": "Shot Off Target",
+          "type": "shot-off-target"
+        },
+        "text": "Attempt missed. Jacob Murphy (Newcastle United) right footed shot from outside the box is too high.",
+        "shortText": "Jacob Murphy Shot Off Target",
+        "period": { "number": 1 },
+        "clock": { "value": 1767.0, "displayValue": "30'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [{ "athlete": { "displayName": "Jacob Murphy" } }],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:29:39Z",
+        "goalPositionY": 45.7,
+        "fieldPositionX": 76.2,
+        "fieldPositionY": 31.3,
+        "fieldPosition2X": 100.0,
+        "fieldPosition2Y": 45.7
+      }
+    },
+    {
+      "sequence": 26,
+      "time": { "value": 1849.0, "displayValue": "31'" },
+      "text": "Attempt missed. Jacob Murphy (Newcastle United) right footed shot from the right side of the six yard box misses to the left. Assisted by Harvey Barnes with a cross.",
+      "play": {
+        "id": "53554560",
+        "type": {
+          "id": "117",
+          "text": "Shot Off Target",
+          "type": "shot-off-target"
+        },
+        "text": "Attempt missed. Jacob Murphy (Newcastle United) right footed shot from the right side of the six yard box misses to the left. Assisted by Harvey Barnes with a cross.",
+        "shortText": "Jacob Murphy Shot Off Target",
+        "period": { "number": 1 },
+        "clock": { "value": 1849.0, "displayValue": "31'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Jacob Murphy" } },
+          { "athlete": { "displayName": "Harvey Barnes" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:31:01Z",
+        "goalPositionY": 99.8,
+        "fieldPositionX": 97.6,
+        "fieldPositionY": 44.0,
+        "fieldPosition2X": 97.8,
+        "fieldPosition2Y": 50.7
+      }
+    },
+    {
+      "sequence": 27,
+      "time": { "value": 1851.0, "displayValue": "31'" },
+      "text": "Corner, Newcastle United. Conceded by Bobby Thomas.",
+      "play": {
+        "id": "53554608",
+        "type": {
+          "id": "95",
+          "text": "Corner Awarded",
+          "type": "corner-awarded"
+        },
+        "text": "Corner, Newcastle United. Conceded by Bobby Thomas.",
+        "period": { "number": 1 },
+        "clock": { "value": 1851.0, "displayValue": "31'" },
+        "team": { "displayName": "Newcastle United" },
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:31:04Z",
+        "fieldPositionX": 100.0,
+        "fieldPositionY": 0.0
+      }
+    },
+    {
+      "sequence": 28,
+      "time": { "value": 1888.0, "displayValue": "32'" },
+      "text": "Corner, Newcastle United. Conceded by Jack Rudoni.",
+      "play": {
+        "id": "53554715",
+        "type": {
+          "id": "95",
+          "text": "Corner Awarded",
+          "type": "corner-awarded"
+        },
+        "text": "Corner, Newcastle United. Conceded by Jack Rudoni.",
+        "period": { "number": 1 },
+        "clock": { "value": 1888.0, "displayValue": "32'" },
+        "team": { "displayName": "Newcastle United" },
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:31:40Z",
+        "fieldPositionX": 96.8,
+        "fieldPositionY": 82.2
+      }
+    },
+    {
+      "sequence": 29,
+      "time": { "value": 1929.0, "displayValue": "33'" },
+      "text": "Caleb Yirenkyi (Coventry City) wins a free kick in the defensive half.",
+      "play": {
+        "id": "53554820",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Foul by Yoane Wissa (Newcastle United).",
+        "shortText": "Yoane Wissa Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 1929.0, "displayValue": "33'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Yoane Wissa" } },
+          { "athlete": { "displayName": "Caleb Yirenkyi" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:32:22Z",
+        "fieldPositionX": 13.4,
+        "fieldPositionY": 56.4
+      }
+    },
+    {
+      "sequence": 30,
+      "time": { "value": 1929.0, "displayValue": "33'" },
+      "text": "Foul by Yoane Wissa (Newcastle United).",
+      "play": {
+        "id": "53554820",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Foul by Yoane Wissa (Newcastle United).",
+        "shortText": "Yoane Wissa Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 1929.0, "displayValue": "33'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Yoane Wissa" } },
+          { "athlete": { "displayName": "Caleb Yirenkyi" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:32:22Z",
+        "fieldPositionX": 13.4,
+        "fieldPositionY": 56.4
+      }
+    },
+    {
+      "sequence": 31,
+      "time": { "value": 2112.0, "displayValue": "36'" },
+      "text": "Brandon Thomas-Asante (Coventry City) wins a free kick in the defensive half.",
+      "play": {
+        "id": "53554991",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Foul by Joe Willock (Newcastle United).",
+        "shortText": "Joe Willock Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 2112.0, "displayValue": "36'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Joe Willock" } },
+          { "athlete": { "displayName": "Brandon Thomas-Asante" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:35:24Z",
+        "fieldPositionX": 63.0,
+        "fieldPositionY": 89.0
+      }
+    },
+    {
+      "sequence": 32,
+      "time": { "value": 2112.0, "displayValue": "36'" },
+      "text": "Foul by Joe Willock (Newcastle United).",
+      "play": {
+        "id": "53554991",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Foul by Joe Willock (Newcastle United).",
+        "shortText": "Joe Willock Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 2112.0, "displayValue": "36'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Joe Willock" } },
+          { "athlete": { "displayName": "Brandon Thomas-Asante" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:35:24Z",
+        "fieldPositionX": 63.0,
+        "fieldPositionY": 89.0
+      }
+    },
+    {
+      "sequence": 33,
+      "time": { "value": 2236.0, "displayValue": "38'" },
+      "text": "Attempt blocked. Joe Willock (Newcastle United) right footed shot from the centre of the box is blocked. Assisted by Harvey Barnes.",
+      "play": {
+        "id": "53555273",
+        "type": { "id": "135", "text": "Shot Blocked", "type": "shot-blocked" },
+        "text": "Attempt blocked. Joe Willock (Newcastle United) right footed shot from the centre of the box is blocked. Assisted by Harvey Barnes.",
+        "shortText": "Joe Willock Shot Blocked",
+        "period": { "number": 1 },
+        "clock": { "value": 2236.0, "displayValue": "38'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Joe Willock" } },
+          { "athlete": { "displayName": "Harvey Barnes" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:37:28Z",
+        "goalPositionY": 50.2,
+        "fieldPositionX": 84.5,
+        "fieldPositionY": 62.7,
+        "fieldPosition2X": 85.7,
+        "fieldPosition2Y": 61.8
+      }
+    },
+    {
+      "sequence": 34,
+      "time": { "value": 2238.0, "displayValue": "38'" },
+      "text": "Corner, Newcastle United. Conceded by Caleb Yirenkyi.",
+      "play": {
+        "id": "53555274",
+        "type": {
+          "id": "95",
+          "text": "Corner Awarded",
+          "type": "corner-awarded"
+        },
+        "text": "Corner, Newcastle United. Conceded by Caleb Yirenkyi.",
+        "period": { "number": 1 },
+        "clock": { "value": 2238.0, "displayValue": "38'" },
+        "team": { "displayName": "Newcastle United" },
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:37:31Z",
+        "fieldPositionX": 92.9,
+        "fieldPositionY": 52.4
+      }
+    },
+    {
+      "sequence": 35,
+      "time": { "value": 2319.0, "displayValue": "39'" },
+      "text": "Offside, Newcastle United. Matias Fernandez-Pardo is caught offside.",
+      "play": {
+        "id": "53555458",
+        "type": { "id": "68", "text": "Offside", "type": "offside" },
+        "text": "Offside, Newcastle United. Matias Fernandez-Pardo is caught offside.",
+        "shortText": "Joe Willock Offside",
+        "period": { "number": 1 },
+        "clock": { "value": 2319.0, "displayValue": "39'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [{ "athlete": { "displayName": "Joe Willock" } }],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:38:51Z",
+        "fieldPositionX": 62.9,
+        "fieldPositionY": 52.3,
+        "fieldPosition2X": 92.1,
+        "fieldPosition2Y": 75.0
+      }
+    },
+    {
+      "sequence": 36,
+      "time": { "value": 2370.0, "displayValue": "40'" },
+      "text": "Caleb Yirenkyi (Coventry City) wins a free kick on the right wing.",
+      "play": {
+        "id": "53555619",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Foul by Joe Willock (Newcastle United).",
+        "shortText": "Joe Willock Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 2370.0, "displayValue": "40'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Joe Willock" } },
+          { "athlete": { "displayName": "Caleb Yirenkyi" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:39:42Z",
+        "fieldPositionX": 42.0,
+        "fieldPositionY": 80.6
+      }
+    },
+    {
+      "sequence": 37,
+      "time": { "value": 2370.0, "displayValue": "40'" },
+      "text": "Foul by Joe Willock (Newcastle United).",
+      "play": {
+        "id": "53555619",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Foul by Joe Willock (Newcastle United).",
+        "shortText": "Joe Willock Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 2370.0, "displayValue": "40'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Joe Willock" } },
+          { "athlete": { "displayName": "Caleb Yirenkyi" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:39:42Z",
+        "fieldPositionX": 42.0,
+        "fieldPositionY": 80.6
+      }
+    },
+    {
+      "sequence": 38,
+      "time": { "value": 2483.0, "displayValue": "42'" },
+      "text": "Foul by Matt Grimes (Coventry City).",
+      "play": {
+        "id": "53555809",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Lewis Hall (Newcastle United) wins a free kick in the defensive half.",
+        "shortText": "Matt Grimes Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 2483.0, "displayValue": "42'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [
+          { "athlete": { "displayName": "Matt Grimes" } },
+          { "athlete": { "displayName": "Lewis Hall" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:41:35Z",
+        "fieldPositionX": 60.4,
+        "fieldPositionY": 19.6
+      }
+    },
+    {
+      "sequence": 39,
+      "time": { "value": 2483.0, "displayValue": "42'" },
+      "text": "Lewis Hall (Newcastle United) wins a free kick in the defensive half.",
+      "play": {
+        "id": "53555809",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Lewis Hall (Newcastle United) wins a free kick in the defensive half.",
+        "shortText": "Matt Grimes Foul",
+        "period": { "number": 1 },
+        "clock": { "value": 2483.0, "displayValue": "42'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [
+          { "athlete": { "displayName": "Matt Grimes" } },
+          { "athlete": { "displayName": "Lewis Hall" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:41:35Z",
+        "fieldPositionX": 60.4,
+        "fieldPositionY": 19.6
+      }
+    },
+    {
+      "sequence": 40,
+      "time": { "value": 2540.0, "displayValue": "43'" },
+      "text": "Attempt blocked. Matias Fernandez-Pardo (Newcastle United) right footed shot from the centre of the box is blocked. Assisted by Nico Gonz\u00e1lez with a through ball.",
+      "play": {
+        "id": "53555937",
+        "type": { "id": "135", "text": "Shot Blocked", "type": "shot-blocked" },
+        "text": "Attempt blocked. Matias Fernandez-Pardo (Newcastle United) right footed shot from the centre of the box is blocked. Assisted by Nico Gonz\u00e1lez with a through ball.",
+        "shortText": "Matias Fernandez-Pardo Shot Bloc",
+        "period": { "number": 1 },
+        "clock": { "value": 2540.0, "displayValue": "43'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Matias Fernandez-Pardo" } },
+          { "athlete": { "displayName": "Nico Gonz\u00e1lez" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:42:32Z",
+        "goalPositionY": 48.5,
+        "fieldPositionX": 89.0,
+        "fieldPositionY": 41.7,
+        "fieldPosition2X": 93.7,
+        "fieldPosition2Y": 44.6
+      }
+    },
+    {
+      "sequence": 41,
+      "time": { "value": 2615.0, "displayValue": "44'" },
+      "text": "Attempt blocked. Joe Willock (Newcastle United) right footed shot from outside the box is blocked. Assisted by Nico Gonz\u00e1lez.",
+      "play": {
+        "id": "53556143",
+        "type": { "id": "135", "text": "Shot Blocked", "type": "shot-blocked" },
+        "text": "Attempt blocked. Joe Willock (Newcastle United) right footed shot from outside the box is blocked. Assisted by Nico Gonz\u00e1lez.",
+        "shortText": "Joe Willock Shot Blocked",
+        "period": { "number": 1 },
+        "clock": { "value": 2615.0, "displayValue": "44'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Joe Willock" } },
+          { "athlete": { "displayName": "Nico Gonz\u00e1lez" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:43:48Z",
+        "goalPositionY": 50.3,
+        "fieldPositionX": 82.2,
+        "fieldPositionY": 61.3,
+        "fieldPosition2X": 83.8,
+        "fieldPosition2Y": 60.3
+      }
+    },
+    {
+      "sequence": 42,
+      "time": { "value": 2700.0, "displayValue": "45'" },
+      "text": "Fourth official has announced 2 minutes of added time."
+    },
+    {
+      "sequence": 43,
+      "time": { "value": 2821.0, "displayValue": "45'+3'" },
+      "text": "First Half ends, Coventry City 1, Newcastle United 0.",
+      "play": {
+        "id": "53556572",
+        "type": { "id": "81", "text": "Halftime", "type": "halftime" },
+        "text": "First Half ends, Coventry City 1, Newcastle United 0.",
+        "period": { "number": 1 },
+        "clock": { "value": 2700.0, "displayValue": "45'+3'" },
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T19:47:13Z"
+      }
+    },
+    {
+      "sequence": 44,
+      "time": { "value": 2700.0, "displayValue": "45'" },
+      "text": "Second Half begins Coventry City 1, Newcastle United 0."
+    },
+    {
+      "sequence": 45,
+      "time": { "value": 2732.0, "displayValue": "46'" },
+      "text": "Delay in match because of an injury Joe Willock (Newcastle United).",
+      "play": {
+        "id": "53558074",
+        "type": { "id": "129", "text": "Start Delay", "type": "start-delay" },
+        "text": "Delay in match because of an injury Joe Willock (Newcastle United).",
+        "period": { "number": 2 },
+        "clock": { "value": 2732.0, "displayValue": "46'" },
+        "team": { "displayName": "Newcastle United" },
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:03:29Z"
+      }
+    },
+    {
+      "sequence": 46,
+      "time": { "value": 2821.0, "displayValue": "48'" },
+      "text": "Delay over. They are ready to continue.",
+      "play": {
+        "id": "53558230",
+        "type": { "id": "130", "text": "End Delay", "type": "end-delay" },
+        "text": "Delay over. They are ready to continue.",
+        "period": { "number": 2 },
+        "clock": { "value": 2821.0, "displayValue": "48'" },
+        "team": { "displayName": "Newcastle United" },
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:04:59Z"
+      }
+    },
+    {
+      "sequence": 47,
+      "time": { "value": 2875.0, "displayValue": "48'" },
+      "text": "Goal! Coventry City 2, Newcastle United 0. Sidiki Cherif (Coventry City) right footed shot from outside the box to the bottom right corner.",
+      "play": {
+        "id": "53558245",
+        "type": { "id": "70", "text": "Goal", "type": "goal" },
+        "text": "Goal! Coventry City 2, Newcastle United 0. Sidiki Cherif (Coventry City) right footed shot from outside the box to the bottom right corner.",
+        "shortText": "Sidiki Cherif Goal",
+        "period": { "number": 2 },
+        "clock": { "value": 2875.0, "displayValue": "48'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [{ "athlete": { "displayName": "Sidiki Cherif" } }],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:05:52Z",
+        "goalPositionY": 46.1,
+        "fieldPositionX": 81.2,
+        "fieldPositionY": 50.8,
+        "fieldPosition2X": 100.0,
+        "fieldPosition2Y": 46.1
+      }
+    },
+    {
+      "sequence": 48,
+      "time": { "value": 2988.0, "displayValue": "50'" },
+      "text": "Attempt missed. Joe Willock (Newcastle United) header from the left side of the six yard box is close, but misses the top left corner. Assisted by Jacob Murphy with a cross.",
+      "play": {
+        "id": "53558553",
+        "type": {
+          "id": "117",
+          "text": "Shot Off Target",
+          "type": "shot-off-target"
+        },
+        "text": "Attempt missed. Joe Willock (Newcastle United) header from the left side of the six yard box is close, but misses the top left corner. Assisted by Jacob Murphy with a cross.",
+        "shortText": "Joe Willock Shot Off Target",
+        "period": { "number": 2 },
+        "clock": { "value": 2988.0, "displayValue": "50'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Joe Willock" } },
+          { "athlete": { "displayName": "Jacob Murphy" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:07:45Z",
+        "goalPositionY": 58.0,
+        "fieldPositionX": 97.8,
+        "fieldPositionY": 57.7,
+        "fieldPosition2X": 100.0,
+        "fieldPosition2Y": 58.0
+      }
+    },
+    {
+      "sequence": 49,
+      "time": { "value": 3161.0, "displayValue": "53'" },
+      "text": "Attempt saved. Yoane Wissa (Newcastle United) right footed shot from outside the box is saved in the bottom right corner by Carl Rushworth (Coventry City). Assisted by Harvey Barnes.",
+      "play": {
+        "id": "53558841",
+        "type": {
+          "id": "106",
+          "text": "Shot On Target",
+          "type": "shot-on-target"
+        },
+        "text": "Attempt saved. Yoane Wissa (Newcastle United) right footed shot from outside the box is saved in the bottom right corner by Carl Rushworth (Coventry City). Assisted by Harvey Barnes.",
+        "shortText": "Yoane Wissa Shot On Target",
+        "period": { "number": 2 },
+        "clock": { "value": 3161.0, "displayValue": "53'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Yoane Wissa" } },
+          { "athlete": { "displayName": "Harvey Barnes" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:10:39Z",
+        "goalPositionY": 47.2,
+        "fieldPositionX": 76.0,
+        "fieldPositionY": 41.4,
+        "fieldPosition2X": 99.0,
+        "fieldPosition2Y": 47.6
+      }
+    },
+    {
+      "sequence": 50,
+      "time": { "value": 3266.0, "displayValue": "55'" },
+      "text": "Attempt blocked. Sidiki Cherif (Coventry City) right footed shot from the centre of the box is blocked.",
+      "play": {
+        "id": "53559039",
+        "type": { "id": "135", "text": "Shot Blocked", "type": "shot-blocked" },
+        "text": "Attempt blocked. Sidiki Cherif (Coventry City) right footed shot from the centre of the box is blocked.",
+        "shortText": "Sidiki Cherif Shot Blocked",
+        "period": { "number": 2 },
+        "clock": { "value": 3266.0, "displayValue": "55'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [{ "athlete": { "displayName": "Sidiki Cherif" } }],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:12:23Z",
+        "goalPositionY": 51.2,
+        "fieldPositionX": 89.1,
+        "fieldPositionY": 58.9,
+        "fieldPosition2X": 90.4,
+        "fieldPosition2Y": 57.9
+      }
+    },
+    {
+      "sequence": 51,
+      "time": { "value": 3484.0, "displayValue": "59'" },
+      "text": "Attempt missed. Joe Willock (Newcastle United) right footed shot from the centre of the box is too high. Assisted by Jacob Murphy.",
+      "play": {
+        "id": "53559416",
+        "type": {
+          "id": "117",
+          "text": "Shot Off Target",
+          "type": "shot-off-target"
+        },
+        "text": "Attempt missed. Joe Willock (Newcastle United) right footed shot from the centre of the box is too high. Assisted by Jacob Murphy.",
+        "shortText": "Joe Willock Shot Off Target",
+        "period": { "number": 2 },
+        "clock": { "value": 3484.0, "displayValue": "59'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Joe Willock" } },
+          { "athlete": { "displayName": "Jacob Murphy" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:16:02Z",
+        "goalPositionY": 50.4,
+        "fieldPositionX": 89.9,
+        "fieldPositionY": 37.4,
+        "fieldPosition2X": 100.0,
+        "fieldPosition2Y": 50.4
+      }
+    },
+    {
+      "sequence": 52,
+      "time": { "value": 3505.0, "displayValue": "59'" },
+      "text": "Substitution, Newcastle United. Amar Dedic replaces Lewis Miley.",
+      "play": {
+        "id": "53559639",
+        "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+        "text": "Substitution, Newcastle United. Amar Dedic replaces Lewis Miley.",
+        "shortText": "Amar Dedic Substitution",
+        "period": { "number": 2 },
+        "clock": { "value": 3505.0, "displayValue": "59'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Amar Dedic" } },
+          { "athlete": { "displayName": "Lewis Miley" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:16:22Z"
+      }
+    },
+    {
+      "sequence": 53,
+      "time": { "value": 3523.0, "displayValue": "59'" },
+      "text": "Substitution, Newcastle United. Bazoumana Tour\u00e9 replaces Jacob Murphy.",
+      "play": {
+        "id": "53559640",
+        "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+        "text": "Substitution, Newcastle United. Bazoumana Tour\u00e9 replaces Jacob Murphy.",
+        "shortText": "Bazoumana Tour\u00e9 Substitution",
+        "period": { "number": 2 },
+        "clock": { "value": 3523.0, "displayValue": "59'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Bazoumana Tour\u00e9" } },
+          { "athlete": { "displayName": "Jacob Murphy" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:16:40Z"
+      }
+    },
+    {
+      "sequence": 54,
+      "time": { "value": 3527.0, "displayValue": "59'" },
+      "text": "Substitution, Newcastle United. Joelinton replaces Joe Willock.",
+      "play": {
+        "id": "53559641",
+        "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+        "text": "Substitution, Newcastle United. Joelinton replaces Joe Willock.",
+        "shortText": "Joelinton Substitution",
+        "period": { "number": 2 },
+        "clock": { "value": 3527.0, "displayValue": "59'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Joelinton" } },
+          { "athlete": { "displayName": "Joe Willock" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:16:44Z"
+      }
+    },
+    {
+      "sequence": 55,
+      "time": { "value": 3620.0, "displayValue": "61'" },
+      "text": "Substitution, Coventry City. Tatsuhiro Sakamoto replaces Ephron Mason-Clark.",
+      "play": {
+        "id": "53559700",
+        "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+        "text": "Substitution, Coventry City. Tatsuhiro Sakamoto replaces Ephron Mason-Clark.",
+        "shortText": "Tatsuhiro Sakamoto Substitution",
+        "period": { "number": 2 },
+        "clock": { "value": 3620.0, "displayValue": "61'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [
+          { "athlete": { "displayName": "Tatsuhiro Sakamoto" } },
+          { "athlete": { "displayName": "Ephron Mason-Clark" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:18:17Z"
+      }
+    },
+    {
+      "sequence": 56,
+      "time": { "value": 3636.0, "displayValue": "61'" },
+      "text": "Attempt saved. Bazoumana Tour\u00e9 (Newcastle United) left footed shot from outside the box is saved in the bottom right corner by Carl Rushworth (Coventry City).",
+      "play": {
+        "id": "53559836",
+        "type": {
+          "id": "106",
+          "text": "Shot On Target",
+          "type": "shot-on-target"
+        },
+        "text": "Attempt saved. Bazoumana Tour\u00e9 (Newcastle United) left footed shot from outside the box is saved in the bottom right corner by Carl Rushworth (Coventry City).",
+        "shortText": "Bazoumana Tour\u00e9 Shot On Target",
+        "period": { "number": 2 },
+        "clock": { "value": 3636.0, "displayValue": "61'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Bazoumana Tour\u00e9" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:18:33Z",
+        "goalPositionY": 45.6,
+        "fieldPositionX": 78.5,
+        "fieldPositionY": 25.3,
+        "fieldPosition2X": 99.1,
+        "fieldPosition2Y": 47.1
+      }
+    },
+    {
+      "sequence": 57,
+      "time": { "value": 3776.0, "displayValue": "63'" },
+      "text": "Milan van Ewijk (Coventry City) wins a free kick in the defensive half.",
+      "play": {
+        "id": "53560102",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Foul by Joelinton (Newcastle United).",
+        "shortText": "Joelinton Foul",
+        "period": { "number": 2 },
+        "clock": { "value": 3776.0, "displayValue": "63'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Joelinton" } },
+          { "athlete": { "displayName": "Milan van Ewijk" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:20:53Z",
+        "fieldPositionX": 59.6,
+        "fieldPositionY": 78.2
+      }
+    },
+    {
+      "sequence": 58,
+      "time": { "value": 3776.0, "displayValue": "63'" },
+      "text": "Foul by Joelinton (Newcastle United).",
+      "play": {
+        "id": "53560102",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Foul by Joelinton (Newcastle United).",
+        "shortText": "Joelinton Foul",
+        "period": { "number": 2 },
+        "clock": { "value": 3776.0, "displayValue": "63'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Joelinton" } },
+          { "athlete": { "displayName": "Milan van Ewijk" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:20:53Z",
+        "fieldPositionX": 59.6,
+        "fieldPositionY": 78.2
+      }
+    },
+    {
+      "sequence": 59,
+      "time": { "value": 3837.0, "displayValue": "64'" },
+      "text": "Corner, Coventry City. Conceded by Amar Dedic.",
+      "play": {
+        "id": "53560113",
+        "type": {
+          "id": "95",
+          "text": "Corner Awarded",
+          "type": "corner-awarded"
+        },
+        "text": "Corner, Coventry City. Conceded by Amar Dedic.",
+        "period": { "number": 2 },
+        "clock": { "value": 3837.0, "displayValue": "64'" },
+        "team": { "displayName": "Coventry City" },
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:21:54Z",
+        "fieldPositionX": 100.0,
+        "fieldPositionY": 23.2
+      }
+    },
+    {
+      "sequence": 60,
+      "time": { "value": 3902.0, "displayValue": "66'" },
+      "text": "Milan van Ewijk (Coventry City) is shown the yellow card.",
+      "play": {
+        "id": "53560148",
+        "type": { "id": "94", "text": "Yellow Card", "type": "yellow-card" },
+        "text": "Milan van Ewijk (Coventry City) is shown the yellow card.",
+        "shortText": "Milan van Ewijk Yellow Card",
+        "period": { "number": 2 },
+        "clock": { "value": 3902.0, "displayValue": "66'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [{ "athlete": { "displayName": "Milan van Ewijk" } }],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:22:59Z"
+      }
+    },
+    {
+      "sequence": 61,
+      "time": { "value": 3943.0, "displayValue": "66'" },
+      "text": "Offside, Newcastle United. Harvey Barnes is caught offside.",
+      "play": {
+        "id": "53560257",
+        "type": { "id": "68", "text": "Offside", "type": "offside" },
+        "text": "Offside, Newcastle United. Harvey Barnes is caught offside.",
+        "shortText": "Lewis Hall Offside",
+        "period": { "number": 2 },
+        "clock": { "value": 3943.0, "displayValue": "66'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [{ "athlete": { "displayName": "Lewis Hall" } }],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:23:40Z",
+        "fieldPositionX": 62.0,
+        "fieldPositionY": 97.3,
+        "fieldPosition2X": 83.1,
+        "fieldPosition2Y": 90.6
+      }
+    },
+    {
+      "sequence": 62,
+      "time": { "value": 4091.0, "displayValue": "69'" },
+      "text": "Jack Rudoni (Coventry City) wins a free kick in the defensive half.",
+      "play": {
+        "id": "53560527",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Foul by Nico Gonz\u00e1lez (Newcastle United).",
+        "shortText": "Nico Gonz\u00e1lez Foul",
+        "period": { "number": 2 },
+        "clock": { "value": 4091.0, "displayValue": "69'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Nico Gonz\u00e1lez" } },
+          { "athlete": { "displayName": "Jack Rudoni" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:26:08Z",
+        "fieldPositionX": 57.6,
+        "fieldPositionY": 65.8
+      }
+    },
+    {
+      "sequence": 63,
+      "time": { "value": 4091.0, "displayValue": "69'" },
+      "text": "Foul by Nico Gonz\u00e1lez (Newcastle United).",
+      "play": {
+        "id": "53560527",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Foul by Nico Gonz\u00e1lez (Newcastle United).",
+        "shortText": "Nico Gonz\u00e1lez Foul",
+        "period": { "number": 2 },
+        "clock": { "value": 4091.0, "displayValue": "69'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Nico Gonz\u00e1lez" } },
+          { "athlete": { "displayName": "Jack Rudoni" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:26:08Z",
+        "fieldPositionX": 57.6,
+        "fieldPositionY": 65.8
+      }
+    },
+    {
+      "sequence": 64,
+      "time": { "value": 4168.0, "displayValue": "70'" },
+      "text": "Goal! Coventry City 2, Newcastle United 1. Sven Botman (Newcastle United) left footed shot from outside the box to the top left corner. Assisted by Nico Gonz\u00e1lez.",
+      "play": {
+        "id": "53560705",
+        "type": { "id": "70", "text": "Goal", "type": "goal" },
+        "text": "Goal! Coventry City 2, Newcastle United 1. Sven Botman (Newcastle United) left footed shot from outside the box to the top left corner. Assisted by Nico Gonz\u00e1lez.",
+        "shortText": "Sven Botman Goal",
+        "period": { "number": 2 },
+        "clock": { "value": 4168.0, "displayValue": "70'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Sven Botman" } },
+          { "athlete": { "displayName": "Nico Gonz\u00e1lez" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:27:25Z",
+        "goalPositionY": 53.9,
+        "fieldPositionX": 81.6,
+        "fieldPositionY": 72.3,
+        "fieldPosition2X": 100.0,
+        "fieldPosition2Y": 53.9
+      }
+    },
+    {
+      "sequence": 65,
+      "time": { "value": 4274.0, "displayValue": "72'" },
+      "text": "Corner, Newcastle United. Conceded by Caleb Yirenkyi.",
+      "play": {
+        "id": "53561046",
+        "type": {
+          "id": "95",
+          "text": "Corner Awarded",
+          "type": "corner-awarded"
+        },
+        "text": "Corner, Newcastle United. Conceded by Caleb Yirenkyi.",
+        "period": { "number": 2 },
+        "clock": { "value": 4274.0, "displayValue": "72'" },
+        "team": { "displayName": "Newcastle United" },
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:29:11Z",
+        "fieldPositionX": 96.0,
+        "fieldPositionY": 36.6
+      }
+    },
+    {
+      "sequence": 66,
+      "time": { "value": 4287.0, "displayValue": "72'" },
+      "text": "Attempt saved. Lewis Hall (Newcastle United) left footed shot from outside the box is saved in the centre of the goal by Carl Rushworth (Coventry City). Assisted by Nico Gonz\u00e1lez.",
+      "play": {
+        "id": "53561054",
+        "type": {
+          "id": "106",
+          "text": "Shot On Target",
+          "type": "shot-on-target"
+        },
+        "text": "Attempt saved. Lewis Hall (Newcastle United) left footed shot from outside the box is saved in the centre of the goal by Carl Rushworth (Coventry City). Assisted by Nico Gonz\u00e1lez.",
+        "shortText": "Lewis Hall Shot On Target",
+        "period": { "number": 2 },
+        "clock": { "value": 4287.0, "displayValue": "72'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Lewis Hall" } },
+          { "athlete": { "displayName": "Nico Gonz\u00e1lez" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:29:24Z",
+        "goalPositionY": 50.8,
+        "fieldPositionX": 76.4,
+        "fieldPositionY": 66.1,
+        "fieldPosition2X": 98.1,
+        "fieldPosition2Y": 51.8
+      }
+    },
+    {
+      "sequence": 67,
+      "time": { "value": 4463.0, "displayValue": "75'" },
+      "text": "Attempt blocked. Yoane Wissa (Newcastle United) right footed shot from the centre of the box is blocked.",
+      "play": {
+        "id": "53561386",
+        "type": { "id": "135", "text": "Shot Blocked", "type": "shot-blocked" },
+        "text": "Attempt blocked. Yoane Wissa (Newcastle United) right footed shot from the centre of the box is blocked.",
+        "shortText": "Yoane Wissa Shot Blocked",
+        "period": { "number": 2 },
+        "clock": { "value": 4463.0, "displayValue": "75'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [{ "athlete": { "displayName": "Yoane Wissa" } }],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:32:20Z",
+        "goalPositionY": 51.9,
+        "fieldPositionX": 87.7,
+        "fieldPositionY": 47.2,
+        "fieldPosition2X": 88.9,
+        "fieldPosition2Y": 47.6
+      }
+    },
+    {
+      "sequence": 68,
+      "time": { "value": 4566.0, "displayValue": "77'" },
+      "text": "Corner, Newcastle United. Conceded by Milan van Ewijk.",
+      "play": {
+        "id": "53561629",
+        "type": {
+          "id": "95",
+          "text": "Corner Awarded",
+          "type": "corner-awarded"
+        },
+        "text": "Corner, Newcastle United. Conceded by Milan van Ewijk.",
+        "period": { "number": 2 },
+        "clock": { "value": 4566.0, "displayValue": "77'" },
+        "team": { "displayName": "Newcastle United" },
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:34:03Z",
+        "fieldPositionX": 97.6,
+        "fieldPositionY": 25.3
+      }
+    },
+    {
+      "sequence": 69,
+      "time": { "value": 4628.0, "displayValue": "78'" },
+      "text": "Substitution, Coventry City. Frank Onyeka replaces Caleb Yirenkyi.",
+      "play": {
+        "id": "53561735",
+        "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+        "text": "Substitution, Coventry City. Frank Onyeka replaces Caleb Yirenkyi.",
+        "shortText": "Frank Onyeka Substitution",
+        "period": { "number": 2 },
+        "clock": { "value": 4628.0, "displayValue": "78'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [
+          { "athlete": { "displayName": "Frank Onyeka" } },
+          { "athlete": { "displayName": "Caleb Yirenkyi" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:35:06Z"
+      }
+    },
+    {
+      "sequence": 70,
+      "time": { "value": 4642.0, "displayValue": "78'" },
+      "text": "Substitution, Coventry City. Ellis Simms replaces Sidiki Cherif.",
+      "play": {
+        "id": "53561888",
+        "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+        "text": "Substitution, Coventry City. Ellis Simms replaces Sidiki Cherif.",
+        "shortText": "Ellis Simms Substitution",
+        "period": { "number": 2 },
+        "clock": { "value": 4642.0, "displayValue": "78'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [
+          { "athlete": { "displayName": "Ellis Simms" } },
+          { "athlete": { "displayName": "Sidiki Cherif" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:35:19Z"
+      }
+    },
+    {
+      "sequence": 71,
+      "time": { "value": 4657.0, "displayValue": "78'" },
+      "text": "Substitution, Newcastle United. William Osula replaces Yoane Wissa.",
+      "play": {
+        "id": "53561890",
+        "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+        "text": "Substitution, Newcastle United. William Osula replaces Yoane Wissa.",
+        "shortText": "William Osula Substitution",
+        "period": { "number": 2 },
+        "clock": { "value": 4657.0, "displayValue": "78'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "William Osula" } },
+          { "athlete": { "displayName": "Yoane Wissa" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:35:34Z"
+      }
+    },
+    {
+      "sequence": 72,
+      "time": { "value": 4752.0, "displayValue": "80'" },
+      "text": "Attempt missed. Bazoumana Tour\u00e9 (Newcastle United) left footed shot from the right side of the box is high and wide to the left. Assisted by Matias Fernandez-Pardo.",
+      "play": {
+        "id": "53561965",
+        "type": {
+          "id": "117",
+          "text": "Shot Off Target",
+          "type": "shot-off-target"
+        },
+        "text": "Attempt missed. Bazoumana Tour\u00e9 (Newcastle United) left footed shot from the right side of the box is high and wide to the left. Assisted by Matias Fernandez-Pardo.",
+        "shortText": "Bazoumana Tour\u00e9 Shot Off Target",
+        "period": { "number": 2 },
+        "clock": { "value": 4752.0, "displayValue": "80'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Bazoumana Tour\u00e9" } },
+          { "athlete": { "displayName": "Matias Fernandez-Pardo" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:37:09Z",
+        "goalPositionY": 60.8,
+        "fieldPositionX": 84.4,
+        "fieldPositionY": 29.9,
+        "fieldPosition2X": 100.0,
+        "fieldPosition2Y": 60.8
+      }
+    },
+    {
+      "sequence": 73,
+      "time": { "value": 4837.0, "displayValue": "81'" },
+      "text": "Goal! Coventry City 3, Newcastle United 1. Ellis Simms (Coventry City) right footed shot from the centre of the box to the bottom right corner. Assisted by Brandon Thomas-Asante.",
+      "play": {
+        "id": "53562133",
+        "type": { "id": "70", "text": "Goal", "type": "goal" },
+        "text": "Goal! Coventry City 3, Newcastle United 1. Ellis Simms (Coventry City) right footed shot from the centre of the box to the bottom right corner. Assisted by Brandon Thomas-Asante.",
+        "shortText": "Ellis Simms Goal",
+        "period": { "number": 2 },
+        "clock": { "value": 4837.0, "displayValue": "81'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [
+          { "athlete": { "displayName": "Ellis Simms" } },
+          { "athlete": { "displayName": "Brandon Thomas-Asante" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:38:34Z",
+        "goalPositionY": 45.9,
+        "fieldPositionX": 86.4,
+        "fieldPositionY": 60.1,
+        "fieldPosition2X": 100.0,
+        "fieldPosition2Y": 45.9
+      }
+    },
+    {
+      "sequence": 74,
+      "time": { "value": 4840.0, "displayValue": "81'" },
+      "text": "Joelinton (Newcastle United) is shown the yellow card for a bad foul.",
+      "play": {
+        "id": "53562294",
+        "type": { "id": "94", "text": "Yellow Card", "type": "yellow-card" },
+        "text": "Joelinton (Newcastle United) is shown the yellow card for a bad foul.",
+        "shortText": "Joelinton Yellow Card",
+        "period": { "number": 2 },
+        "clock": { "value": 4840.0, "displayValue": "81'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [{ "athlete": { "displayName": "Joelinton" } }],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:38:38Z"
+      }
+    },
+    {
+      "sequence": 75,
+      "time": { "value": 4932.0, "displayValue": "83'" },
+      "text": "Substitution, Coventry City. Victor Torp replaces Jack Rudoni.",
+      "play": {
+        "id": "53562296",
+        "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+        "text": "Substitution, Coventry City. Victor Torp replaces Jack Rudoni.",
+        "shortText": "Victor Torp Substitution",
+        "period": { "number": 2 },
+        "clock": { "value": 4932.0, "displayValue": "83'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [
+          { "athlete": { "displayName": "Victor Torp" } },
+          { "athlete": { "displayName": "Jack Rudoni" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:40:09Z"
+      }
+    },
+    {
+      "sequence": 76,
+      "time": { "value": 4939.0, "displayValue": "83'" },
+      "text": "Substitution, Coventry City. Stephen Mfuni replaces Matt Grimes.",
+      "play": {
+        "id": "53562297",
+        "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+        "text": "Substitution, Coventry City. Stephen Mfuni replaces Matt Grimes.",
+        "shortText": "Stephen Mfuni Substitution",
+        "period": { "number": 2 },
+        "clock": { "value": 4939.0, "displayValue": "83'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [
+          { "athlete": { "displayName": "Stephen Mfuni" } },
+          { "athlete": { "displayName": "Matt Grimes" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:40:16Z"
+      }
+    },
+    {
+      "sequence": 77,
+      "time": { "value": 5031.0, "displayValue": "84'" },
+      "text": "Attempt blocked. Brandon Thomas-Asante (Coventry City) right footed shot from outside the box is blocked.",
+      "play": {
+        "id": "53562506",
+        "type": { "id": "135", "text": "Shot Blocked", "type": "shot-blocked" },
+        "text": "Attempt blocked. Brandon Thomas-Asante (Coventry City) right footed shot from outside the box is blocked.",
+        "shortText": "Brandon Thomas-Asante Shot Block",
+        "period": { "number": 2 },
+        "clock": { "value": 5031.0, "displayValue": "84'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [
+          { "athlete": { "displayName": "Brandon Thomas-Asante" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:41:48Z",
+        "goalPositionY": 49.8,
+        "fieldPositionX": 74.5,
+        "fieldPositionY": 40.3,
+        "fieldPosition2X": 79.7,
+        "fieldPosition2Y": 42.2
+      }
+    },
+    {
+      "sequence": 78,
+      "time": { "value": 5034.0, "displayValue": "84'" },
+      "text": "Attempt blocked. Frank Onyeka (Coventry City) right footed shot from outside the box is blocked.",
+      "play": {
+        "id": "53562508",
+        "type": { "id": "135", "text": "Shot Blocked", "type": "shot-blocked" },
+        "text": "Attempt blocked. Frank Onyeka (Coventry City) right footed shot from outside the box is blocked.",
+        "shortText": "Frank Onyeka Shot Blocked",
+        "period": { "number": 2 },
+        "clock": { "value": 5034.0, "displayValue": "84'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [{ "athlete": { "displayName": "Frank Onyeka" } }],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:41:51Z",
+        "goalPositionY": 50.6,
+        "fieldPositionX": 81.4,
+        "fieldPositionY": 47.7,
+        "fieldPosition2X": 85.8,
+        "fieldPosition2Y": 48.4
+      }
+    },
+    {
+      "sequence": 79,
+      "time": { "value": 5037.0, "displayValue": "84'" },
+      "text": "Corner, Coventry City. Conceded by Malick Thiaw.",
+      "play": {
+        "id": "53562650",
+        "type": {
+          "id": "95",
+          "text": "Corner Awarded",
+          "type": "corner-awarded"
+        },
+        "text": "Corner, Coventry City. Conceded by Malick Thiaw.",
+        "period": { "number": 2 },
+        "clock": { "value": 5037.0, "displayValue": "84'" },
+        "team": { "displayName": "Coventry City" },
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:41:54Z",
+        "fieldPositionX": 91.4,
+        "fieldPositionY": 47.2
+      }
+    },
+    {
+      "sequence": 80,
+      "time": { "value": 5079.0, "displayValue": "85'" },
+      "text": "Attempt saved. Stephen Mfuni (Coventry City) header from very close range is saved in the centre of the goal by Luk\u00e1s Horn\u00edcek (Newcastle United). Assisted by Victor Torp with a cross.",
+      "play": {
+        "id": "53562654",
+        "type": {
+          "id": "106",
+          "text": "Shot On Target",
+          "type": "shot-on-target"
+        },
+        "text": "Attempt saved. Stephen Mfuni (Coventry City) header from very close range is saved in the centre of the goal by Luk\u00e1s Horn\u00edcek (Newcastle United). Assisted by Victor Torp with a cross.",
+        "shortText": "Stephen Mfuni Shot On Target",
+        "period": { "number": 2 },
+        "clock": { "value": 5079.0, "displayValue": "85'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [
+          { "athlete": { "displayName": "Stephen Mfuni" } },
+          { "athlete": { "displayName": "Victor Torp" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:42:36Z",
+        "goalPositionY": 50.6,
+        "fieldPositionX": 95.6,
+        "fieldPositionY": 45.1,
+        "fieldPosition2X": 98.6,
+        "fieldPosition2Y": 47.5
+      }
+    },
+    {
+      "sequence": 81,
+      "time": { "value": 5150.0, "displayValue": "86'" },
+      "text": "Goal! Coventry City 4, Newcastle United 1. Stephen Mfuni (Coventry City) left footed shot from the left side of the box to the bottom right corner. Assisted by Jay Dasilva.",
+      "play": {
+        "id": "53562744",
+        "type": { "id": "70", "text": "Goal", "type": "goal" },
+        "text": "Goal! Coventry City 4, Newcastle United 1. Stephen Mfuni (Coventry City) left footed shot from the left side of the box to the bottom right corner. Assisted by Jay Dasilva.",
+        "shortText": "Stephen Mfuni Goal",
+        "period": { "number": 2 },
+        "clock": { "value": 5150.0, "displayValue": "86'" },
+        "team": { "displayName": "Coventry City" },
+        "participants": [
+          { "athlete": { "displayName": "Stephen Mfuni" } },
+          { "athlete": { "displayName": "Jay Da Silva" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:43:47Z",
+        "goalPositionY": 45.4,
+        "fieldPositionX": 84.4,
+        "fieldPositionY": 64.2,
+        "fieldPosition2X": 100.0,
+        "fieldPosition2Y": 45.4
+      }
+    },
+    {
+      "sequence": 82,
+      "time": { "value": 5235.0, "displayValue": "88'" },
+      "text": "Corner, Newcastle United. Conceded by Milan van Ewijk.",
+      "play": {
+        "id": "53562865",
+        "type": {
+          "id": "95",
+          "text": "Corner Awarded",
+          "type": "corner-awarded"
+        },
+        "text": "Corner, Newcastle United. Conceded by Milan van Ewijk.",
+        "period": { "number": 2 },
+        "clock": { "value": 5235.0, "displayValue": "88'" },
+        "team": { "displayName": "Newcastle United" },
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:45:12Z",
+        "fieldPositionX": 97.4,
+        "fieldPositionY": 9.4
+      }
+    },
+    {
+      "sequence": 83,
+      "time": { "value": 5348.0, "displayValue": "90'" },
+      "text": "Attempt missed. William Osula (Newcastle United) left footed shot from the left side of the box is too high. Assisted by Nico Gonz\u00e1lez.",
+      "play": {
+        "id": "53563077",
+        "type": {
+          "id": "117",
+          "text": "Shot Off Target",
+          "type": "shot-off-target"
+        },
+        "text": "Attempt missed. William Osula (Newcastle United) left footed shot from the left side of the box is too high. Assisted by Nico Gonz\u00e1lez.",
+        "shortText": "William Osula Shot Off Target",
+        "period": { "number": 2 },
+        "clock": { "value": 5348.0, "displayValue": "90'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "William Osula" } },
+          { "athlete": { "displayName": "Nico Gonz\u00e1lez" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:47:05Z",
+        "goalPositionY": 48.1,
+        "fieldPositionX": 88.4,
+        "fieldPositionY": 64.9,
+        "fieldPosition2X": 100.0,
+        "fieldPosition2Y": 48.1
+      }
+    },
+    {
+      "sequence": 84,
+      "time": { "value": 5400.0, "displayValue": "90'" },
+      "text": "Substitution, Newcastle United. Dan Burn replaces Bazoumana Tour\u00e9 because of an injury.",
+      "play": {
+        "id": "53563200",
+        "type": { "id": "76", "text": "Substitution", "type": "substitution" },
+        "text": "Substitution, Newcastle United. Dan Burn replaces Bazoumana Tour\u00e9 because of an injury.",
+        "shortText": "Dan Burn Substitution",
+        "period": { "number": 2 },
+        "clock": { "value": 5400.0, "displayValue": "90'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Dan Burn" } },
+          { "athlete": { "displayName": "Bazoumana Tour\u00e9" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:47:57Z"
+      }
+    },
+    {
+      "sequence": 85,
+      "time": { "value": 5449.0, "displayValue": "90'+1'" },
+      "text": "Fourth official has announced 4 minutes of added time."
+    },
+    {
+      "sequence": 86,
+      "time": { "value": 5491.0, "displayValue": "90'+2'" },
+      "text": "Attempt blocked. Amar Dedic (Newcastle United) right footed shot from outside the box is blocked. Assisted by Harvey Barnes.",
+      "play": {
+        "id": "53563292",
+        "type": { "id": "135", "text": "Shot Blocked", "type": "shot-blocked" },
+        "text": "Attempt blocked. Amar Dedic (Newcastle United) right footed shot from outside the box is blocked. Assisted by Harvey Barnes.",
+        "shortText": "Amar Dedic Shot Blocked",
+        "period": { "number": 2 },
+        "clock": { "value": 5400.0, "displayValue": "90'+2'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Amar Dedic" } },
+          { "athlete": { "displayName": "Harvey Barnes" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:49:28Z",
+        "goalPositionY": 51.8,
+        "fieldPositionX": 75.8,
+        "fieldPositionY": 38.8,
+        "fieldPosition2X": 77.1,
+        "fieldPosition2Y": 39.5
+      }
+    },
+    {
+      "sequence": 87,
+      "time": { "value": 5537.0, "displayValue": "90'+3'" },
+      "text": "Tatsuhiro Sakamoto (Coventry City) wins a free kick in the defensive half.",
+      "play": {
+        "id": "53563437",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Foul by Matias Fernandez-Pardo (Newcastle United).",
+        "shortText": "Matias Fernandez-Pardo Foul",
+        "period": { "number": 2 },
+        "clock": { "value": 5400.0, "displayValue": "90'+3'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Matias Fernandez-Pardo" } },
+          { "athlete": { "displayName": "Tatsuhiro Sakamoto" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:50:14Z",
+        "fieldPositionX": 66.2,
+        "fieldPositionY": 95.4
+      }
+    },
+    {
+      "sequence": 88,
+      "time": { "value": 5537.0, "displayValue": "90'+3'" },
+      "text": "Foul by Matias Fernandez-Pardo (Newcastle United).",
+      "play": {
+        "id": "53563437",
+        "type": { "id": "66", "text": "Foul", "type": "foul" },
+        "text": "Foul by Matias Fernandez-Pardo (Newcastle United).",
+        "shortText": "Matias Fernandez-Pardo Foul",
+        "period": { "number": 2 },
+        "clock": { "value": 5400.0, "displayValue": "90'+3'" },
+        "team": { "displayName": "Newcastle United" },
+        "participants": [
+          { "athlete": { "displayName": "Matias Fernandez-Pardo" } },
+          { "athlete": { "displayName": "Tatsuhiro Sakamoto" } }
+        ],
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:50:14Z",
+        "fieldPositionX": 66.2,
+        "fieldPositionY": 95.4
+      }
+    },
+    {
+      "sequence": 89,
+      "time": { "value": 5644.0, "displayValue": "90'+5'" },
+      "text": "Second Half ends, Coventry City 4, Newcastle United 1.",
+      "play": {
+        "id": "53563517",
+        "type": {
+          "id": "83",
+          "text": "End Regular Time",
+          "type": "end-regular-time"
+        },
+        "text": "Second Half ends, Coventry City 4, Newcastle United 1.",
+        "period": { "number": 2 },
+        "clock": { "value": 5400.0, "displayValue": "90'+5'" },
+        "source": { "id": "38", "description": "SA.ENVOY" },
+        "wallclock": "2026-10-12T20:52:01Z"
+      }
+    },
+    {
+      "sequence": 90,
+      "time": { "value": 0.0, "displayValue": "" },
+      "text": "Match ends, Coventry City 4, Newcastle United 1."
+    }
+  ]
+}
