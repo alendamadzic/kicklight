@@ -59,7 +59,8 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **(you)** needs the own
 
 ## Phase 3: Parallel tracks
 
-- [ ] A · UI scorebug (fixtures, onboarding, match remote, demo, settings)
+- [x] A · UI scorebug: merged. Fixtures (my teams, search, day picker), match remote (sticky virtual strip, stat channels incl. auto, ticker, delay slider), `/demo` (runs fully in the browser), onboarding (cloud + local), login (magic link), settings. 70 UI-side tests (strip composition etc.)
+  - Verified in the browser preview: demo, fixtures and match preview on live ESPN data at 375px. Not yet: signed-in flows against real auth/Realtime
 - [x] B · Cloud lights (Hue OAuth routes, RemoteTransport, token refresh, link/lights/light/test/unlink/set/effect routes) — done by core
 - [x] C · Local lights: merged. Pinned LAN TLS, mDNS discovery, pairing, LocalTransport, event stream, HueStream v2 + DTLS-PSK, 50 Hz renderer; core wired local routes (`/api/hue/local/{discover,pair}`), `instrumentation.ts` loop and an opt-in streaming transport (`KICKLIGHT_ENTERTAINMENT=1`)
   - Verified: everything unit-tested; DTLS handshake against an independent PSK test server; read-only GETs, cert pin, mDNS and event stream against the real bridge
@@ -68,5 +69,17 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **(you)** needs the own
 
 ## Phase 4: Integration
 
-- [ ] Merge tracks, e2e on the real strip in both modes, live match test
-- [ ] README rewrite, production deploy
+- [~] Merge tracks: done (both tracks merged, v1 code removed, build/tsc/biome/188 tests green). e2e on the real strip:
+  - [x] Cloud, replay: full Derby day through `/api/cron/tick`, strip followed and restored (auto-director switched to Scoreline at 86')
+  - [x] Cloud, live: Lens v Sporting (Champions League, half time) through the real ESPN feed
+  - [ ] Signed-in UI flow (magic link, Realtime mirror, start/stop) — next
+  - [ ] Local mode on the LAN, incl. Entertainment (needs bridge re-pair + a supervised run)
+- [x] README rewrite
+- [ ] **(you)** Production deploy: Vercel env vars, Supabase auth URLs, then apply the cron migration (docs/deploy.md). The Vercel connector can't create/deploy here, so this is yours
+
+## Findings worth remembering
+
+- ESPN 403s the `Bun/x.y` user-agent and version-token/URL-style agents; it accepts `node`, browsers and `Mozilla/5.0 (compatible; Kicklight)`. We always send the latter (`ESPN_HEADERS`).
+- All 17 ESPN league slugs in `leagues.ts` verified against the live API (13 Oct 2026).
+- Hue Remote API: tokens last ~7 days; refresh is the standard grant but has not been exercised live yet (first refresh will happen ~6 days after linking).
+- The strip has 7 Entertainment channels (3,3,5,5,5,3,3), not 27.

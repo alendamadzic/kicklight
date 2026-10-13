@@ -72,7 +72,10 @@ try {
       delay_ms: 0,
     }),
   );
-  console.log("session started: Derby day replay (about 95 s + 30 s hold)\n");
+  console.log(
+    `session started: ${process.env.LEAGUE ?? "replay"}/${process.env.EVENT_ID ?? "derby-day"}
+`,
+  );
 
   const t0 = Date.now();
   for (let i = 0; i < Number(process.env.TICKS ?? 20); i++) {
