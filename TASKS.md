@@ -41,7 +41,9 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **(you)** needs the own
 
 ## Phase 2: Platform contracts
 
-- [~] Supabase project `kicklight` created (ref `nblzexgtutfxrxadcwav`, eu-west-2, free); migrations, RLS, magic-link auth pending
+- [x] Supabase project `kicklight` (ref `nblzexgtutfxrxadcwav`, eu-west-2, free). `supabase/migrations/20261013160000_initial_schema.sql` applied: preferences, hue_links, hue_secrets, sessions (Realtime), recordings. RLS on; security advisor clean apart from the two intentional service-role-only tables
+- [ ] Magic-link auth config (Site URL `https://kicklight.alen.world`, redirect URLs) in the Supabase dashboard
+- [ ] **(you)** `SUPABASE_SERVICE_ROLE_KEY` from the dashboard → `.env.local` and Vercel (Sensitive)
 - [ ] Supabase client helpers + `proxy.ts`
 - [ ] `LightTransport` interface + command queue
 - [ ] `/api/cron/tick` + pg_cron job
