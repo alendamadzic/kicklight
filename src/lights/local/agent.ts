@@ -127,7 +127,7 @@ export function captureBridgeCertificate(
         }),
       );
     });
-    socket.once("error", (e) =>
+    socket.once("error", (e: Error) =>
       finish(() => reject(new BridgeTlsError("tls", e.message))),
     );
   });

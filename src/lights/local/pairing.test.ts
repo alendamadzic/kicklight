@@ -41,7 +41,7 @@ describe("pairOnce", () => {
       username: "user-abc",
       clientkey: "00112233445566778899AABBCCDDEEFF",
     });
-    expect(seen).toEqual({
+    expect(seen as unknown).toEqual({
       url: "https://10.0.0.2/api",
       method: "POST",
       body: { devicetype: "kicklight#my server", generateclientkey: true },
