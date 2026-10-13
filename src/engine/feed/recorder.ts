@@ -74,3 +74,64 @@ export function scriptFromRecordings(
     events,
   };
 }
+
+// biome-ignore lint/suspicious/noExplicitAny: ESPN's response is undocumented; reads are defensive
+type Json = any;
+
+/**
+ * ESPN's full summary is ~400 KB (news, odds, rosters, videos). Keep only what the parser
+ * reads so a recorded match is tens of KB, not tens of MB.
+ */
+export function trimEspnPayload(raw: Json): Json {
+  const teams = (raw?.boxscore?.teams ?? []).map((t: Json) => ({
+    homeAway: t.homeAway,
+    statistics: t.statistics,
+    team: {
+      id: t.team?.id,
+      displayName: t.team?.displayName,
+      shortDisplayName: t.team?.shortDisplayName,
+      abbreviation: t.team?.abbreviation,
+      color: t.team?.color,
+      alternateColor: t.team?.alternateColor,
+      logo: t.team?.logo,
+    },
+  }));
+  return {
+    header: raw?.header
+      ? {
+          id: raw.header.id,
+          league: raw.header.league
+            ? { slug: raw.header.league.slug }
+            : undefined,
+          competitions: (raw.header.competitions ?? []).map((c: Json) => ({
+            id: c.id,
+            date: c.date,
+            status: c.status,
+            competitors: (c.competitors ?? []).map((k: Json) => ({
+              homeAway: k.homeAway,
+              score: k.score,
+              team: k.team,
+            })),
+          })),
+        }
+      : undefined,
+    boxscore: { teams },
+    keyEvents: raw?.keyEvents,
+    commentary: (raw?.commentary ?? []).map((c: Json) => ({
+      sequence: c.sequence,
+      text: c.text,
+      time: c.time,
+      play: c.play
+        ? {
+            id: c.play.id,
+            type: c.play.type,
+            text: c.play.text,
+            clock: c.play.clock,
+            team: c.play.team ? { id: c.play.team.id } : undefined,
+            scoringPlay: c.play.scoringPlay,
+            wallclock: c.play.wallclock,
+          }
+        : undefined,
+    })),
+  };
+}

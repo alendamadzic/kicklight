@@ -23,7 +23,7 @@ export function liveFeed(admin: SupabaseClient) {
         lastSaved.set(key, now);
         void admin
           .from("recordings")
-          .insert({ league, event_id: eventId, payload: raw })
+          .insert({ league, event_id: eventId, payload: trimEspnPayload(raw) })
           .then(({ error }) => {
             if (error)
               console.error("[kicklight] recording failed:", error.message);

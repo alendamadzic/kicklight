@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import fixture from "./__fixtures__/espn-cov-new.json";
-import { keyEventType, parseEspnSummary, parseMinute } from "./espn";
+import { keyEventType, parseEspnSummary, parseMinute, phaseFrom } from "./espn";
 
 describe("espn parser", () => {
   const { snapshot, events } = parseEspnSummary(fixture, "eng.1");
@@ -65,5 +65,33 @@ describe("espn parser", () => {
     expect(keyEventType("penalty---saved", false)).toBe("penalty_missed");
     expect(keyEventType("red-card", false)).toBe("red_card");
     expect(keyEventType("start-delay", false)).toBeNull();
+  });
+});
+
+describe("phaseFrom", () => {
+  test("named statuses", () => {
+    expect(phaseFrom("STATUS_SCHEDULED")).toBe("scheduled");
+    expect(phaseFrom("STATUS_HALFTIME")).toBe("half_time");
+    expect(phaseFrom("STATUS_FULL_TIME")).toBe("full_time");
+    expect(phaseFrom("STATUS_SECOND_HALF")).toBe("second_half");
+  });
+  test("an ambiguous in-progress status takes the half from the period, then the clock", () => {
+    expect(phaseFrom("STATUS_IN_PROGRESS", { period: 2, clock: "47'" })).toBe(
+      "second_half",
+    );
+    expect(phaseFrom("STATUS_IN_PROGRESS", { clock: "47'" })).toBe(
+      "second_half",
+    );
+    expect(phaseFrom("STATUS_IN_PROGRESS", { clock: "45'+2'" })).toBe(
+      "first_half",
+    );
+    expect(phaseFrom("STATUS_IN_PROGRESS", { period: 1, clock: "30'" })).toBe(
+      "first_half",
+    );
+  });
+  test("an end-of-period marker is never mistaken for the final whistle", () => {
+    expect(phaseFrom("STATUS_END_PERIOD", { period: 1, clock: "45'+3'" })).toBe(
+      "first_half",
+    );
   });
 });

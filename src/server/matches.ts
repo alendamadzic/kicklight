@@ -39,7 +39,10 @@ export function parseEspnScoreboard(
       id: String(e.id),
       league,
       kickoff: new Date(e.date).toISOString(),
-      phase: phaseFrom(status?.type?.name),
+      phase: phaseFrom(status?.type?.name, {
+        period: status?.period,
+        clock: status?.displayClock,
+      }),
       minute: parseMinute(status?.displayClock),
       home: side(home),
       away: side(away),

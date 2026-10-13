@@ -46,15 +46,21 @@ export function parseMinute(display: string | undefined | null): number | null {
   return Number.parseInt(m[1], 10) + (m[2] ? Number.parseInt(m[2], 10) : 0);
 }
 
-export function phaseFrom(statusName: string | undefined): MatchPhase {
+/** Extra evidence for the half when the status name is ambiguous (e.g. "IN_PROGRESS"). */
+export interface PhaseHints {
+  period?: number | null;
+  /** The match clock as displayed, e.g. "47'" or "45'+2'". */
+  clock?: string | null;
+}
+
+export function phaseFrom(
+  statusName: string | undefined,
+  hints: PhaseHints = {},
+): MatchPhase {
   const s = (statusName ?? "").toUpperCase();
-  if (s.includes("SCHEDULED") || s.includes("PRE")) return "scheduled";
+  if (s.includes("SCHEDULED") || s.endsWith("_PRE")) return "scheduled";
   if (s.includes("HALFTIME")) return "half_time";
-  if (s.includes("FIRST_HALF")) return "first_half";
-  if (s.includes("SECOND_HALF")) return "second_half";
-  if (s.includes("EXTRA")) return "extra_time";
-  if (s.includes("SHOOTOUT") || s.includes("PENALT")) return "shootout";
-  if (s.includes("FULL_TIME") || s.includes("FINAL") || s.includes("END"))
+  if (s.includes("FULL_TIME") || s.includes("FINAL") || s.endsWith("_FT"))
     return "full_time";
   if (
     s.includes("POSTPONED") ||
@@ -63,8 +69,21 @@ export function phaseFrom(statusName: string | undefined): MatchPhase {
     s.includes("ABANDON")
   )
     return "suspended";
-  if (s.includes("IN_PROGRESS") || s.includes("PLAY")) return "first_half";
-  return "scheduled";
+  if (s.includes("FIRST_HALF")) return "first_half";
+  if (s.includes("SECOND_HALF")) return "second_half";
+  if (s.includes("EXTRA")) return "extra_time";
+  if (s.includes("SHOOTOUT") || s.includes("PENALT")) return "shootout";
+
+  // Anything else that is live ("IN_PROGRESS", end-of-period markers...): decide the
+  // half from the period, then from the clock, never from a guess at the name.
+  const { period } = hints;
+  if (period === 1) return "first_half";
+  if (period === 2) return "second_half";
+  if (period === 3 || period === 4) return "extra_time";
+  if (period === 5) return "shootout";
+  const base = hints.clock ? Number.parseInt(hints.clock, 10) : Number.NaN;
+  if (Number.isFinite(base)) return base > 45 ? "second_half" : "first_half";
+  return s ? "first_half" : "scheduled";
 }
 
 function team(t: Json): TeamInfo {
@@ -164,7 +183,10 @@ export function parseEspnSummary(json: Json, league: string): ParsedMatch {
     awayC?.team ?? boxTeams.find((t) => t.homeAway === "away")?.team,
   );
 
-  const phase = phaseFrom(comp?.status?.type?.name);
+  const phase = phaseFrom(comp?.status?.type?.name, {
+    period: comp?.status?.period,
+    clock: comp?.status?.displayClock,
+  });
   const kickoffMs = Date.parse(comp?.date ?? "") || 0;
   const minuteFromClock = parseMinute(comp?.status?.displayClock);
   const minute =

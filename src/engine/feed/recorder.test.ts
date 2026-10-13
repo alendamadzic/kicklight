@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import fixture from "./__fixtures__/espn-cov-new.json";
-import { scriptFromRecordings } from "./recorder";
+import { parseEspnSummary } from "./espn";
+import { scriptFromRecordings, trimEspnPayload } from "./recorder";
 import { replayAt } from "./replay";
 
 describe("scriptFromRecordings", () => {
@@ -36,5 +37,38 @@ describe("scriptFromRecordings", () => {
 
   test("no recordings is an error, not an empty replay", () => {
     expect(() => scriptFromRecordings([], meta)).toThrow();
+  });
+});
+
+describe("trimEspnPayload", () => {
+  const bloated = {
+    ...(fixture as object),
+    news: {
+      articles: Array.from({ length: 200 }, (_, i) => ({
+        i,
+        body: "x".repeat(500),
+      })),
+    },
+    odds: [{ provider: "x".repeat(10_000) }],
+    rosters: Array.from({ length: 50 }, () => ({ pad: "y".repeat(2_000) })),
+  };
+
+  test("drops the bulk but parses to exactly the same match", () => {
+    const trimmed = trimEspnPayload(bloated);
+    expect(JSON.stringify(trimmed).length).toBeLessThan(
+      JSON.stringify(bloated).length / 2,
+    );
+    expect(parseEspnSummary(trimmed, "eng.1")).toEqual(
+      parseEspnSummary(bloated, "eng.1"),
+    );
+  });
+
+  test("a trimmed recording still exports to the real final score", () => {
+    const script = scriptFromRecordings(
+      [{ capturedAt: 1, payload: trimEspnPayload(bloated) }],
+      { id: "t", title: "t", blurb: "", league: "eng.1" },
+    );
+    const end = replayAt(script, script.endMinute + 1, 0).snapshot;
+    expect(end.score).toEqual({ home: 4, away: 1 });
   });
 });
