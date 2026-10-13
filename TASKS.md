@@ -25,13 +25,13 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **(you)** needs the own
 - [x] `bun test` set up
 - [x] `src/engine/model.ts` snapshot + event types
 - [x] `src/engine/colors.ts` ESPN hex, clash detection, can't-glow lift
-- [~] `src/engine/stats/` eight modes done; auto-director + match clock pending
-- [ ] `src/engine/effects/` 14 effects + nerves (frames + signaling fallback)
-- [ ] `src/engine/scheduler.ts` wallclock + TV delay
-- [ ] `src/engine/runner.ts` `tick()`
-- [~] `src/engine/feed/` espn parser done (tested on a real match); footballData, replay, leagues pending
-- [ ] Recorder + `scripts/export-recording.ts`; scripted scenarios
-- [ ] Remove global TLS override, old stat code, debug logs, colour-name deps
+- [x] `src/engine/stats/` eight modes, auto-director; match clock handled in the runner
+- [x] `src/engine/effects/` 14 effects + nerves (frames + signaling fallback)
+- [x] `src/engine/scheduler.ts` wallclock + TV delay
+- [x] `src/engine/runner.ts` `tick()` (replayed a real match end to end)
+- [~] `src/engine/feed/` espn, replay, leagues done; footballData fallback pending. League slugs other than eng.1 are unverified (Phase 0)
+- [~] Scripted scenarios done (3); recorder + `scripts/export-recording.ts` need the Supabase `recordings` table
+- [ ] Remove global TLS override, old stat code, debug logs, colour-name deps (do when the UI track swaps over, so the app keeps running until then)
 
 ## Phase 2: Platform contracts
 
