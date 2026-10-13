@@ -45,7 +45,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **(you)** needs the own
 - [ ] Magic-link auth config (Site URL `https://kicklight.alen.world`, redirect URLs) in the Supabase dashboard
 - [ ] **(you)** `SUPABASE_SERVICE_ROLE_KEY` from the dashboard → `.env.local` and Vercel (Sensitive)
 - [ ] Supabase client helpers + `proxy.ts`
-- [ ] `LightTransport` interface + command queue
+- [x] `LightTransport` interface (`src/lights/transport.ts`), command queue with rate limit + coalescing, xy conversion with gamut C clamping, split/fill rendering onto 5 points
 - [ ] `/api/cron/tick` + pg_cron job
 - [x] **(you)** Vercel project created manually; domain `kicklight.alen.world`
 - [ ] **(you)** Add `HUE_CLIENT_ID`, `HUE_CLIENT_SECRET`, Supabase keys as Vercel env vars (mark the secrets Sensitive)
