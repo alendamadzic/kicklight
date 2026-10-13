@@ -47,3 +47,6 @@ kicklight.config.json
 # internal dev artifacts
 spec.md
 skills-lock.json
+
+# Hue Remote API spike tokens
+.hue-remote-spike.json

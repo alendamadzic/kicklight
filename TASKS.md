@@ -15,8 +15,8 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **(you)** needs the own
 ## Phase 0: Spikes
 
 - [ ] ESPN: record 2–3 live matches as fixtures; catalogue event type slugs; measure lag vs `wallclock`
-- [ ] **(you)** Register a Hue Remote API app on developers.meethue.com (client id, secret, callback URL)
-- [ ] Hue remote: confirm OAuth + remote linkbutton + `route/clip/v2`, remote `signaling` / `gradient.mode`, throttle limits
+- [x] **(you)** Hue Remote API app registered. Callback `https://kicklight.alen.world/api/hue/oauth/callback`; credentials in `.env.local` (gitignored)
+- [~] Hue remote (`scripts/hue-remote-spike.ts`; needs you to authorize once): confirm OAuth + remote linkbutton + `route/clip/v2`, remote `signaling` / `gradient.mode`, throttle limits
 - [x] Hue local: read the strip (13 Oct 2026). Findings:
   - Device: Hue Flux strip light (929004610403), fw 1.163.5, archetype `hue_lightstrip`, gamut C
   - `gradient`: `points_capable: 5`, `pixel_count: 27`, `mode_values`: interpolated_palette, interpolated_palette_mirrored, random_pixelated, **segmented_palette**
@@ -45,7 +45,8 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **(you)** needs the own
 - [ ] Supabase client helpers + `proxy.ts`
 - [ ] `LightTransport` interface + command queue
 - [ ] `/api/cron/tick` + pg_cron job
-- [ ] **(you)** Vercel project `kicklight`: the Vercel connector got 403 on create and there's no CLI here. Create it (dashboard or `vercel project add kicklight`), then env vars
+- [x] **(you)** Vercel project created manually; domain `kicklight.alen.world`
+- [ ] **(you)** Add `HUE_CLIENT_ID`, `HUE_CLIENT_SECRET`, Supabase keys as Vercel env vars (mark the secrets Sensitive)
 - [ ] Replace file config with DB config
 
 ## Phase 3: Parallel tracks
