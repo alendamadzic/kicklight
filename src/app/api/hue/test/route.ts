@@ -1,7 +1,7 @@
 import type { Rgb } from "@/engine/colors";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { apiError, json, requireUser } from "@/server/auth";
-import { remoteTransportFor } from "@/server/hue-link";
+import { transportFor } from "@/server/hue-link";
 
 export const maxDuration = 30;
 
@@ -11,7 +11,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 export async function POST() {
   const { user, response } = await requireUser();
   if (!user) return response;
-  const t = await remoteTransportFor(createAdminClient(), user.id);
+  const t = await transportFor(createAdminClient(), user.id);
   if (!t) return apiError("not_linked", 409);
   if (!t.link.light_id)
     return apiError("no_light", 409, "Choose a strip first");

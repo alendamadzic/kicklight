@@ -164,6 +164,16 @@ export async function processSession(
     if (wait > 0) await sleep(Math.min(wait, HORIZON_MS));
     const cmd = c.item;
     try {
+      if (cmd.kind !== "restore" && transport.applyCommand) {
+        const handled = await transport.applyCommand(cmd, colors).catch((e) => {
+          errors.push(`stream: ${(e as Error).message}`);
+          return false;
+        });
+        if (handled) {
+          recent.push(mirrorOf(cmd, c.at));
+          continue;
+        }
+      }
       if (cmd.kind === "split") {
         await transport.setGradient(
           splitPoints(cmd.homeShare, transport.points, colors),

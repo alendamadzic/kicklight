@@ -3,7 +3,7 @@ import { EFFECTS, type EffectKey } from "@/engine/effects";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { HueRemoteError } from "@/lights/remote";
 import { apiError, json, requireUser } from "@/server/auth";
-import { remoteTransportFor } from "@/server/hue-link";
+import { transportFor } from "@/server/hue-link";
 import { isRgb } from "@/server/validate";
 
 /**
@@ -32,8 +32,9 @@ export async function POST(request: NextRequest) {
   });
   if (!signal) return json({ ok: true, skipped: true });
 
-  const t = await remoteTransportFor(createAdminClient(), user.id);
+  const t = await transportFor(createAdminClient(), user.id);
   if (!t?.link.light_id) return apiError("not_linked", 409);
+  if (!t.transport.signal) return json({ ok: true, skipped: true });
   try {
     await t.transport.signal(signal);
     return json({ ok: true, skipped: false });

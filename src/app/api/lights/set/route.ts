@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { HueRemoteError } from "@/lights/remote";
 import { apiError, json, requireUser } from "@/server/auth";
-import { remoteTransportFor } from "@/server/hue-link";
+import { transportFor } from "@/server/hue-link";
 import { isRgbList } from "@/server/validate";
 
 export async function POST(request: NextRequest) {
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       ? Math.min(5000, Math.max(0, body.transitionMs))
       : 300;
 
-  const t = await remoteTransportFor(createAdminClient(), user.id);
+  const t = await transportFor(createAdminClient(), user.id);
   if (!t?.link.light_id) return apiError("not_linked", 409);
   try {
     await t.transport.setGradient(body.colors, transition);

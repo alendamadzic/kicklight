@@ -137,6 +137,23 @@ describe("processSession (replay)", () => {
     expect(r.update.status).toBe("active");
   });
 
+  test("a streaming transport renders commands itself; the REST path is the fallback", async () => {
+    const h = harness();
+    const applied: string[] = [];
+    h.deps.transport.applyCommand = async (cmd) => {
+      applied.push(cmd.kind);
+      return true;
+    };
+    await processSession(base(h.now() - 30_000), h.deps);
+    expect(applied).toContain("split");
+    expect(h.grads).toHaveLength(0);
+
+    const h2 = harness();
+    h2.deps.transport.applyCommand = async () => false;
+    await processSession(base(h2.now() - 30_000), h2.deps);
+    expect(h2.grads.length).toBeGreaterThan(0);
+  });
+
   test("an unknown scenario fails loudly", async () => {
     const h = harness();
     const row = { ...base(h.now()), event_id: "nope" };

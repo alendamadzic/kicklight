@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { json, requireUser } from "@/server/auth";
-import { remoteTransportFor } from "@/server/hue-link";
+import { transportFor } from "@/server/hue-link";
 
 export async function POST() {
   const { user, response } = await requireUser();
@@ -13,7 +13,7 @@ export async function POST() {
     .in("status", ["active", "paused"]);
   if (!live?.length) return json({ ok: true, stopped: 0 });
 
-  const t = await remoteTransportFor(admin, user.id).catch(() => null);
+  const t = await transportFor(admin, user.id).catch(() => null);
   for (const s of live) {
     if (t && s.light_snapshot)
       await t.transport.restore(s.light_snapshot).catch(() => {});

@@ -43,7 +43,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **(you)** needs the own
 - [x] `src/engine/runner.ts` `tick()` (replayed a real match end to end)
 - [~] `src/engine/feed/` espn, replay, leagues done; footballData fallback pending. League slugs other than eng.1 are unverified (Phase 0)
 - [~] Scripted scenarios done (3); recorder + `scripts/export-recording.ts` need the Supabase `recordings` table
-- [ ] Remove global TLS override, old stat code, debug logs, colour-name deps (do when the UI track swaps over, so the app keeps running until then)
+- [ ] Remove global TLS override, old stat code, debug logs, colour-name deps (do at UI merge, so the app keeps running until then)
 
 ## Phase 2: Platform contracts
 
@@ -61,7 +61,10 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **(you)** needs the own
 
 - [ ] A · UI scorebug (fixtures, onboarding, match remote, demo, settings)
 - [x] B · Cloud lights (Hue OAuth routes, RemoteTransport, token refresh, link/lights/light/test/unlink/set/effect routes) — done by core
-- [ ] C · Local lights (LocalTransport, scoped TLS, mDNS, eventstream, Entertainment, instrumentation loop)
+- [x] C · Local lights: merged. Pinned LAN TLS, mDNS discovery, pairing, LocalTransport, event stream, HueStream v2 + DTLS-PSK, 50 Hz renderer; core wired local routes (`/api/hue/local/{discover,pair}`), `instrumentation.ts` loop and an opt-in streaming transport (`KICKLIGHT_ENTERTAINMENT=1`)
+  - Verified: everything unit-tested; DTLS handshake against an independent PSK test server; read-only GETs, cert pin, mDNS and event stream against the real bridge
+  - **Not yet verified on the real bridge:** creating the entertainment configuration (POST body), start/stop, the DTLS handshake with the bridge itself. Needs the bridge re-paired through Kicklight (the old config has no clientkey) and a supervised run
+  - Findings: PSK identity is the `hue-application-id` header (not the app key); the strip has 7 Entertainment channels (3,3,5,5,5,3,3)
 
 ## Phase 4: Integration
 

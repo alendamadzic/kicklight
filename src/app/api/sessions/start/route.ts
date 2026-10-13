@@ -5,7 +5,7 @@ import { STAT_ORDER } from "@/engine/stats";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { apiError, json, requireUser } from "@/server/auth";
-import { getLink, remoteTransportFor } from "@/server/hue-link";
+import { getLink, transportFor } from "@/server/hue-link";
 
 const STATS = new Set<string>([...STAT_ORDER, "auto", "clock"]);
 
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     .eq("user_id", user.id)
     .in("status", ["active", "paused"]);
   if (live?.length) {
-    const t = await remoteTransportFor(admin, user.id).catch(() => null);
+    const t = await transportFor(admin, user.id).catch(() => null);
     for (const s of live) {
       if (t && s.light_snapshot)
         await t.transport.restore(s.light_snapshot).catch(() => {});
