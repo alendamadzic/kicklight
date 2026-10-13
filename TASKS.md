@@ -50,17 +50,17 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **(you)** needs the own
 - [x] Supabase project `kicklight` (ref `nblzexgtutfxrxadcwav`, eu-west-2, free). `supabase/migrations/20261013160000_initial_schema.sql` applied: preferences, hue_links, hue_secrets, sessions (Realtime), recordings. RLS on; security advisor clean apart from the two intentional service-role-only tables
 - [ ] Magic-link auth config (Site URL `https://kicklight.alen.world`, redirect URLs) in the Supabase dashboard
 - [ ] **(you)** `SUPABASE_SERVICE_ROLE_KEY` from the dashboard → `.env.local` and Vercel (Sensitive)
-- [ ] Supabase client helpers + `proxy.ts`
+- [x] Supabase client helpers (`src/lib/supabase/{client,server,admin}.ts`) + `src/proxy.ts`
 - [x] `LightTransport` interface (`src/lights/transport.ts`), command queue with rate limit + coalescing, xy conversion with gamut C clamping, split/fill rendering onto 5 points
-- [ ] `/api/cron/tick` + pg_cron job
+- [x] `/api/cron/tick` (atomic claim, per-session processing) ; [~] pg_cron migration written (`20261013170000_cron_tick.sql`), applied after first deploy
 - [x] **(you)** Vercel project created manually; domain `kicklight.alen.world`
 - [ ] **(you)** Add `HUE_CLIENT_ID`, `HUE_CLIENT_SECRET`, Supabase keys as Vercel env vars (mark the secrets Sensitive)
-- [ ] Replace file config with DB config
+- [x] DB-backed config (hue_links/hue_secrets/preferences); old file config removed at merge
 
 ## Phase 3: Parallel tracks
 
 - [ ] A · UI scorebug (fixtures, onboarding, match remote, demo, settings)
-- [ ] B · Cloud lights (Hue OAuth, RemoteTransport)
+- [x] B · Cloud lights (Hue OAuth routes, RemoteTransport, token refresh, link/lights/light/test/unlink/set/effect routes) — done by core
 - [ ] C · Local lights (LocalTransport, scoped TLS, mDNS, eventstream, Entertainment, instrumentation loop)
 
 ## Phase 4: Integration

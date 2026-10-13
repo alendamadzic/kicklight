@@ -157,7 +157,9 @@ export function ActiveMatch({
 
     // Update light gradient for active match statuses — driven by selected stat
     if (data.status === "IN_PLAY" || data.status === "EXTRA_TIME") {
-      const activeStat = ALL_STATS.find((s) => s.key === activeStatKeyRef.current)!;
+      const activeStat = ALL_STATS.find(
+        (s) => s.key === activeStatKeyRef.current,
+      )!;
       const { homePct } = activeStat.calculate(data);
       const lightResult = await updateLightGradient(homeHex, awayHex, homePct);
       if (lightResult.error) {
@@ -230,7 +232,6 @@ export function ActiveMatch({
     startPolling();
   }, [liveData?.status, startPolling, liveData]);
 
-
   return (
     <div
       className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center gap-8 py-8"
@@ -269,7 +270,9 @@ export function ActiveMatch({
             awayTeam={match.awayTeam}
             homeHex={homeHex}
             awayHex={awayHex}
-            footerText={isFallback ? activeStat.fallbackText : activeStat.activeText}
+            footerText={
+              isFallback ? activeStat.fallbackText : activeStat.activeText
+            }
           />
         );
       })()}

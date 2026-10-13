@@ -15,7 +15,8 @@ export async function proxy(request: NextRequest) {
       setAll: (all) => {
         for (const { name, value } of all) request.cookies.set(name, value);
         response = NextResponse.next({ request });
-        for (const { name, value, options } of all) response.cookies.set(name, value, options);
+        for (const { name, value, options } of all)
+          response.cookies.set(name, value, options);
       },
     },
   });
@@ -24,5 +25,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };

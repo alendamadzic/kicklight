@@ -68,11 +68,15 @@ export function ShowcaseModal({ onClose }: { onClose: () => void }) {
   const [status, setStatus] = useState<MatchStatus>("IN_PLAY");
   const [minute, setMinute] = useState<number | null>(null);
   const [homePossession, setHomePossession] = useState(50);
-  const [scenarioStats, setScenarioStats] = useState<ShowcaseStats | null>(null);
+  const [scenarioStats, setScenarioStats] = useState<ShowcaseStats | null>(
+    null,
+  );
   const [activeStatKey, setActiveStatKey] = useState<StatKey>("goals");
   const [lightError, setLightError] = useState<string | null>(null);
 
-  const penaltyIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const penaltyIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  );
   const matchupRef = useRef<ShowcaseMatchup | null>(null);
   const activeStatKeyRef = useRef<StatKey>("goals");
   matchupRef.current = matchup;

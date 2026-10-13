@@ -111,7 +111,9 @@ export function StatBar({
       </div>
 
       {footerText && (
-        <p className="mt-1.5 text-[10px] text-muted-foreground/40">{footerText}</p>
+        <p className="mt-1.5 text-[10px] text-muted-foreground/40">
+          {footerText}
+        </p>
       )}
     </button>
   );
