@@ -57,7 +57,8 @@ function CommandDialog({
         )}
         showCloseButton={showCloseButton}
       >
-        {children}
+        {/* cmdk's Input/List/Item read their store from a <Command> ancestor. */}
+        <Command className="rounded-4xl!">{children}</Command>
       </DialogContent>
     </Dialog>
   );
