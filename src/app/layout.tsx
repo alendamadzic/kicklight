@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Barlow_Condensed, Geist_Mono, Inter } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { cn } from "@/lib/utils";
@@ -6,7 +6,7 @@ import "./globals.css";
 
 const barlowCondensed = Barlow_Condensed({
   subsets: ["latin"],
-  weight: ["600", "700"],
+  weight: ["600", "700", "800"],
   variable: "--font-display",
 });
 
@@ -21,9 +21,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "kicklight.",
+  title: { default: "Kicklight", template: "%s · Kicklight" },
   description:
-    "Sync your Philips Hue gradient light strip with live football match statistics.",
+    "Your Hue strip follows the match. Live football stats, goals and cards on the lights behind your TV.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#090b10" },
+    { media: "(prefers-color-scheme: light)", color: "#f3f4f7" },
+  ],
 };
 
 export default function RootLayout({

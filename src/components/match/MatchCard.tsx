@@ -1,96 +1,101 @@
 "use client";
 
-import { Play } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { TeamChip } from "@/components/ui/TeamChip";
-import type { Match } from "@/types";
+import { StarIcon } from "lucide-react";
+import Link from "next/link";
+import { LivePill } from "@/components/match/LivePill";
+import { TeamCrest } from "@/components/match/TeamCrest";
+import type { MatchListItem } from "@/lib/api-types";
+import { isLivePhase, kickoffLabel, minuteLabel } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
-const statusLabels: Record<string, string> = {
-  SCHEDULED: "Scheduled",
-  TIMED: "Scheduled",
-  IN_PLAY: "Live",
-  PAUSED: "Half Time",
-  EXTRA_TIME: "Extra Time",
-  PENALTY_SHOOTOUT: "Penalties",
-  FINISHED: "Full Time",
-  SUSPENDED: "Suspended",
-  POSTPONED: "Postponed",
-  CANCELLED: "Cancelled",
-  AWARDED: "Awarded",
-};
-
-const statusVariants: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  IN_PLAY: "default",
-  EXTRA_TIME: "default",
-  PENALTY_SHOOTOUT: "default",
-  PAUSED: "secondary",
-  FINISHED: "outline",
-  SCHEDULED: "outline",
-  TIMED: "outline",
-};
-
-const liveStatuses = new Set(["IN_PLAY", "EXTRA_TIME", "PENALTY_SHOOTOUT"]);
-
-function formatKickoffTime(utcDate: string): string {
-  const date = new Date(utcDate);
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
-
+/**
+ * One fixture. The whole card opens the remote; each team has its own star
+ * for "my teams". The link is a stretched overlay so the stars stay tappable.
+ */
 export function MatchCard({
   match,
-  onSelect,
+  followedIds,
+  onToggleFollow,
+  className,
 }: {
-  match: Match;
-  onSelect: (match: Match) => void;
+  match: MatchListItem;
+  followedIds: ReadonlySet<string>;
+  onToggleFollow?: (teamId: string) => void;
+  className?: string;
 }) {
-  const hasScore =
-    match.score.fullTime.home !== null && match.score.fullTime.away !== null;
-  const isLive = liveStatuses.has(match.status);
+  const live = isLivePhase(match.phase);
+  const finished = match.phase === "full_time";
+  const started = match.phase !== "scheduled";
+  const status = live
+    ? minuteLabel(match.minute, match.phase)
+    : finished
+      ? "FT"
+      : kickoffLabel(match.kickoff);
 
   return (
-    <Card size="sm">
-      <CardContent className="flex items-center gap-4">
-        <div className="flex flex-1 flex-col gap-2">
-          <div className="flex items-center gap-3">
-            <TeamChip team={match.homeTeam} size="md" className="flex-1" />
-            {hasScore ? (
-              <span className="font-display text-lg font-bold tabular-nums">
-                {match.score.fullTime.home} – {match.score.fullTime.away}
+    <div
+      className={cn(
+        "kl-press group/card relative flex items-stretch overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-foreground/25",
+        live && "border-live/40",
+        className,
+      )}
+    >
+      <Link
+        href={`/match/${encodeURIComponent(match.league)}/${encodeURIComponent(match.id)}`}
+        aria-label={`${match.home.name} v ${match.away.name}`}
+        className="absolute inset-0 z-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+      />
+      <div className="pointer-events-none z-10 flex w-14 shrink-0 flex-col items-center justify-center gap-1 border-r border-border px-1">
+        {live ? <LivePill label={null} /> : null}
+        <span
+          className={cn(
+            "kl-display text-lg leading-none",
+            live ? "text-live" : "text-muted-foreground",
+          )}
+        >
+          {status}
+        </span>
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        {(["home", "away"] as const).map((side) => {
+          const t = match[side];
+          const isFollowed = followedIds.has(t.id);
+          return (
+            <div
+              key={side}
+              className="pointer-events-none z-10 flex min-h-11 items-center gap-2.5 pl-3"
+            >
+              <TeamCrest team={t} size={22} className="shrink-0" />
+              <span className="kl-display min-w-0 flex-1 truncate text-xl leading-none">
+                {t.name}
               </span>
-            ) : (
-              <span className="text-sm text-muted-foreground">vs</span>
-            )}
-            <TeamChip
-              team={match.awayTeam}
-              size="md"
-              className="flex-1 flex-row-reverse text-right"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            {isLive && (
-              <span className="relative flex size-2">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-75" />
-                <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+              <span className="kl-display w-6 text-right text-xl leading-none tabular-nums">
+                {started ? match.score[side] : ""}
               </span>
-            )}
-            <Badge variant={statusVariants[match.status] ?? "outline"}>
-              {statusLabels[match.status] ?? match.status}
-            </Badge>
-            <span className="text-xs text-muted-foreground">
-              {formatKickoffTime(match.utcDate)}
-            </span>
-          </div>
-        </div>
-        <Button size="sm" onClick={() => onSelect(match)}>
-          <Play className="size-3.5" />
-          Watch
-        </Button>
-      </CardContent>
-    </Card>
+              {onToggleFollow ? (
+                <button
+                  type="button"
+                  aria-label={
+                    isFollowed ? `Unfollow ${t.name}` : `Follow ${t.name}`
+                  }
+                  aria-pressed={isFollowed}
+                  onClick={() => onToggleFollow(t.id)}
+                  className="pointer-events-auto grid size-11 shrink-0 place-items-center text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <StarIcon
+                    className={cn(
+                      "size-[1.125rem]",
+                      isFollowed && "fill-amber stroke-amber",
+                    )}
+                  />
+                </button>
+              ) : (
+                <span className="w-3" />
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
