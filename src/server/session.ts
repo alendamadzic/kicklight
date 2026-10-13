@@ -67,15 +67,21 @@ const RECENT_KEEP = 20;
 function replayFeed(row: SessionRow, now: number): ParsedMatch {
   const script = SCENARIOS.find((s) => s.id === row.event_id);
   if (!script) throw new Error(`Unknown replay scenario: ${row.event_id}`);
-  const elapsed = now - row.created_at - LEAD_IN_MS;
-  const minute = elapsed / REPLAY_MINUTE_MS;
-  const parsed = replayAt(script, minute, row.created_at);
+  const minuteAt = (ms: number) =>
+    (ms - row.created_at - LEAD_IN_MS) / REPLAY_MINUTE_MS;
+  const wallclock = (minute: number) =>
+    row.created_at + LEAD_IN_MS + minute * REPLAY_MINUTE_MS;
+
+  // The scoreboard is "now"; events are looked up one polling window ahead so each
+  // effect is scheduled for exactly its moment instead of up to a window late.
+  const current = replayAt(script, minuteAt(now), row.created_at);
+  const ahead = replayAt(script, minuteAt(now + HORIZON_MS), row.created_at);
   // Compress match minutes onto real seconds so a whole match plays in about 95 s.
-  const events = parsed.events.map((e) => ({
+  const events = ahead.events.map((e) => ({
     ...e,
-    wallclock: row.created_at + LEAD_IN_MS + e.minute * REPLAY_MINUTE_MS,
+    wallclock: wallclock(e.minute),
   }));
-  return { snapshot: parsed.snapshot, events };
+  return { snapshot: current.snapshot, events };
 }
 
 function nextDue(

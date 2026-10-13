@@ -85,6 +85,21 @@ describe("processSession (replay)", () => {
     expect(h.signals.filter((s) => s.signal === "alternating")).toHaveLength(1);
   });
 
+  test("replays poll every window and schedule a goal for exactly its moment, ahead of time", async () => {
+    const h = harness();
+    // 20 s in: the goal at match minute 24 is 6 s away, inside the 10 s look-ahead.
+    const created = h.now() - 20_000;
+    const r = await processSession(base(created), h.deps);
+    expect(r.update.next_due_at).toBe(h.now() + 10_000);
+    const goal = r.executed.find(
+      (c) => c.item.kind === "effect" && c.item.effect === "goal",
+    );
+    expect(goal?.at).toBe(created + 2_000 + 24 * 1_000);
+    expect(h.signals.filter((s) => s.signal === "alternating")).toHaveLength(1);
+    // The scoreboard still shows the present, not the look-ahead.
+    expect(r.update.snapshot.match.score).toEqual({ home: 0, away: 0 });
+  });
+
   test("the final whistle holds, then restores the strip and ends the session", async () => {
     const h = harness();
     const created = h.now() - 100_000; // past full time (95 min → 97 s)
