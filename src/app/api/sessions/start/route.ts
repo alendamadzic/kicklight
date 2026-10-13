@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   const admin = createAdminClient();
   const link = await getLink(admin, user.id);
   if (!link?.light_id)
-    return apiError("not_ready", 409, "Link Hue and choose a strip first");
+    return apiError("hue_not_linked", 409, "Link Hue and choose a strip first");
 
   const { data: prefs } = await admin
     .from("preferences")
