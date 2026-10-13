@@ -1,5 +1,6 @@
 // End-to-end check of the cloud path against the real Supabase project and the real strip:
-//   bun --conditions react-server scripts/e2e-cloud-replay.ts
+//   bun --conditions react-server scripts/e2e-cloud.ts            (Derby day replay, ~2 min)
+//   LEAGUE=uefa.champions EVENT_ID=401915418 TICKS=24 bun --conditions react-server scripts/e2e-cloud.ts  (a live match)
 // Creates a throwaway user + replay session, drives /api/cron/tick every 10 s until the
 // session ends, then deletes everything it created. Needs .hue-remote-spike.json
 // (from scripts/hue-remote-spike.ts) and kicklight.config.json for the light id.
@@ -64,8 +65,8 @@ try {
   await must(
     admin.from("sessions").insert({
       user_id: userId,
-      league: "replay",
-      event_id: "derby-day",
+      league: process.env.LEAGUE ?? "replay",
+      event_id: process.env.EVENT_ID ?? "derby-day",
       stat: "auto",
       mode: "remote",
       delay_ms: 0,
@@ -74,7 +75,7 @@ try {
   console.log("session started: Derby day replay (about 95 s + 30 s hold)\n");
 
   const t0 = Date.now();
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < Number(process.env.TICKS ?? 20); i++) {
     const res = await tick(
       new NextRequest("http://localhost/api/cron/tick", {
         headers: { authorization: `Bearer ${secret}` },

@@ -15,6 +15,16 @@ import {
 
 const BASE = "https://site.api.espn.com/apis/site/v2/sports/soccer";
 
+/**
+ * ESPN's edge answers 403 to some default client user-agents (Bun's `Bun/x.y`, and strings
+ * with a version token or URL such as `kicklight/2.0 (+https://…)`), while Node, browsers and
+ * this one pass. Always send it explicitly so behaviour doesn't depend on the runtime.
+ */
+export const ESPN_HEADERS = {
+  "user-agent": "Mozilla/5.0 (compatible; Kicklight)",
+  accept: "application/json",
+} as const;
+
 export const espnSummaryUrl = (league: string, eventId: string) =>
   `${BASE}/${league}/summary?event=${eventId}`;
 export const espnScoreboardUrl = (league: string, yyyymmdd?: string) =>
@@ -244,6 +254,7 @@ export async function fetchEspnRaw(
 ): Promise<unknown> {
   const res = await fetchImpl(espnSummaryUrl(league, eventId), {
     cache: "no-store",
+    headers: ESPN_HEADERS,
   });
   if (!res.ok) throw new Error(`ESPN summary ${res.status}`);
   return res.json();

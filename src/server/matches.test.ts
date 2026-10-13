@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import fixture from "@/engine/feed/__fixtures__/espn-scoreboard-eng1.json";
-import { parseEspnScoreboard } from "./matches";
+import { fetchMatches, parseEspnScoreboard } from "./matches";
 
 describe("scoreboard parser", () => {
   const list = parseEspnScoreboard(fixture, "eng.1");
@@ -18,5 +18,20 @@ describe("scoreboard parser", () => {
   test("an empty scoreboard is an empty list", () => {
     expect(parseEspnScoreboard({ events: [] }, "eng.1")).toEqual([]);
     expect(parseEspnScoreboard({}, "eng.1")).toEqual([]);
+  });
+});
+
+describe("feed requests", () => {
+  test("send an explicit user-agent, because ESPN 403s some runtimes' defaults", async () => {
+    let seen: Headers | null = null;
+    const f = (async (_u: string | URL | Request, init?: RequestInit) => {
+      seen = new Headers(init?.headers);
+      return new Response(JSON.stringify({ events: [] }));
+    }) as typeof fetch;
+    await fetchMatches("eng.1", undefined, f);
+    expect(seen).not.toBeNull();
+    expect((seen as unknown as Headers).get("user-agent")).toBe(
+      "Mozilla/5.0 (compatible; Kicklight)",
+    );
   });
 });

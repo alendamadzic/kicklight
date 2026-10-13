@@ -45,7 +45,7 @@ Useful scripts:
 | Script | What it does |
 |---|---|
 | `scripts/hue-remote-spike.ts` | link a bridge through the Hue Remote API and probe what it can do |
-| `scripts/e2e-cloud-replay.ts` | drive a replay through the real cron route and your real strip |
+| `scripts/e2e-cloud.ts` | drive a replay through the real cron route and your real strip |
 | `scripts/export-recording.ts` | turn captured live matches into replays |
 
 ## Deploy (cloud mode)

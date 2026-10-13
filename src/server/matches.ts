@@ -1,4 +1,9 @@
-import { espnScoreboardUrl, parseMinute, phaseFrom } from "@/engine/feed/espn";
+import {
+  ESPN_HEADERS,
+  espnScoreboardUrl,
+  parseMinute,
+  phaseFrom,
+} from "@/engine/feed/espn";
 import type { MatchListItem } from "@/lib/api-types";
 
 // Fixture lists come from ESPN's scoreboard endpoint. Parsed defensively and
@@ -51,6 +56,7 @@ export async function fetchMatches(
 ): Promise<MatchListItem[]> {
   const res = await fetchImpl(espnScoreboardUrl(league, yyyymmdd), {
     cache: "no-store",
+    headers: ESPN_HEADERS,
   });
   if (!res.ok) throw new Error(`ESPN scoreboard ${res.status}`);
   return parseEspnScoreboard(await res.json(), league);
