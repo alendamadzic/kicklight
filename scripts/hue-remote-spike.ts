@@ -132,6 +132,31 @@ if (cmd === "url") {
       [...lights.headers].filter(([k]) => /rate|limit|retry/i.test(k)),
     ),
   );
+} else if (cmd === "reset-white") {
+  // Put the strip back to a plain warm white (the old app's reset state).
+  const s = load();
+  if (!s.access_token || !s.username) throw new Error("run exchange first");
+  const lightId =
+    process.env.LIGHT_ID ??
+    (JSON.parse(readFileSync("kicklight.config.json", "utf8"))
+      .lightId as string);
+  const { rgbToXy } = await import("../src/lights/xy");
+  const white = rgbToXy([255, 244, 230]);
+  const r = await call(`/route/clip/v2/resource/light/${lightId}`, {
+    token: s.access_token,
+    key: s.username,
+    method: "PUT",
+    body: JSON.stringify({
+      on: { on: true },
+      dimming: { brightness: 100 },
+      gradient: {
+        mode: "interpolated_palette",
+        points: [...Array(4)].map(() => ({ color: { xy: white } })),
+      },
+      dynamics: { duration: 800 },
+    }),
+  });
+  show("reset to white", r.status, r.text);
 } else if (cmd === "write-test") {
   const s = load();
   if (!s.access_token || !s.username) throw new Error("run exchange first");
@@ -225,5 +250,7 @@ if (cmd === "url") {
     show("restore original state", r.status, r.text);
   }
 } else {
-  console.log("usage: url | exchange <code> | probe | write-test");
+  console.log(
+    "usage: url | exchange <code> | probe | write-test | reset-white",
+  );
 }

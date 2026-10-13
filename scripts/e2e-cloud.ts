@@ -10,6 +10,7 @@ import { NextRequest } from "next/server";
 import { GET as tick } from "../src/app/api/cron/tick/route";
 import { encrypt } from "../src/lib/crypto";
 import { createAdminClient } from "../src/lib/supabase/admin";
+import { remoteTransportFor } from "../src/server/hue-link";
 
 const spike = JSON.parse(readFileSync(".hue-remote-spike.json", "utf8")) as {
   access_token: string;
@@ -111,6 +112,21 @@ try {
   }
 } finally {
   if (userId) {
+    // Always hand the strip back, even when the run is cut short mid-match.
+    try {
+      const { data: live } = await admin
+        .from("sessions")
+        .select("status, light_snapshot")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (live && live.status !== "ended" && live.light_snapshot) {
+        const t = await remoteTransportFor(admin, userId);
+        await t?.transport.restore(live.light_snapshot);
+        console.log("restored the strip to its pre-match state");
+      }
+    } catch (e) {
+      console.error("could not restore the strip:", (e as Error).message);
+    }
     await admin.auth.admin.deleteUser(userId); // cascades hue_links, hue_secrets, sessions
     console.log("cleaned up throwaway user");
   }
