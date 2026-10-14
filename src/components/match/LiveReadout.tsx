@@ -69,7 +69,8 @@ export function LiveReadout({
               strokeOpacity="0.1"
               strokeWidth="3"
             />
-            <g transform="rotate(-90 18 18)">
+            {/* Mirrored so the home arc sweeps down the left, matching the home value and the bar. */}
+            <g transform="translate(36 0) scale(-1 1) rotate(-90 18 18)">
               <circle
                 cx="18"
                 cy="18"
