@@ -1,17 +1,25 @@
 import type { NextRequest } from "next/server";
+import type { Rgb } from "@/engine/colors";
 import { EFFECTS, type EffectKey } from "@/engine/effects";
+import type { Side } from "@/engine/model";
+import type { MirroredCommand } from "@/lib/api-types";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { playFrames } from "@/lights/play";
 import { HueRemoteError } from "@/lights/remote";
+import { fillPoints, splitPoints } from "@/lights/render";
 import { apiError, json, requireUser } from "@/server/auth";
 import { transportFor } from "@/server/hue-link";
 import { activeStreamFor } from "@/server/local-streaming";
 import { isRgb } from "@/server/validate";
 
+// A replay waits for the whole animation (up to ~7 s) before answering.
+export const maxDuration = 30;
+
 /**
  * Fire one effect from the demo's event pad or a ticker replay. While a match is streaming
  * it goes into that stream (the bridge ignores REST then), so it plays exactly as it did live.
- * Otherwise only effects with a native bridge-side signal can run; the rest are reported as
- * skipped, not as errors.
+ * Otherwise a native bridge-side signal is used when the effect has one, and the effect's
+ * frames are played as REST gradient keyframes when it doesn't.
  */
 export async function POST(request: NextRequest) {
   const { user, response } = await requireUser();
@@ -25,7 +33,8 @@ export async function POST(request: NextRequest) {
   const fx = b?.effect ? EFFECTS[b.effect as EffectKey] : undefined;
   if (!fx || !isRgb(b?.home) || !isRgb(b?.away))
     return apiError("bad_effect", 400);
-  const side = b?.side === "home" || b?.side === "away" ? b.side : null;
+  const side: Side | null =
+    b?.side === "home" || b?.side === "away" ? b.side : null;
 
   const stream = activeStreamFor(user.id);
   if (
@@ -39,23 +48,43 @@ export async function POST(request: NextRequest) {
   )
     return json({ ok: true, skipped: false });
 
-  const signal = fx.signal?.({
-    home: b.home,
-    away: b.away,
-    side,
-    winner: null,
-  });
-  if (!signal) return json({ ok: true, skipped: true });
-
-  const t = await transportFor(createAdminClient(), user.id);
+  const admin = createAdminClient();
+  const t = await transportFor(admin, user.id);
   if (!t?.link.light_id) return apiError("not_linked", 409);
-  if (!t.transport.signal) return json({ ok: true, skipped: true });
+  const ctx = { home: b.home, away: b.away, side, winner: null };
+  const signal = fx.signal?.(ctx);
   try {
-    await t.transport.signal(signal);
+    if (signal && t.transport.signal) await t.transport.signal(signal);
+    else {
+      const base = await restingStrip(admin, user.id, t.transport.points, ctx);
+      await playFrames(t.transport, fx, ctx, base);
+    }
     return json({ ok: true, skipped: false });
   } catch (e) {
     if (e instanceof HueRemoteError && e.unauthorized)
       return apiError("hue_unauthorized", 401);
     return apiError("hue_unavailable", 502, (e as Error).message);
   }
+}
+
+/** What the strip rests on between effects: the running match's last split or fill. */
+async function restingStrip(
+  admin: ReturnType<typeof createAdminClient>,
+  userId: string,
+  points: number,
+  c: { home: Rgb; away: Rgb },
+): Promise<Rgb[]> {
+  const { data } = await admin
+    .from("sessions")
+    .select("runner_state")
+    .eq("user_id", userId)
+    .in("status", ["active", "paused"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const recent = (data?.runner_state?.recent ?? []) as MirroredCommand[];
+  const last = recent.findLast((m) => m.kind === "split" || m.kind === "fill");
+  return last?.kind === "fill"
+    ? fillPoints(last.fraction ?? 0, last.lead ?? null, points, c)
+    : splitPoints(last?.homeShare ?? 0.5, points, c);
 }

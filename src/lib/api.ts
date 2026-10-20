@@ -102,10 +102,7 @@ export const api = {
   setLights: (body: SetLightsBody) =>
     request<{ ok?: boolean }>("/api/lights/set", post(body)),
   fireEffect: (body: FireEffectBody) =>
-    request<{ ok?: boolean; skipped?: boolean }>(
-      "/api/lights/effect",
-      post(body),
-    ),
+    request<{ ok?: boolean }>("/api/lights/effect", post(body)),
   localDiscover: () =>
     request<DiscoverResponse>("/api/hue/local/discover", { method: "POST" }),
   localPair: (body: PairBody) =>
