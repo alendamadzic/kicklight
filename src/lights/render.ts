@@ -1,5 +1,6 @@
 import type { Rgb } from "@/engine/colors";
 import type { Command } from "@/engine/runner";
+import type { MirroredCommand } from "@/lib/api-types";
 
 // Turns a semantic command ("home gets 62%") into the concrete colour points a
 // strip can show. Pure, so the same code backs the bridge, the virtual strip and tests.
@@ -53,3 +54,15 @@ export function restingPoints(
 }
 
 export { OFF };
+
+/** What the strip rests on between effects: the last mirrored split or fill, else an even split. */
+export function restingFromRecent(
+  recent: readonly MirroredCommand[],
+  points: number,
+  c: StripColors,
+): Rgb[] {
+  const last = recent.findLast((m) => m.kind === "split" || m.kind === "fill");
+  return last?.kind === "fill"
+    ? fillPoints(last.fraction ?? 0, last.lead ?? null, points, c)
+    : splitPoints(last?.homeShare ?? 0.5, points, c);
+}

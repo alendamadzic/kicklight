@@ -75,19 +75,28 @@ describe("processSession (replay)", () => {
     expect(r.update.status).toBe("active");
   });
 
-  test("a goal triggers the bridge's native signal, once, across cycles", async () => {
+  test("a goal plays its animation on the strip, once, across cycles", async () => {
     const h = harness();
     const created = h.now() - 26_000; // goal is at match minute 24 → 26 s in
     let row = base(created);
-    let r = await processSession(row, h.deps);
+    const first = await processSession(row, h.deps);
     row = {
       ...row,
-      runner_state: r.update.runner_state,
-      light_snapshot: r.update.light_snapshot,
+      runner_state: first.update.runner_state,
+      light_snapshot: first.update.light_snapshot,
     };
     h.advance(10_000);
-    r = await processSession(row, h.deps);
-    expect(h.signals.filter((s) => s.signal === "alternating")).toHaveLength(1);
+    const second = await processSession(row, h.deps);
+    const goals = [...first.executed, ...second.executed].filter(
+      (c) =>
+        c.item.kind === "effect" &&
+        c.item.effect === "goal" &&
+        c.at === created + 26_000,
+    );
+    expect(goals).toHaveLength(1);
+    // 6.5 s of keyframes at ~3 a second, then back to the resting split.
+    expect(h.grads.length).toBeGreaterThan(20);
+    expect(h.signals).toHaveLength(0);
   });
 
   test("replays poll every window and schedule a goal for exactly its moment, ahead of time", async () => {
@@ -100,7 +109,7 @@ describe("processSession (replay)", () => {
       (c) => c.item.kind === "effect" && c.item.effect === "goal",
     );
     expect(goal?.at).toBe(created + 2_000 + 24 * 1_000);
-    expect(h.signals.filter((s) => s.signal === "alternating")).toHaveLength(1);
+    expect(h.signals).toHaveLength(0);
     // The scoreboard still shows the present, not the look-ahead.
     expect(r.update.snapshot.match.score).toEqual({ home: 0, away: 0 });
   });

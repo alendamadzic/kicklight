@@ -14,7 +14,8 @@ import {
 import type { Scheduled } from "@/engine/scheduler";
 import type { StatKey } from "@/engine/stats";
 import type { MirroredCommand, SessionMirror } from "@/lib/api-types";
-import { fillPoints, splitPoints } from "@/lights/render";
+import { playFrames } from "@/lights/play";
+import { fillPoints, restingFromRecent, splitPoints } from "@/lights/render";
 import type { LightTransport } from "@/lights/transport";
 
 // One pass over one session: poll the feed, run the brain, drive the lights,
@@ -172,6 +173,11 @@ export async function processSession(
   const strip = pickStripColors(parsed.snapshot.home, parsed.snapshot.away);
   const colors = { home: strip.home as Rgb, away: strip.away as Rgb };
   const recent = [...(row.runner_state.recent ?? [])];
+  const score = parsed.snapshot.score;
+  const winner =
+    score.home > score.away ? "home" : score.away > score.home ? "away" : null;
+  // Effects play over this and settle back onto it.
+  let resting = restingFromRecent(recent, transport.points, colors);
   let status: SessionRow["status"] = row.status;
   let ended = false;
 
@@ -191,24 +197,24 @@ export async function processSession(
         }
       }
       if (cmd.kind === "split") {
-        await transport.setGradient(
-          splitPoints(cmd.homeShare, transport.points, colors),
-          1500,
-        );
+        resting = splitPoints(cmd.homeShare, transport.points, colors);
+        await transport.setGradient(resting, 1500);
       } else if (cmd.kind === "fill") {
-        await transport.setGradient(
-          fillPoints(cmd.fraction, cmd.lead, transport.points, colors),
-          800,
-        );
+        resting = fillPoints(cmd.fraction, cmd.lead, transport.points, colors);
+        await transport.setGradient(resting, 800);
       } else if (cmd.kind === "effect") {
+        // The same frames the virtual strip draws, as REST keyframes. An effect that
+        // queued behind another joins at the point the virtual strip has reached.
         const fx = EFFECTS[cmd.effect];
-        const sig = fx?.signal?.({
-          home: colors.home,
-          away: colors.away,
-          side: cmd.side,
-          winner: null,
-        });
-        if (sig && transport.signal) await transport.signal(sig);
+        if (fx)
+          await playFrames(
+            transport,
+            fx,
+            { ...colors, side: cmd.side, winner },
+            resting,
+            sleep,
+            now() - c.at,
+          );
       } else if (cmd.kind === "restore") {
         await transport.restore(lightSnapshot);
         status = "ended";
