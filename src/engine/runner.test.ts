@@ -83,6 +83,19 @@ describe("runner", () => {
     expect(r.commands.some((c) => c.item.kind === "effect")).toBe(false);
   });
 
+  test("a goal the feed publishes late still fires, right away", () => {
+    const input = { snapshot: snap(), delayMs: 0, horizonMs: 0 };
+    const first = tick(initialState(), { ...input, events: [], now: NOW });
+    // ESPN posts the goal 40s after its wallclock.
+    const r = tick(first.state, {
+      ...input,
+      events: [goal("late", NOW)],
+      now: NOW + 40_000,
+    });
+    const fx = r.commands.find((c) => c.item.kind === "effect");
+    expect(fx?.at).toBe(NOW + 40_000);
+  });
+
   test("an own goal lights the other team's colour", () => {
     const r = tick(initialState(), {
       snapshot: snap(),

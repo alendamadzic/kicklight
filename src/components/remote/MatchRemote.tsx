@@ -36,6 +36,7 @@ import { useLiveSession } from "@/hooks/use-live-session";
 import { useMatchPreview } from "@/hooks/use-match-preview";
 import { usePreferences } from "@/hooks/use-preferences";
 import { ApiRequestError, api } from "@/lib/api";
+import type { MirroredCommand } from "@/lib/api-types";
 import { REPLAY_LEAGUE, scenarioById } from "@/lib/fixtures";
 import { isLivePhase, minuteLabel, PHASE_LABEL } from "@/lib/format";
 import { effectLabel, type TickerItem, TOAST_EFFECTS } from "@/lib/ticker";
@@ -172,11 +173,21 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
     return [];
   }, [mode, mirror, sim.ui, now]);
 
+  // Effects the viewer replayed from the ticker, drawn on the virtual strip too.
+  const [replays, setReplays] = useState<MirroredCommand[]>([]);
+
   // The strip: live and sim are pulled per frame, a preview is a steady state.
   const mirrorFrame = useCallback(
     (t: number, reduced: boolean) =>
-      mirror ? frameFromMirror(mirror, t, STRIP_POINTS, reduced) : [],
-    [mirror],
+      mirror
+        ? frameFromMirror(
+            { ...mirror, recent: [...mirror.recent, ...replays] },
+            t,
+            STRIP_POINTS,
+            reduced,
+          )
+        : [],
+    [mirror, replays],
   );
   const previewColors = useMemo(
     () =>
@@ -291,6 +302,24 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
     if (mode === "live") void steer({ stat: next });
     else if (mode === "sim") sim.controls.setStat(next);
     else setLocalStat(next);
+  };
+
+  const replay = (item: TickerItem) => {
+    if (mode === "sim") return sim.controls.fire(item.effect, item.side);
+    if (mode !== "live" || !colors) return;
+    const at = Date.now();
+    setReplays((prev) => [
+      ...prev.filter((c) => at - c.at < 10_000),
+      { at, kind: "effect", effect: item.effect, side: item.side },
+    ]);
+    api
+      .fireEffect({
+        effect: item.effect,
+        side: item.side,
+        home: colors.home,
+        away: colors.away,
+      })
+      .catch(() => toast.error("Your strip didn't answer."));
   };
 
   const commitDelay = (ms: number) => {
@@ -447,6 +476,7 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
             </h2>
             <Ticker
               items={ticker}
+              onReplay={mode === "preview" ? undefined : replay}
               teams={{
                 home: { short: snapshot.home.short, color: homeHex },
                 away: { short: snapshot.away.short, color: awayHex },

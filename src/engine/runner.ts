@@ -50,8 +50,13 @@ export interface TickResult {
   activeStat: StatKey;
 }
 
-/** An event that landed on TV more than this long ago is not worth a flourish. */
+/** On the first tick, events that landed on TV longer ago than this are history, not news. */
 const STALE_MS = 15_000;
+/**
+ * Once running, a new event is news even if it's old by its wallclock: ESPN often publishes
+ * key events (goals included) 30-90s after they happen. Only a feed backfill this late is skipped.
+ */
+const FEED_LAG_MS = 180_000;
 /** After the final whistle, hold the colours this long before handing the lights back. */
 const FULL_TIME_HOLD_MS = 30_000;
 const NERVES_MS = 4_000;
@@ -92,13 +97,14 @@ export function tick(prev: RunnerState, input: TickInput): TickResult {
   let state: RunnerState = { ...prev, seen: [...prev.seen] };
   const seen = new Set(state.seen);
   let pending = state.pending;
+  const maxAge = prev.started ? FEED_LAG_MS : STALE_MS;
 
-  // 1. New events → effects at wallclock + delay.
+  // 1. New events → effects at wallclock + delay, or now if the feed was late with them.
   for (const e of events) {
     if (seen.has(e.id)) continue;
     seen.add(e.id);
     const at = e.wallclock + delayMs;
-    if (at < now - STALE_MS) continue;
+    if (at < now - maxAge) continue;
     const fx = effectFor(e);
     if (!fx) continue;
     pending = schedule(pending, Math.max(at, now), { kind: "effect", ...fx });
