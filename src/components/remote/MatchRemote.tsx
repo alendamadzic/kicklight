@@ -168,6 +168,7 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
           effect: c.effect as TickerItem["effect"],
           side: c.side ?? null,
           at: c.at,
+          minute: c.minute ?? null,
         }));
     }
     return [];

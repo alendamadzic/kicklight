@@ -77,6 +77,8 @@ export interface MirroredCommand {
   lead?: Side | null;
   effect?: EffectKey;
   side?: Side | null;
+  /** Match minute of the event behind an effect (absent on older rows). */
+  minute?: number;
 }
 
 /**

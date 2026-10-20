@@ -53,7 +53,12 @@ describe("runner", () => {
     });
     const fx = r.commands.find((c) => c.item.kind === "effect");
     expect(fx?.at).toBe(NOW - 2_000 + 35_000);
-    expect(fx?.item).toEqual({ kind: "effect", effect: "goal", side: "home" });
+    expect(fx?.item).toEqual({
+      kind: "effect",
+      effect: "goal",
+      side: "home",
+      minute: 30,
+    });
   });
 
   test("the same event is never scheduled twice across ticks", () => {
@@ -116,6 +121,7 @@ describe("runner", () => {
       kind: "effect",
       effect: "goal",
       side: "away",
+      minute: 10,
     });
   });
 

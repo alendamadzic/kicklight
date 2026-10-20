@@ -15,13 +15,14 @@ import { cn } from "@/lib/utils";
 /**
  * "Hit the lights": a rolling list of the events that just lit the strip.
  * Rows show the match minute when the source knows it, otherwise how long ago.
+ * The list has a fixed max height and scrolls, newest on top.
  * With `onReplay`, each row is a button that runs its effect on the lights again.
  */
 export function Ticker({
   items,
   teams,
   emptyHint = "Nothing yet. Events show up here as they hit your lights.",
-  limit = 8,
+  limit = 40,
   onReplay,
   className,
 }: {
@@ -54,7 +55,15 @@ export function Ticker({
   }
 
   return (
-    <ol className={cn("flex flex-col gap-1.5", className)} aria-live="polite">
+    <ol
+      className={cn(
+        // Fixed height that cuts the last row in half, so it reads as scrollable.
+        // The padding keeps the rows' focus rings clear of the scroll clip.
+        "flex max-h-72 flex-col gap-1.5 overflow-y-auto overscroll-contain p-0.5",
+        className,
+      )}
+      aria-live="polite"
+    >
       {items.slice(0, limit).map((item, i) => {
         const team = item.side ? teams[item.side] : null;
         const when = item.pad

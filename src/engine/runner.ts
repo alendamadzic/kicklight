@@ -11,7 +11,7 @@ import { type AutoState, type ConcreteStat, pickAuto } from "./stats/auto";
 export type Command =
   | { kind: "split"; homeShare: number }
   | { kind: "fill"; fraction: number; lead: Side | null }
-  | { kind: "effect"; effect: EffectKey; side: Side | null }
+  | { kind: "effect"; effect: EffectKey; side: Side | null; minute?: number }
   | { kind: "restore" };
 
 export interface RunnerState {
@@ -107,7 +107,11 @@ export function tick(prev: RunnerState, input: TickInput): TickResult {
     if (at < now - maxAge) continue;
     const fx = effectFor(e);
     if (!fx) continue;
-    pending = schedule(pending, Math.max(at, now), { kind: "effect", ...fx });
+    pending = schedule(pending, Math.max(at, now), {
+      kind: "effect",
+      ...fx,
+      minute: e.minute,
+    });
   }
 
   const live = snapshot.phase !== "scheduled" && snapshot.phase !== "suspended";
@@ -186,6 +190,7 @@ export function tick(prev: RunnerState, input: TickInput): TickResult {
         kind: "effect",
         effect: "nerves",
         side: null,
+        minute: snapshot.minute ?? 90,
       });
       t += NERVES_MS;
     }

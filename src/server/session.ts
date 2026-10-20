@@ -121,7 +121,13 @@ function mirrorOf(cmd: Command, at: number): MirroredCommand {
     case "fill":
       return { at, kind: "fill", fraction: cmd.fraction, lead: cmd.lead };
     case "effect":
-      return { at, kind: "effect", effect: cmd.effect, side: cmd.side };
+      return {
+        at,
+        kind: "effect",
+        effect: cmd.effect,
+        side: cmd.side,
+        minute: cmd.minute,
+      };
     case "restore":
       return { at, kind: "restore" };
   }
