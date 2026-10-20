@@ -2,7 +2,12 @@ import { describe, expect, test } from "bun:test";
 import type { Rgb } from "@/engine/colors";
 import type { SignalFallback } from "@/engine/effects";
 import type { LightTransport } from "@/lights/transport";
-import { processSession, type SessionDeps, type SessionRow } from "./session";
+import {
+  processSession,
+  type SessionDeps,
+  type SessionRow,
+  trimRecent,
+} from "./session";
 
 function harness(startMs = 1_000_000) {
   let clock = startMs;
@@ -160,5 +165,19 @@ describe("processSession (replay)", () => {
     await expect(processSession(row, h.deps)).rejects.toThrow(
       "Unknown replay scenario",
     );
+  });
+});
+
+describe("trimRecent", () => {
+  test("a run of splits never pushes the last goal out of the mirror", () => {
+    const goal = { at: 0, kind: "effect" as const, effect: "goal" as const };
+    const splits = Array.from({ length: 50 }, (_, i) => ({
+      at: i + 1,
+      kind: "split" as const,
+      homeShare: 0.5,
+    }));
+    const kept = trimRecent([goal, ...splits]);
+    expect(kept[0]).toEqual(goal);
+    expect(kept.filter((c) => c.kind === "split")).toHaveLength(20);
   });
 });

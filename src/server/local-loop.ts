@@ -1,10 +1,8 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { HueRemoteError } from "@/lights/remote";
-import { remoteTransportFor } from "./hue-link";
 import { localTransportWithStreaming } from "./local-streaming";
 import { liveFeed } from "./recording";
-import { runDueSessions, type TickOptions } from "./tick";
+import { runDueSessions } from "./tick";
 
 // Some processes have no cron to drive sessions, so the server process itself does it every
 // second: local mode (self-hosted, drives "local" sessions) and `next dev` (drives
@@ -13,48 +11,60 @@ import { runDueSessions, type TickOptions } from "./tick";
 // Short, so a stat switch reaches the lights quickly; an idle pass is one cheap claim query.
 const INTERVAL_MS = 1_000;
 
-function startLoop(mode: TickOptions["mode"], label: string): void {
-  const KEY = Symbol.for(`kicklight.loop.${mode}`);
+/** Self-hosted local mode: drive "local" sessions in-process (no hot reloads in production). */
+export function startLocalLoop(): void {
+  const KEY = Symbol.for("kicklight.loop.local");
   const g = globalThis as Record<symbol, unknown>;
-  if (g[KEY]) return; // survive dev-server hot reloads without doubling up
+  if (g[KEY]) return;
   let running = false;
   g[KEY] = setInterval(async () => {
     if (running) return;
     running = true;
     try {
       const admin = createAdminClient();
-      await runDueSessions(
-        admin,
-        mode === "local"
-          ? {
-              mode,
-              transportFor: (userId) =>
-                localTransportWithStreaming(admin, userId),
-              fetchMatch: liveFeed(admin),
-            }
-          : {
-              mode,
-              transportFor: async (userId) =>
-                (await remoteTransportFor(admin, userId))?.transport ?? null,
-              fetchMatch: liveFeed(admin),
-              isUnauthorized: (e) =>
-                e instanceof HueRemoteError && e.unauthorized,
-            },
-      );
+      await runDueSessions(admin, {
+        mode: "local",
+        transportFor: (userId) => localTransportWithStreaming(admin, userId),
+        fetchMatch: liveFeed(admin),
+      });
     } catch (e) {
-      console.error(`${mode} loop`, (e as Error).message);
+      console.error("local loop", (e as Error).message);
     } finally {
       running = false;
     }
   }, INTERVAL_MS);
-  console.log(`[kicklight] ${label}: session loop started`);
+  console.log("[kicklight] local mode: session loop started");
 }
 
-export function startLocalLoop(): void {
-  startLoop("local", "local mode");
-}
-
-/** Dev only: stands in for the Supabase Cron job that calls /api/cron/tick. */
+/**
+ * Dev only: stands in for the Supabase Cron job by calling /api/cron/tick, exactly as cron does.
+ * Going through the route (not an in-process call) means every pass runs the latest code:
+ * this interval lives for the whole `next dev` process and never sees hot reloads itself.
+ */
 export function startDevRemoteLoop(): void {
-  startLoop("remote", "dev server");
+  const KEY = Symbol.for("kicklight.loop.remote");
+  const g = globalThis as Record<symbol, unknown>;
+  if (g[KEY]) return;
+  let running = false;
+  g[KEY] = setInterval(async () => {
+    if (running) return;
+    running = true;
+    try {
+      const res = await fetch(
+        `http://localhost:${process.env.PORT ?? 3000}/api/cron/tick`,
+        {
+          method: "POST",
+          headers: { authorization: `Bearer ${process.env.CRON_SECRET}` },
+        },
+      );
+      if (!res.ok) console.error("remote loop", res.status, await res.text());
+    } catch (e) {
+      console.error("remote loop", (e as Error).message);
+    } finally {
+      running = false;
+    }
+  }, INTERVAL_MS);
+  console.log(
+    "[kicklight] dev server: session loop started (via /api/cron/tick)",
+  );
 }

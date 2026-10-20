@@ -62,7 +62,17 @@ export const HORIZON_MS = 10_000;
 /** Replay sessions run a scenario at one match minute per real second. */
 export const REPLAY_MINUTE_MS = 1_000;
 const LEAD_IN_MS = 2_000;
+/** Mirrored commands kept per kind: resting ones churn every tick and mustn't push effects out. */
 const RECENT_KEEP = 20;
+
+/** The last RECENT_KEEP effects and the last RECENT_KEEP resting commands, in time order. */
+export function trimRecent(recent: MirroredCommand[]): MirroredCommand[] {
+  const effects = recent.filter((c) => c.kind === "effect");
+  const resting = recent.filter((c) => c.kind !== "effect");
+  return [...effects.slice(-RECENT_KEEP), ...resting.slice(-RECENT_KEEP)].sort(
+    (a, b) => a.at - b.at,
+  );
+}
 
 function replayFeed(row: SessionRow, now: number): ParsedMatch {
   const script = SCENARIOS.find((s) => s.id === row.event_id);
@@ -214,7 +224,7 @@ export async function processSession(
     stat: row.stat as StatKey,
     activeStat: result.activeStat,
     colors,
-    recent: recent.slice(-RECENT_KEEP),
+    recent: trimRecent(recent),
     updatedAt: after,
   };
 
