@@ -25,6 +25,8 @@ export type EventType =
   | "var"
   | "var_overturned"
   | "corner"
+  | "free_kick"
+  | "offside"
   | "shot_on_target"
   | "shot"
   | "foul"

@@ -53,6 +53,7 @@ const MOMENTUM_WEIGHTS: Partial<Record<MatchEvent["type"], number>> = {
   shot_on_target: 2,
   shot: 1,
   corner: 1,
+  free_kick: 1,
 };
 
 /** Recent attacking pressure, decaying linearly over the last ten match minutes. */

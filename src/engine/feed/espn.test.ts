@@ -95,3 +95,38 @@ describe("phaseFrom", () => {
     );
   });
 });
+
+describe("espn commentary", () => {
+  const { snapshot, events } = parseEspnSummary(fixture, "eng.1");
+
+  test("commentary events are credited to the team the line names", () => {
+    const of = (type: string, side: string) =>
+      events.filter((e) => e.type === type && e.side === side).length;
+    expect(of("corner", "away")).toBe(snapshot.stats.away.corners);
+    expect(of("corner", "home")).toBe(snapshot.stats.home.corners);
+    expect(
+      events.filter((e) => e.side === null && e.type === "corner"),
+    ).toEqual([]);
+    // Shots on target are the saved attempts plus the goals.
+    expect(of("shot_on_target", "home") + of("goal", "home")).toBe(
+      snapshot.stats.home.shotsOnTarget,
+    );
+  });
+
+  test("free kicks near the box stand apart from fouls", () => {
+    const fk = events.filter((e) => e.type === "free_kick");
+    expect(fk.length).toBeGreaterThan(0);
+    // Rudoni wins the first one for Coventry, at home, in the attacking half.
+    expect(fk[0].side).toBe("home");
+    // One event per foul: the "wins a free kick" line doesn't double it up.
+    const ids = events.map((e) => e.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(events.some((e) => e.type === "foul")).toBe(true);
+  });
+
+  test("offsides are recognised", () => {
+    expect(
+      events.filter((e) => e.type === "offside" && e.side === "away").length,
+    ).toBe(snapshot.stats.away.offsides);
+  });
+});

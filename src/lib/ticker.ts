@@ -24,6 +24,8 @@ export const EFFECT_TINT: Record<string, string> = {
   penalty_missed: "#8f9bb2",
   var: "#6fb7ff",
   corner: "#4fd18b",
+  free_kick: "#4fd18b",
+  offside: "#ffce00",
   shot_on_target: "#e8ecf3",
   shot: "#8f9bb2",
   foul: "#8f9bb2",

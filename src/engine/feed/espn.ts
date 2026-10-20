@@ -151,16 +151,33 @@ export function keyEventType(
   return null;
 }
 
-/** Commentary lines carry the fine-grained stuff: corners, fouls, attempts. */
-function commentaryType(text: string): EventType | null {
+/** Commentary lines carry the fine-grained stuff: corners, free kicks, offsides, attempts. */
+function commentaryType(text: string, slug: string): EventType | null {
   const t = text.toLowerCase();
-  if (t.startsWith("attempt saved")) return "shot_on_target";
-  if (t.startsWith("attempt blocked") || t.startsWith("attempt missed"))
+  const s = slug.toLowerCase();
+  // Penalties come through the key events; their commentary lines are fouls too.
+  if (t.startsWith("penalty")) return null;
+  if (t.startsWith("attempt saved") || s === "shot-on-target")
+    return "shot_on_target";
+  if (
+    t.startsWith("attempt blocked") ||
+    t.startsWith("attempt missed") ||
+    s === "shot-blocked" ||
+    s === "shot-off-target"
+  )
     return "shot";
-  if (t.startsWith("corner")) return "corner";
-  if (t.startsWith("foul")) return "foul";
+  if (t.startsWith("corner") || s === "corner-awarded") return "corner";
+  if (t.startsWith("offside") || s === "offside") return "offside";
+  if (t.startsWith("foul") || t.includes("wins a free kick") || s === "foul")
+    return "foul";
   return null;
 }
+
+/** A free kick worth lighting up: one that puts the ball near the box, not a reset in midfield. */
+const dangerousFreeKick = (text: string) =>
+  /wins a free kick (in the attacking half|on the (left|right) wing)/i.test(
+    text,
+  );
 
 export interface ParsedMatch {
   snapshot: MatchSnapshot;
@@ -227,23 +244,50 @@ export function parseEspnSummary(json: Json, league: string): ParsedMatch {
   const goalMinutes = new Set(
     events.filter((e) => e.type === "goal").map((e) => e.minute),
   );
+  // Commentary rarely carries a team id, but every line names the team it's about
+  // first: "Corner, Newcastle United.", "Foul by X (Coventry City).", "X (Leeds) wins…".
+  const sideIn = (text: string): Side | null => {
+    const h = home.name ? text.indexOf(home.name) : -1;
+    const a = away.name ? text.indexOf(away.name) : -1;
+    if (h < 0 && a < 0) return null;
+    return a < 0 || (h >= 0 && h <= a) ? "home" : "away";
+  };
+  const other = (s: Side | null): Side | null =>
+    s === "home" ? "away" : s === "away" ? "home" : null;
+
+  // A foul is two lines sharing a play: "Foul by X (A)." and "Y (B) wins a free kick…".
+  const freeKicks = new Map<string, string>();
+  for (const c of json?.commentary ?? []) {
+    const text: string = c?.text ?? "";
+    if (c?.play?.id != null && /wins a free kick/i.test(text))
+      freeKicks.set(String(c.play.id), text);
+  }
+
   for (const c of json?.commentary ?? []) {
     const play = c?.play;
-    const text: string = play?.type?.text ?? c?.text ?? "";
-    const type = commentaryType(text);
+    const line: string = c?.text ?? "";
+    let type = commentaryType(line, play?.type?.type ?? "");
     if (!type || play?.scoringPlay) continue;
     const m =
       parseMinute(play?.clock?.displayValue ?? c?.time?.displayValue) ?? 0;
-    if (
-      type === "shot_on_target" &&
-      goalMinutes.has(m) &&
-      /goal/i.test(c?.text ?? "")
-    )
+    if (type === "shot_on_target" && goalMinutes.has(m) && /goal/i.test(line))
       continue;
+    let side = sideIn(line) ?? sideOf(play?.team?.id);
+    if (type === "foul") {
+      const won = play?.id != null ? freeKicks.get(String(play.id)) : undefined;
+      if (won && dangerousFreeKick(won)) {
+        // The free kick belongs to the team taking it.
+        type = "free_kick";
+        side = sideIn(won) ?? side;
+      } else if (won) {
+        // A foul belongs to the team that committed it.
+        side = other(sideIn(won)) ?? side;
+      }
+    }
     push({
       id: `c${play?.id ?? c?.sequence}`,
       type,
-      side: sideOf(play?.team?.id),
+      side,
       minute: m,
       wallclock: wallclockOf(play?.wallclock, m),
     });

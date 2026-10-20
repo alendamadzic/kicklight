@@ -88,6 +88,7 @@ export function replayAt(
     fouls: count(done, side, ["foul", "yellow_card", "red_card"]),
     yellowCards: count(done, side, ["yellow_card"]),
     redCards: count(done, side, ["red_card"]),
+    offsides: count(done, side, ["offside"]),
   });
   const goals = (side: Side) =>
     done.filter(

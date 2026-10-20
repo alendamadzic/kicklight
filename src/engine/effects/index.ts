@@ -36,6 +36,7 @@ const WHITE: Rgb = [255, 244, 230];
 const YELLOW: Rgb = [255, 206, 0];
 const RED: Rgb = [235, 20, 20];
 const WARM: Rgb = [255, 180, 90];
+const GREEN: Rgb = [40, 220, 90];
 
 const clamp = (v: number, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, v));
 const mix = (a: Rgb, b: Rgb, t: number): Rgb => [
@@ -59,6 +60,37 @@ const from = (i: number, n: number, side: Side | null) => {
 
 const each = (base: Rgb[], fn: (c: Rgb, i: number, n: number) => Rgb): Rgb[] =>
   base.map((c, i) => fn(c, i, base.length));
+
+const otherColor = (ctx: EffectContext): Rgb =>
+  ctx.side === "away" ? ctx.home : ctx.away;
+const easeIn = (t: number) => clamp(t) * clamp(t);
+const easeOut = (t: number) => 1 - (1 - clamp(t)) * (1 - clamp(t));
+/** 0..1 over [start, start + dur]. */
+const phase = (t: number, start: number, dur: number) =>
+  clamp((t - start) / dur);
+
+/**
+ * A soft point of light: 1 at `at`, 0 at `width` away. Keep `width` above ~0.17 for
+ * anything that must show: the real strip streams only 7 segments.
+ */
+const glow = (u: number, at: number, width: number) =>
+  clamp(1 - Math.abs(u - at) / width);
+
+/** A ball's tail: bright just behind the head, gone `length` back. `dir` is its heading. */
+const trail = (u: number, head: number, length: number, dir: 1 | -1 = 1) => {
+  const d = (head - u) * dir;
+  return d > 0 ? clamp(1 - d / length) * 0.8 : 0;
+};
+
+/**
+ * Where the TV's top corners fall along the strip. On a 16:9 set the sides are about
+ * half the length of the top, so the top edge runs from a quarter to three quarters.
+ */
+const TOP_CORNER = 0.75;
+
+/** Fade the scene up from the resting strip at the start and back down to it at the end. */
+const bookend = (t: number, durationS: number, out: number) =>
+  Math.min(clamp(t / 0.25), clamp((durationS - t) / out));
 
 export const EFFECTS: Partial<Record<EffectKey, Effect>> = {
   goal: {
@@ -179,65 +211,208 @@ export const EFFECTS: Partial<Record<EffectKey, Effect>> = {
   corner: {
     key: "corner",
     label: "Corner",
-    durationMs: 2000,
-    // The two top corners of the TV flash in the team's colour.
+    durationMs: 3000,
+    // The flag flutters at the top corner of the TV, the ball is whipped across the
+    // top towards the middle, and the box goes up as it lands.
     frame: (t, base, ctx) => {
-      const k = Math.max(0, Math.sin(t * Math.PI * 3));
-      const c = teamColor(ctx).map((v) => Math.min(255, v * 1.2)) as Rgb;
+      const c = teamColor(ctx);
+      const k = bookend(t, 3, 0.6);
+      const cross = easeOut(phase(t, 1.1, 0.7));
+      const ball = TOP_CORNER - 0.3 * cross;
+      const flying = t >= 1.1 && t < 1.8;
+      const burst = phase(t, 1.8, 0.6);
       return each(base, (b, i, n) => {
-        const u = n > 1 ? i / (n - 1) : 0;
-        return Math.abs(u - 1 / 3) < 0.07 || Math.abs(u - 2 / 3) < 0.07
-          ? mix(b, c, k)
-          : b;
+        const f = from(i, n, ctx.side);
+        let out = scale(b, 0.3);
+        if (t < 1.8) {
+          const flutter = 0.55 + 0.45 * Math.abs(Math.sin(t * Math.PI * 4.5));
+          const fade = t < 1.1 ? 1 : 1 - phase(t, 1.1, 0.5);
+          out = mix(out, c, glow(f, TOP_CORNER, 0.22) * flutter * fade);
+        }
+        if (flying) {
+          out = mix(out, c, trail(f, ball, 0.3, -1));
+          out = mix(out, WHITE, glow(f, ball, 0.14));
+        }
+        if (t >= 1.8) {
+          // Two wavefronts racing out from where the ball dropped.
+          const r = burst * 0.45;
+          const front = Math.max(
+            glow(f, ball - r, 0.14),
+            glow(f, ball + r, 0.14),
+          );
+          out = mix(out, c, front * (1 - burst * 0.6));
+          out = mix(out, WHITE, glow(f, ball, 0.18) * (1 - burst));
+        }
+        return mix(b, out, k);
+      });
+    },
+  },
+  free_kick: {
+    key: "free_kick",
+    label: "Free kick",
+    durationMs: 3400,
+    // The wall lines up one man at a time, the ball sits and throbs, then it's struck
+    // over the wall and the far end lights up.
+    frame: (t, base, ctx) => {
+      const c = teamColor(ctx);
+      const k = bookend(t, 3.4, 0.5);
+      const WALL_FROM = 0.56;
+      const WALL_TO = 0.76;
+      const SPOT = 0.28;
+      const built = WALL_FROM + (WALL_TO - WALL_FROM) * phase(t, 0.2, 0.8);
+      const strike = easeIn(phase(t, 1.9, 0.5));
+      const ball = SPOT + (1.02 - SPOT) * strike;
+      const struck = t >= 1.9;
+      const landed = phase(t, 2.4, 0.5);
+      // The ball breathes faster as the taker steps up.
+      const throb =
+        0.6 +
+        0.4 * Math.abs(Math.sin(t * Math.PI * (1 + phase(t, 1, 0.9) * 3)));
+      return each(base, (b, i, n) => {
+        const f = from(i, n, ctx.side);
+        let out = scale(b, 0.25);
+        const inWall = f >= WALL_FROM - 0.06 && f <= built + 0.06;
+        if (inWall && t < 2.6) {
+          const jitter =
+            t > 1 && t < 1.9 ? 0.85 + 0.15 * Math.sin(t * 23 + i) : 1;
+          // The wall jumps and drops away once the ball is over it.
+          const jumped = struck ? 1 - phase(t, 2.05, 0.4) : 1;
+          out = mix(out, WHITE, 0.6 * jitter * jumped);
+        }
+        if (!struck) out = mix(out, c, glow(f, SPOT, 0.18) * throb);
+        else if (t < 2.4) {
+          out = mix(out, c, trail(f, ball, 0.35));
+          out = mix(out, WHITE, glow(f, ball, 0.15));
+        }
+        if (t >= 2.4) {
+          const near = clamp((f - 0.6) / 0.4);
+          out = mix(out, c, near * (1 - landed * 0.5));
+          out = mix(out, WHITE, glow(f, 1, 0.25) * (1 - landed));
+        }
+        return mix(b, out, k);
+      });
+    },
+  },
+  offside: {
+    key: "offside",
+    label: "Offside",
+    durationMs: 2400,
+    // A runner breaks past the last defender, and the line turns into the linesman's
+    // flag, waving yellow and red.
+    frame: (t, base, ctx) => {
+      const c = teamColor(ctx);
+      const k = bookend(t, 2.4, 0.5);
+      const LINE = 0.62;
+      const run = easeOut(phase(t, 0, 0.9));
+      const runner = 0.22 + (0.8 - 0.22) * run;
+      const flag = t >= 0.75 && t < 1.9;
+      const wave = Math.floor(t * 9);
+      return each(base, (b, i, n) => {
+        const f = from(i, n, ctx.side);
+        let out = scale(b, 0.25);
+        const line = glow(f, LINE, 0.16);
+        if (flag) {
+          const chip = (i + wave) % 2 ? YELLOW : RED;
+          out = mix(out, chip, line > 0 ? Math.max(line, 0.7) : 0);
+        } else if (t < 0.75) {
+          out = mix(out, WHITE, line * 0.75);
+        }
+        // The runner stops dead when the flag goes up, then fades.
+        out = mix(out, c, glow(f, runner, 0.17) * (1 - phase(t, 0.9, 0.7)));
+        return mix(b, out, k);
       });
     },
   },
   shot_on_target: {
     key: "shot_on_target",
     label: "Shot on target",
-    durationMs: 1600,
-    // A quick ripple from the attacking end towards goal.
-    frame: (t, base, ctx) =>
-      each(base, (b, i, n) =>
-        mix(
-          b,
+    durationMs: 2000,
+    // The ball gathers pace towards goal, the keeper's colour flares at the far end as
+    // it's saved, and the parry spills back out.
+    frame: (t, base, ctx) => {
+      const c = teamColor(ctx);
+      const keeper = otherColor(ctx);
+      const k = bookend(t, 2, 0.6);
+      const shot = easeIn(phase(t, 0, 0.65));
+      const saved = t >= 0.65;
+      const parry = easeOut(phase(t, 0.65, 0.55));
+      const ball = saved ? 0.92 - 0.22 * parry : 0.1 + 0.82 * shot;
+      const flare = 1 - phase(t, 0.65, 0.7);
+      return each(base, (b, i, n) => {
+        const f = from(i, n, ctx.side);
+        let out = scale(b, 0.35);
+        if (!saved) out = mix(out, c, trail(f, ball, 0.4));
+        else {
+          out = mix(out, keeper, glow(f, 1, 0.3) * flare);
+          out = mix(out, WHITE, glow(f, 0.95, 0.18) * flare * flare);
+        }
+        out = mix(
+          out,
           WHITE,
-          Math.max(0, 1 - Math.abs(from(i, n, ctx.side) - t / 1.1) * 7) * 0.85,
-        ),
-      ),
+          glow(f, ball, 0.14) * (saved ? 1 - parry * 0.7 : 1),
+        );
+        return mix(b, out, k);
+      });
+    },
   },
   shot: {
     key: "shot",
     label: "Shot off target",
-    durationMs: 1000,
-    frame: (t, base, ctx) =>
-      each(base, (b, i, n) =>
-        from(i, n, ctx.side) < 0.5
-          ? scale(b, 1 + 0.4 * Math.sin(t * Math.PI))
-          : b,
-      ),
+    durationMs: 1500,
+    // The ball flies straight off the end of the strip, then the room goes "ooh".
+    frame: (t, base, ctx) => {
+      const c = teamColor(ctx);
+      const ball = 0.15 + 1.1 * easeIn(phase(t, 0, 0.6));
+      const groan = Math.sin(phase(t, 0.6, 0.6) * Math.PI);
+      const dim = 1 - phase(t, 0.9, 0.6);
+      return each(base, (b, i, n) => {
+        const f = from(i, n, ctx.side);
+        let out = scale(b, 1 - 0.5 * dim - 0.25 * groan);
+        if (t < 0.9) {
+          out = mix(out, c, trail(f, ball, 0.4) * (1 - phase(t, 0.6, 0.3)));
+          out = mix(out, WHITE, glow(f, ball, 0.14));
+        }
+        return out;
+      });
+    },
   },
   foul: {
     key: "foul",
     label: "Foul",
-    durationMs: 800,
-    frame: (t, base, ctx) =>
-      each(base, (b, i, n) =>
-        from(i, n, ctx.side) < 0.5
-          ? scale(b, 1 - 0.6 * Math.sin((t / 0.8) * Math.PI))
-          : b,
-      ),
+    durationMs: 1000,
+    // Two short peeps of the whistle over the offender's half, then a sulk.
+    frame: (t, base, ctx) => {
+      const peep = t < 0.12 || (t > 0.22 && t < 0.34) ? 0.55 : 0;
+      const sulk = Math.sin(phase(t, 0.34, 0.66) * Math.PI) * 0.5;
+      return each(base, (b, i, n) => {
+        const f = from(i, n, ctx.side);
+        const own = clamp((0.6 - f) / 0.2);
+        return mix(scale(b, 1 - sulk * own), WHITE, peep * own);
+      });
+    },
   },
   substitution: {
     key: "substitution",
     label: "Substitution",
-    durationMs: 2000,
-    frame: (t, base, ctx) =>
-      each(base, (b, i, n) =>
-        from(i, n, ctx.side) < 0.5
-          ? scale(b, 0.5 + 0.5 * Math.cos((t / 2) * Math.PI * 2))
-          : b,
-      ),
+    durationMs: 2600,
+    // The fourth official's board: a red light walks off down the team's half while a
+    // green one walks on, then the half swells in the team's colour.
+    frame: (t, base, ctx) => {
+      const c = teamColor(ctx);
+      const k = bookend(t, 2.6, 0.6);
+      const off = 0.42 - 0.6 * easeIn(phase(t, 0.3, 1.2));
+      const on = -0.18 + 0.6 * easeOut(phase(t, 0.5, 1.3));
+      const swell = Math.sin(phase(t, 1.7, 0.9) * Math.PI);
+      return each(base, (b, i, n) => {
+        const f = from(i, n, ctx.side);
+        const own = clamp((0.62 - f) / 0.14);
+        let out = scale(b, 1 - 0.65 * own);
+        out = mix(out, RED, glow(f, off, 0.17) * own);
+        out = mix(out, GREEN, glow(f, on, 0.17) * own);
+        out = mix(out, c, swell * own * 0.9);
+        return mix(b, out, k);
+      });
+    },
   },
   kickoff: {
     key: "kickoff",
@@ -302,7 +477,10 @@ export const PAD_ORDER: EffectKey[] = [
   "penalty_missed",
   "var",
   "corner",
+  "free_kick",
+  "offside",
   "shot_on_target",
+  "shot",
   "foul",
   "substitution",
   "kickoff",

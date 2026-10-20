@@ -43,6 +43,51 @@ describe("effects", () => {
     });
   });
 
+  test("set pieces settle back on the resting colours", () => {
+    for (const k of [
+      "corner",
+      "free_kick",
+      "offside",
+      "shot_on_target",
+      "shot",
+      "foul",
+      "substitution",
+    ] as const) {
+      const fx = EFFECTS[k];
+      if (!fx) throw new Error(`missing ${k}`);
+      for (const side of ["home", "away"] as const) {
+        const end = fx.frame(fx.durationMs / 1000, base, { ...ctx, side });
+        end.forEach((c, i) => {
+          c.forEach((v, j) => {
+            expect(v).toBeCloseTo(base[i][j], 0);
+          });
+        });
+      }
+    }
+  });
+
+  test("set pieces still show on a 7-segment strip", () => {
+    const seven = base.filter((_, i) => i % 4 === 0).slice(0, 7);
+    for (const k of [
+      "corner",
+      "free_kick",
+      "offside",
+      "shot_on_target",
+    ] as const) {
+      const fx = EFFECTS[k];
+      if (!fx) throw new Error(`missing ${k}`);
+      let changed = 0;
+      for (let t = 0.3; t < fx.durationMs / 1000 - 0.6; t += 0.1) {
+        const out = fx.frame(t, seven, ctx);
+        const moved = out.some((c, i) =>
+          c.some((v, j) => Math.abs(v - seven[i][j]) > 40),
+        );
+        if (moved) changed++;
+      }
+      expect(changed).toBeGreaterThan(5);
+    }
+  });
+
   test("the cloud fallback exists for the effects that matter", () => {
     for (const k of [
       "goal",
