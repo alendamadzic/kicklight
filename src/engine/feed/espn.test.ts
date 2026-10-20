@@ -116,10 +116,11 @@ describe("espn commentary", () => {
     expect(fk.length).toBeGreaterThan(0);
     // Rudoni wins the first one for Coventry, at home, in the attacking half.
     expect(fk[0].side).toBe("home");
-    // One event per foul: the "wins a free kick" line doesn't double it up.
+    // One event per free kick: the "wins a free kick" line doesn't double it up.
     const ids = events.map((e) => e.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(events.some((e) => e.type === "foul")).toBe(true);
+    // Plain fouls are noise; only the dangerous free kicks come through.
+    expect(events.some((e) => (e.type as string) === "foul")).toBe(false);
   });
 
   test("offsides are recognised", () => {

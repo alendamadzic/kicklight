@@ -76,7 +76,7 @@ export function replayAt(
     shots: count(done, side, ["goal", "penalty_missed"]),
     shotsOnTarget: count(done, side, ["goal", "penalty_missed"]),
     corners: count(done, side, ["corner"]),
-    fouls: count(done, side, ["foul", "yellow_card", "red_card"]),
+    fouls: count(done, side, ["yellow_card", "red_card"]),
     yellowCards: count(done, side, ["yellow_card"]),
     redCards: count(done, side, ["red_card"]),
     offsides: count(done, side, ["offside"]),

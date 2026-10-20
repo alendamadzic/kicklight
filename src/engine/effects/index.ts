@@ -321,21 +321,6 @@ export const EFFECTS: Partial<Record<EffectKey, Effect>> = {
       });
     },
   },
-  foul: {
-    key: "foul",
-    label: "Foul",
-    durationMs: 1000,
-    // Two short peeps of the whistle over the offender's half, then a sulk.
-    frame: (t, base, ctx) => {
-      const peep = t < 0.12 || (t > 0.22 && t < 0.34) ? 0.55 : 0;
-      const sulk = Math.sin(phase(t, 0.34, 0.66) * Math.PI) * 0.5;
-      return each(base, (b, i, n) => {
-        const f = from(i, n, ctx.side);
-        const own = clamp((0.6 - f) / 0.2);
-        return mix(scale(b, 1 - sulk * own), WHITE, peep * own);
-      });
-    },
-  },
   substitution: {
     key: "substitution",
     label: "Substitution",
@@ -424,7 +409,6 @@ export const PAD_ORDER: EffectKey[] = [
   "corner",
   "free_kick",
   "offside",
-  "foul",
   "substitution",
   "kickoff",
   "full_time",

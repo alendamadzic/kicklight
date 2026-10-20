@@ -151,8 +151,8 @@ export function keyEventType(
   return null;
 }
 
-/** Commentary lines carry the fine-grained stuff: corners, free kicks, offsides, fouls. */
-function commentaryType(text: string, slug: string): EventType | null {
+/** Commentary lines carry the fine-grained stuff: corners, offsides, and fouls (free kicks). */
+function commentaryType(text: string, slug: string): EventType | "foul" | null {
   const t = text.toLowerCase();
   const s = slug.toLowerCase();
   // Penalties come through the key events; their commentary lines are fouls too.
@@ -240,8 +240,6 @@ export function parseEspnSummary(json: Json, league: string): ParsedMatch {
     if (h < 0 && a < 0) return null;
     return a < 0 || (h >= 0 && h <= a) ? "home" : "away";
   };
-  const other = (s: Side | null): Side | null =>
-    s === "home" ? "away" : s === "away" ? "home" : null;
 
   // A foul is two lines sharing a play: "Foul by X (A)." and "Y (B) wins a free kick…".
   const freeKicks = new Map<string, string>();
@@ -254,22 +252,20 @@ export function parseEspnSummary(json: Json, league: string): ParsedMatch {
   for (const c of json?.commentary ?? []) {
     const play = c?.play;
     const line: string = c?.text ?? "";
-    let type = commentaryType(line, play?.type?.type ?? "");
-    if (!type || play?.scoringPlay) continue;
+    const kind = commentaryType(line, play?.type?.type ?? "");
+    if (!kind || play?.scoringPlay) continue;
     const m =
       parseMinute(play?.clock?.displayValue ?? c?.time?.displayValue) ?? 0;
+    let type: EventType;
     let side = sideIn(line) ?? sideOf(play?.team?.id);
-    if (type === "foul") {
+    if (kind === "foul") {
+      // Only a foul that hands out a free kick near the box lights up; the rest are noise.
       const won = play?.id != null ? freeKicks.get(String(play.id)) : undefined;
-      if (won && dangerousFreeKick(won)) {
-        // The free kick belongs to the team taking it.
-        type = "free_kick";
-        side = sideIn(won) ?? side;
-      } else if (won) {
-        // A foul belongs to the team that committed it.
-        side = other(sideIn(won)) ?? side;
-      }
-    }
+      if (!won || !dangerousFreeKick(won)) continue;
+      // The free kick belongs to the team taking it.
+      type = "free_kick";
+      side = sideIn(won) ?? side;
+    } else type = kind;
     push({
       id: `c${play?.id ?? c?.sequence}`,
       type,

@@ -48,7 +48,6 @@ describe("effects", () => {
       "corner",
       "free_kick",
       "offside",
-      "foul",
       "substitution",
     ] as const) {
       const fx = EFFECTS[k];
