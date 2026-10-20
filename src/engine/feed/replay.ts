@@ -73,17 +73,8 @@ export function replayAt(
               ? interp(script.possession, minute)
               : 100 - interp(script.possession, minute),
           ),
-    shots: count(done, side, [
-      "goal",
-      "shot",
-      "shot_on_target",
-      "penalty_missed",
-    ]),
-    shotsOnTarget: count(done, side, [
-      "goal",
-      "shot_on_target",
-      "penalty_missed",
-    ]),
+    shots: count(done, side, ["goal", "penalty_missed"]),
+    shotsOnTarget: count(done, side, ["goal", "penalty_missed"]),
     corners: count(done, side, ["corner"]),
     fouls: count(done, side, ["foul", "yellow_card", "red_card"]),
     yellowCards: count(done, side, ["yellow_card"]),

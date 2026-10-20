@@ -48,8 +48,6 @@ describe("effects", () => {
       "corner",
       "free_kick",
       "offside",
-      "shot_on_target",
-      "shot",
       "foul",
       "substitution",
     ] as const) {
@@ -68,12 +66,7 @@ describe("effects", () => {
 
   test("set pieces still show on a 7-segment strip", () => {
     const seven = base.filter((_, i) => i % 4 === 0).slice(0, 7);
-    for (const k of [
-      "corner",
-      "free_kick",
-      "offside",
-      "shot_on_target",
-    ] as const) {
+    for (const k of ["corner", "free_kick", "offside"] as const) {
       const fx = EFFECTS[k];
       if (!fx) throw new Error(`missing ${k}`);
       let changed = 0;

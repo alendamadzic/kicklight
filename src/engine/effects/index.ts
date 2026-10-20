@@ -61,8 +61,6 @@ const from = (i: number, n: number, side: Side | null) => {
 const each = (base: Rgb[], fn: (c: Rgb, i: number, n: number) => Rgb): Rgb[] =>
   base.map((c, i) => fn(c, i, base.length));
 
-const otherColor = (ctx: EffectContext): Rgb =>
-  ctx.side === "away" ? ctx.home : ctx.away;
 const easeIn = (t: number) => clamp(t) * clamp(t);
 const easeOut = (t: number) => 1 - (1 - clamp(t)) * (1 - clamp(t));
 /** 0..1 over [start, start + dur]. */
@@ -323,59 +321,6 @@ export const EFFECTS: Partial<Record<EffectKey, Effect>> = {
       });
     },
   },
-  shot_on_target: {
-    key: "shot_on_target",
-    label: "Shot on target",
-    durationMs: 2000,
-    // The ball gathers pace towards goal, the keeper's colour flares at the far end as
-    // it's saved, and the parry spills back out.
-    frame: (t, base, ctx) => {
-      const c = teamColor(ctx);
-      const keeper = otherColor(ctx);
-      const k = bookend(t, 2, 0.6);
-      const shot = easeIn(phase(t, 0, 0.65));
-      const saved = t >= 0.65;
-      const parry = easeOut(phase(t, 0.65, 0.55));
-      const ball = saved ? 0.92 - 0.22 * parry : 0.1 + 0.82 * shot;
-      const flare = 1 - phase(t, 0.65, 0.7);
-      return each(base, (b, i, n) => {
-        const f = from(i, n, ctx.side);
-        let out = scale(b, 0.35);
-        if (!saved) out = mix(out, c, trail(f, ball, 0.4));
-        else {
-          out = mix(out, keeper, glow(f, 1, 0.3) * flare);
-          out = mix(out, WHITE, glow(f, 0.95, 0.18) * flare * flare);
-        }
-        out = mix(
-          out,
-          WHITE,
-          glow(f, ball, 0.14) * (saved ? 1 - parry * 0.7 : 1),
-        );
-        return mix(b, out, k);
-      });
-    },
-  },
-  shot: {
-    key: "shot",
-    label: "Shot off target",
-    durationMs: 1500,
-    // The ball flies straight off the end of the strip, then the room goes "ooh".
-    frame: (t, base, ctx) => {
-      const c = teamColor(ctx);
-      const ball = 0.15 + 1.1 * easeIn(phase(t, 0, 0.6));
-      const groan = Math.sin(phase(t, 0.6, 0.6) * Math.PI);
-      const dim = 1 - phase(t, 0.9, 0.6);
-      return each(base, (b, i, n) => {
-        const f = from(i, n, ctx.side);
-        let out = scale(b, 1 - 0.5 * dim - 0.25 * groan);
-        if (t < 0.9) {
-          out = mix(out, c, trail(f, ball, 0.4) * (1 - phase(t, 0.6, 0.3)));
-          out = mix(out, WHITE, glow(f, ball, 0.14));
-        }
-        return out;
-      });
-    },
-  },
   foul: {
     key: "foul",
     label: "Foul",
@@ -479,8 +424,6 @@ export const PAD_ORDER: EffectKey[] = [
   "corner",
   "free_kick",
   "offside",
-  "shot_on_target",
-  "shot",
   "foul",
   "substitution",
   "kickoff",

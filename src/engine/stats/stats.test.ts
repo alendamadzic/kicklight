@@ -73,13 +73,7 @@ describe("stat modes", () => {
   test("momentum: recent away pressure outweighs old home pressure", () => {
     const events: MatchEvent[] = [
       { id: "1", type: "goal", side: "home", minute: 20, wallclock: 0 },
-      {
-        id: "2",
-        type: "shot_on_target",
-        side: "away",
-        minute: 58,
-        wallclock: 0,
-      },
+      { id: "2", type: "free_kick", side: "away", minute: 58, wallclock: 0 },
       { id: "3", type: "corner", side: "away", minute: 59, wallclock: 0 },
     ];
     expect(STAT_MODES.momentum.homeShare(ctx(snap(), events))).toBeLessThan(

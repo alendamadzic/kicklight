@@ -24,8 +24,6 @@ const KEEP: ReadonlySet<EventType> = new Set([
   "corner",
   "free_kick",
   "offside",
-  "shot_on_target",
-  "shot",
   "foul",
   "substitution",
   "half_time",

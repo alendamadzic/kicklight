@@ -107,10 +107,8 @@ describe("espn commentary", () => {
     expect(
       events.filter((e) => e.side === null && e.type === "corner"),
     ).toEqual([]);
-    // Shots on target are the saved attempts plus the goals.
-    expect(of("shot_on_target", "home") + of("goal", "home")).toBe(
-      snapshot.stats.home.shotsOnTarget,
-    );
+    // Attempts on goal are noise on the strip; only the goals come through.
+    expect(events.some((e) => e.type.includes("shot"))).toBe(false);
   });
 
   test("free kicks near the box stand apart from fouls", () => {
