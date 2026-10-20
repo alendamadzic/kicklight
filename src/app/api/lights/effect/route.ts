@@ -4,11 +4,14 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { HueRemoteError } from "@/lights/remote";
 import { apiError, json, requireUser } from "@/server/auth";
 import { transportFor } from "@/server/hue-link";
+import { activeStreamFor } from "@/server/local-streaming";
 import { isRgb } from "@/server/validate";
 
 /**
- * Fire one effect from the demo's event pad. In cloud mode only effects with a native
- * bridge-side signal can run; the rest are reported as skipped, not as errors.
+ * Fire one effect from the demo's event pad or a ticker replay. While a match is streaming
+ * it goes into that stream (the bridge ignores REST then), so it plays exactly as it did live.
+ * Otherwise only effects with a native bridge-side signal can run; the rest are reported as
+ * skipped, not as errors.
  */
 export async function POST(request: NextRequest) {
   const { user, response } = await requireUser();
@@ -23,6 +26,18 @@ export async function POST(request: NextRequest) {
   if (!fx || !isRgb(b?.home) || !isRgb(b?.away))
     return apiError("bad_effect", 400);
   const side = b?.side === "home" || b?.side === "away" ? b.side : null;
+
+  const stream = activeStreamFor(user.id);
+  if (
+    stream &&
+    (await stream
+      .applyCommand(
+        { kind: "effect", effect: fx.key, side },
+        { home: b.home, away: b.away },
+      )
+      .catch(() => false))
+  )
+    return json({ ok: true, skipped: false });
 
   const signal = fx.signal?.({
     home: b.home,

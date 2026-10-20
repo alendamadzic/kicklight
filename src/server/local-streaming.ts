@@ -17,7 +17,18 @@ import { StreamingTransport } from "./streaming-transport";
 // One long-lived StreamingTransport per user while a match runs; anything that goes
 // wrong on the way falls back to plain REST for that match.
 
-const live = new Map<string, StreamingTransport>();
+// On globalThis: the session loop (started from instrumentation) and route handlers can
+// load this module as separate instances, but must share the same live streams.
+const LIVE = Symbol.for("kicklight.live-streams");
+const g = globalThis as { [LIVE]?: Map<string, StreamingTransport> };
+g[LIVE] ??= new Map();
+const live = g[LIVE];
+
+/** The user's running Entertainment stream, if a match is driving one right now. */
+export function activeStreamFor(userId: string): StreamingTransport | null {
+  const st = live.get(userId);
+  return st?.isStreaming ? st : null;
+}
 
 export async function localTransportWithStreaming(
   admin: SupabaseClient,

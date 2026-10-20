@@ -319,6 +319,13 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
         home: colors.home,
         away: colors.away,
       })
+      .then((r) => {
+        if (r.skipped)
+          toast(`${effectLabel(item.effect)} only plays on the app's strip`, {
+            description:
+              "Your bridge can only flash goals, cards and penalties.",
+          });
+      })
       .catch(() => toast.error("Your strip didn't answer."));
   };
 
