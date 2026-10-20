@@ -147,7 +147,6 @@ export function keyEventType(
     return s.includes("overturn") || s.includes("cancel")
       ? "var_overturned"
       : "var";
-  if (s === "substitution") return "substitution";
   return null;
 }
 

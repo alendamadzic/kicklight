@@ -27,7 +27,6 @@ export type EventType =
   | "corner"
   | "free_kick"
   | "offside"
-  | "substitution"
   | "half_time"
   | "second_half"
   | "full_time";

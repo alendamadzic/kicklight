@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import type { Rgb } from "@/engine/colors";
-import { EFFECTS } from "@/engine/effects";
+import { EFFECTS, type Effect } from "@/engine/effects";
 import { playFrames, sampleFrame } from "./play";
 import { splitPoints } from "./render";
 import type { LightTransport } from "./transport";
@@ -44,8 +44,14 @@ test("a thin scan bar between two points still shows on 5 points", () => {
 });
 
 test("parts of the strip an effect leaves alone stay exactly as they were", () => {
-  const fx = EFFECTS.substitution;
-  if (!fx) throw new Error("substitution effect missing");
+  // Lights up the first half of the strip and leaves the rest alone.
+  const fx: Effect = {
+    key: "corner",
+    label: "Half",
+    durationMs: 1000,
+    frame: (_t, base) =>
+      base.map((c, i) => (i < base.length / 2 ? ([255, 255, 255] as Rgb) : c)),
+  };
   const base = splitPoints(0.5, 5, colors);
   const frame = sampleFrame(fx, 0.01, base, {
     ...colors,

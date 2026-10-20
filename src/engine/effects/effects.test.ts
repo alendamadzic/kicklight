@@ -44,12 +44,7 @@ describe("effects", () => {
   });
 
   test("set pieces settle back on the resting colours", () => {
-    for (const k of [
-      "corner",
-      "free_kick",
-      "offside",
-      "substitution",
-    ] as const) {
+    for (const k of ["corner", "free_kick", "offside"] as const) {
       const fx = EFFECTS[k];
       if (!fx) throw new Error(`missing ${k}`);
       for (const side of ["home", "away"] as const) {

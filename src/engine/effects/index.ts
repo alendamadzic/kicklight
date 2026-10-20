@@ -36,7 +36,6 @@ const WHITE: Rgb = [255, 244, 230];
 const YELLOW: Rgb = [255, 206, 0];
 const RED: Rgb = [235, 20, 20];
 const WARM: Rgb = [255, 180, 90];
-const GREEN: Rgb = [40, 220, 90];
 
 const clamp = (v: number, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, v));
 const mix = (a: Rgb, b: Rgb, t: number): Rgb => [
@@ -321,29 +320,6 @@ export const EFFECTS: Partial<Record<EffectKey, Effect>> = {
       });
     },
   },
-  substitution: {
-    key: "substitution",
-    label: "Substitution",
-    durationMs: 2600,
-    // The fourth official's board: a red light walks off down the team's half while a
-    // green one walks on, then the half swells in the team's colour.
-    frame: (t, base, ctx) => {
-      const c = teamColor(ctx);
-      const k = bookend(t, 2.6, 0.6);
-      const off = 0.42 - 0.6 * easeIn(phase(t, 0.3, 1.2));
-      const on = -0.18 + 0.6 * easeOut(phase(t, 0.5, 1.3));
-      const swell = Math.sin(phase(t, 1.7, 0.9) * Math.PI);
-      return each(base, (b, i, n) => {
-        const f = from(i, n, ctx.side);
-        const own = clamp((0.62 - f) / 0.14);
-        let out = scale(b, 1 - 0.65 * own);
-        out = mix(out, RED, glow(f, off, 0.17) * own);
-        out = mix(out, GREEN, glow(f, on, 0.17) * own);
-        out = mix(out, c, swell * own * 0.9);
-        return mix(b, out, k);
-      });
-    },
-  },
   kickoff: {
     key: "kickoff",
     label: "Kick-off",
@@ -409,7 +385,6 @@ export const PAD_ORDER: EffectKey[] = [
   "corner",
   "free_kick",
   "offside",
-  "substitution",
   "kickoff",
   "full_time",
 ];
