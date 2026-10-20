@@ -21,10 +21,13 @@ const CHANNELS: StatKey[] = ["auto", ...STAT_ORDER];
 export function StatChannels({
   value,
   onValueChange,
+  pending,
   disabled,
   className,
 }: {
   value: StatKey;
+  /** The chosen channel isn't on the lights yet. */
+  pending?: boolean;
   onValueChange: (stat: StatKey) => void;
   disabled?: boolean;
   className?: string;
@@ -52,10 +55,11 @@ export function StatChannels({
             key={key}
             value={key}
             aria-label={STAT_LABEL(key)}
+            aria-busy={pending && key === value ? true : undefined}
             className={cn(
               "kl-display h-11 min-w-11 rounded-md bg-secondary px-3.5 text-[0.9375rem] leading-none text-muted-foreground",
               "hover:bg-accent hover:text-foreground aria-pressed:bg-foreground aria-pressed:text-background",
-              "kl-press",
+              "kl-press aria-busy:animate-pulse",
             )}
           >
             {key === "auto" ? <SparklesIcon data-icon="inline-start" /> : null}

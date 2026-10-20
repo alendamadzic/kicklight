@@ -128,6 +128,30 @@ describe("runner", () => {
     expect(second.commands.some((c) => c.item.kind === "split")).toBe(false);
   });
 
+  test("switching stat lands now, drops the old stat's queued splits, and re-sends", () => {
+    const input = { snapshot: snap(), events: [], delayMs: 20_000 };
+    const first = tick(initialState("possession"), { ...input, now: NOW });
+    expect(first.state.pending.map((q) => q.item.kind)).toEqual(["split"]);
+
+    const toClock = tick(
+      { ...first.state, stat: "clock" },
+      { ...input, now: NOW + 1_000 },
+    );
+    expect(toClock.commands.map((c) => [c.item.kind, c.at])).toEqual([
+      ["fill", NOW + 1_000],
+    ]);
+    expect(toClock.state.pending).toHaveLength(0);
+
+    // Back to the same share: still re-sent, since the strip is showing the clock.
+    const back = tick(
+      { ...toClock.state, stat: "possession" },
+      { ...input, now: NOW + 2_000 },
+    );
+    expect(back.commands.map((c) => c.item)).toEqual([
+      { kind: "split", homeShare: 0.6 },
+    ]);
+  });
+
   test("nothing is sent before kick-off", () => {
     const r = tick(initialState(), {
       snapshot: snap({ phase: "scheduled", minute: null }),

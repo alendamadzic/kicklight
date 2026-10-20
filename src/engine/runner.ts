@@ -25,6 +25,10 @@ export interface RunnerState {
   finished: boolean;
   started: boolean;
   lastPhase: MatchPhase | null;
+  /** The viewer's choice as of the last tick, to spot a switch. */
+  appliedStat: StatKey | null;
+  /** The concrete stat currently on the strip. */
+  shown: ConcreteStat | "clock" | null;
 }
 
 export interface TickInput {
@@ -64,6 +68,8 @@ export function initialState(stat: StatKey = "possession"): RunnerState {
     finished: false,
     started: false,
     lastPhase: null,
+    appliedStat: null,
+    shown: null,
   };
 }
 
@@ -110,9 +116,23 @@ export function tick(prev: RunnerState, input: TickInput): TickResult {
     concrete = state.stat as ConcreteStat | "clock";
   }
 
-  // 3. Stat drift → a split (or clock fill) at now + delay, only when it moved a point.
+  // 3. A new stat always re-sends. The viewer switching channels is a control, not match
+  // news, so it lands now and drops the old stat's splits still queued behind the delay.
+  const userSwitched =
+    state.appliedStat != null && state.appliedStat !== state.stat;
+  if (concrete !== state.shown) {
+    state.lastShare = null;
+    state.lastFill = null;
+  }
+  if (userSwitched) {
+    pending = pending.filter(
+      (q) => q.item.kind !== "split" && q.item.kind !== "fill",
+    );
+  }
+
+  // 4. Stat drift → a split (or clock fill) at now + delay, only when it moved a point.
   if (live && snapshot.phase !== "full_time") {
-    const at = now + delayMs;
+    const at = userSwitched ? now : now + delayMs;
     if (concrete === "clock") {
       const fraction = Math.min(1, Math.max(0, (snapshot.minute ?? 0) / 90));
       const rounded = Math.round(fraction * 100) / 100;
@@ -146,7 +166,7 @@ export function tick(prev: RunnerState, input: TickInput): TickResult {
     }
   }
 
-  // 4. Squeaky bum time: stoppage time of a one-goal game.
+  // 5. Squeaky bum time: stoppage time of a one-goal game.
   const oneGoal = Math.abs(snapshot.score.home - snapshot.score.away) === 1;
   if (
     oneGoal &&
@@ -166,7 +186,7 @@ export function tick(prev: RunnerState, input: TickInput): TickResult {
     state.nervesNext = t;
   }
 
-  // 5. Final whistle → hold, then hand the lights back.
+  // 6. Final whistle → hold, then hand the lights back.
   if (snapshot.phase === "full_time" && !state.finished) {
     state.finished = true;
     pending = schedule(pending, now + delayMs + FULL_TIME_HOLD_MS, {
@@ -181,6 +201,8 @@ export function tick(prev: RunnerState, input: TickInput): TickResult {
     pending: rest,
     started: true,
     lastPhase: snapshot.phase,
+    appliedStat: state.stat,
+    shown: concrete,
   };
   return { state, commands: due, activeStat: concrete };
 }

@@ -211,6 +211,7 @@ export async function processSession(
   const after = now();
   const mirror: SessionMirror = {
     match: parsed.snapshot,
+    stat: row.stat as StatKey,
     activeStat: result.activeStat,
     colors,
     recent: recent.slice(-RECENT_KEEP),

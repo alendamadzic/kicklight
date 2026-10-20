@@ -7,10 +7,11 @@ import { liveFeed } from "./recording";
 import { runDueSessions, type TickOptions } from "./tick";
 
 // Some processes have no cron to drive sessions, so the server process itself does it every
-// few seconds: local mode (self-hosted, drives "local" sessions) and `next dev` (drives
+// second: local mode (self-hosted, drives "local" sessions) and `next dev` (drives
 // "remote" sessions, since Supabase Cron can only reach a deployed site).
 
-const INTERVAL_MS = 5_000;
+// Short, so a stat switch reaches the lights quickly; an idle pass is one cheap claim query.
+const INTERVAL_MS = 1_000;
 
 function startLoop(mode: TickOptions["mode"], label: string): void {
   const KEY = Symbol.for(`kicklight.loop.${mode}`);

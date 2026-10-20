@@ -26,6 +26,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { pickStripColors, rgbToHex } from "@/engine/colors";
 import { leagueName } from "@/engine/feed/leagues";
 import type { MatchSnapshot } from "@/engine/model";
@@ -82,6 +83,13 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
       ? "sim"
       : "preview";
   const mirror = isMine ? session.snapshot : null;
+  // The phone saves a new stat at once; the lights (and so the mirror) follow on the
+  // session's next tick. Until then, say so rather than show the old stat as the new one.
+  const switching =
+    isMine &&
+    session.status === "active" &&
+    !!mirror?.stat &&
+    mirror.stat !== session.stat;
 
   // ---------- one view model, three sources ----------
   const stat: StatKey =
@@ -383,13 +391,26 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
             label={`Virtual strip: ${snapshot.home.name} v ${snapshot.away.name}`}
             className="aspect-[5/2] lg:aspect-[16/10]"
           />
-          <p className="flex items-center justify-between gap-2 px-0.5 text-xs text-muted-foreground">
-            <span>
-              Lights follow{" "}
-              <span className="kl-display text-sm text-foreground">
-                {chosen}
+          <p
+            className="flex items-center justify-between gap-2 px-0.5 text-xs text-muted-foreground"
+            aria-live="polite"
+          >
+            {switching ? (
+              <span className="inline-flex items-center gap-1.5">
+                <Spinner className="size-3" aria-hidden />
+                Switching lights to{" "}
+                <span className="kl-display text-sm text-foreground">
+                  {STAT_LABEL(stat)}
+                </span>
               </span>
-            </span>
+            ) : (
+              <span>
+                Lights follow{" "}
+                <span className="kl-display text-sm text-foreground">
+                  {chosen}
+                </span>
+              </span>
+            )}
             {delayMs > 0 ? (
               <span className="font-mono tabular-nums">
                 delay {Math.round(delayMs / 1000)}s
@@ -403,11 +424,16 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
             <h2 id="r-channels" className="kl-eyebrow">
               Channels
             </h2>
-            <StatChannels value={stat} onValueChange={changeStat} />
+            <StatChannels
+              value={stat}
+              pending={switching}
+              onValueChange={changeStat}
+            />
           </section>
 
           <LiveReadout
-            stat={stat}
+            stat={switching && mirror?.stat ? mirror.stat : stat}
+            pending={switching}
             autoPick={activeStat}
             share={share}
             values={values}

@@ -85,6 +85,8 @@ export interface MirroredCommand {
  */
 export interface SessionMirror {
   match: MatchSnapshot;
+  /** The viewer's choice this mirror was drawn with (absent on older rows). */
+  stat?: StatKey;
   activeStat: StatKey;
   colors: { home: Rgb; away: Rgb };
   recent: MirroredCommand[];

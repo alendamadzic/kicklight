@@ -12,6 +12,7 @@ const R = 15.915;
 export function LiveReadout({
   stat,
   autoPick,
+  pending,
   share,
   values,
   home,
@@ -22,6 +23,8 @@ export function LiveReadout({
   stat: StatKey;
   /** What auto resolved to right now. */
   autoPick?: StatKey | null;
+  /** A new stat is on its way to the lights; this still shows the old one. */
+  pending?: boolean;
   /** Home share 0..1, or null when unknown. */
   share: number | null;
   values: [string, string] | null;
@@ -36,7 +39,14 @@ export function LiveReadout({
     stat === "auto" && autoPick ? STAT_LABEL(autoPick) : STAT_LABEL(stat);
 
   return (
-    <div className={cn("kl-panel flex flex-col gap-4 p-4", className)}>
+    <div
+      className={cn(
+        "kl-panel flex flex-col gap-4 p-4 transition-opacity duration-300",
+        pending && "opacity-50",
+        className,
+      )}
+      aria-busy={pending || undefined}
+    >
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-col items-start">
           <span className="kl-display truncate text-sm leading-none text-muted-foreground">
@@ -96,7 +106,7 @@ export function LiveReadout({
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
             <span className="kl-eyebrow text-[0.5625rem]">
-              {stat === "auto" ? "Auto" : "Lights"}
+              {pending ? "Switching" : stat === "auto" ? "Auto" : "Lights"}
             </span>
             <span className="kl-display px-2 text-base leading-tight">
               {label}
