@@ -28,7 +28,8 @@ export async function runDueSessions(
   admin: SupabaseClient,
   opts: TickOptions,
 ): Promise<TickSummary> {
-  const claimMs = opts.claimMs ?? 25_000;
+  // Longer than a pass can run (see BUDGET_MS in session.ts), so no other runner takes it mid-pass.
+  const claimMs = opts.claimMs ?? 45_000;
   // Atomic claim: only rows still due get pushed forward, so overlapping ticks can't double-run.
   const { data: due, error } = await admin
     .from("sessions")
@@ -66,6 +67,13 @@ export async function runDueSessions(
           fetchMatch: opts.fetchMatch,
           now: Date.now,
           sleep: (ms) => new Promise((res) => setTimeout(res, ms)),
+          publish: async (snapshot) => {
+            const { error } = await admin
+              .from("sessions")
+              .update({ snapshot })
+              .eq("id", s.id);
+            if (error) throw new Error(error.message);
+          },
         });
         await admin
           .from("sessions")

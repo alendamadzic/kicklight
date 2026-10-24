@@ -18,8 +18,8 @@ import { playFrames } from "@/lights/play";
 import { fillPoints, restingFromRecent, splitPoints } from "@/lights/render";
 import type { LightTransport } from "@/lights/transport";
 
-// One pass over one session: poll the feed, run the brain, drive the lights,
-// and say what to write back. Pure of I/O except through `deps`, so it is the same
+// One pass over one session: poll the feed every few seconds, run the brain, drive the
+// lights, and say what to write back. Pure of I/O except through `deps`, so it is the same
 // code in the cloud cron tick, the local loop and the tests.
 
 export interface SessionRow {
@@ -41,6 +41,8 @@ export interface SessionDeps {
   fetchMatch: (league: string, eventId: string) => Promise<ParsedMatch>;
   now: () => number;
   sleep: (ms: number) => Promise<void>;
+  /** Show the viewer what's coming mid-pass, so the virtual strip keeps time with the real one. */
+  publish?: (mirror: SessionMirror) => Promise<void>;
 }
 
 export interface SessionUpdate {
@@ -60,6 +62,21 @@ export interface SessionResult {
 }
 
 export const HORIZON_MS = 10_000;
+/** While the ball is in play the feed is re-read this often within a pass. */
+export const POLL_MS = 3_000;
+/** No new poll starts after this far into a pass. */
+export const PASS_MS = 12_000;
+/**
+ * No command starts after this far into a pass; it goes back in the queue for the next one.
+ * Keeps a pass, effects and all, inside the cron route's time limit.
+ */
+export const BUDGET_MS = 20_000;
+const IN_PLAY: ReadonlySet<MatchSnapshot["phase"]> = new Set([
+  "first_half",
+  "second_half",
+  "extra_time",
+  "shootout",
+]);
 /** Replay sessions run a scenario at one match minute per real second. */
 export const REPLAY_MINUTE_MS = 1_000;
 const LEAD_IN_MS = 2_000;
@@ -141,11 +158,10 @@ export async function processSession(
   const { transport, now, sleep } = deps;
   const errors: string[] = [];
   const t0 = now();
-
-  const parsed =
+  const read = (at: number) =>
     row.league === "replay"
-      ? replayFeed(row, t0)
-      : await deps.fetchMatch(row.league, row.event_id);
+      ? Promise.resolve(replayFeed(row, at))
+      : deps.fetchMatch(row.league, row.event_id);
 
   // Remember how the strip looked before kick-off, once.
   let lightSnapshot = row.light_snapshot;
@@ -157,107 +173,173 @@ export async function processSession(
     }
   }
 
-  const prev: RunnerState = {
+  let state: RunnerState = {
     ...initialState(row.stat as StatKey),
     ...(row.runner_state as Partial<RunnerState>),
     stat: row.stat as StatKey,
   };
-  const result = tick(prev, {
-    snapshot: parsed.snapshot,
-    events: parsed.events,
-    now: t0,
-    delayMs: row.delay_ms,
-    horizonMs: HORIZON_MS,
-  });
-
-  const strip = pickStripColors(parsed.snapshot.home, parsed.snapshot.away);
-  const colors = { home: strip.home as Rgb, away: strip.away as Rgb };
   const recent = [...(row.runner_state.recent ?? [])];
-  const score = parsed.snapshot.score;
-  const winner =
-    score.home > score.away ? "home" : score.away > score.home ? "away" : null;
-  // Effects play over this and settle back onto it.
-  let resting = restingFromRecent(recent, transport.points, colors);
+  const executed: Scheduled<Command>[] = [];
   let status: SessionRow["status"] = row.status;
   let ended = false;
+  let parsed: ParsedMatch | null = null;
+  let colors: { home: Rgb; away: Rgb } | null = null;
+  let activeStat = state.stat;
+  // Effects play over this and settle back onto it.
+  let resting: Rgb[] | null = null;
 
-  for (const c of result.commands) {
-    const wait = c.at - now();
-    if (wait > 0) await sleep(Math.min(wait, HORIZON_MS));
-    const cmd = c.item;
+  const mirrorNow = (): SessionMirror => ({
+    match: (parsed as ParsedMatch).snapshot,
+    stat: row.stat as StatKey,
+    activeStat,
+    colors: colors as { home: Rgb; away: Rgb },
+    recent: trimRecent(recent),
+    updatedAt: now(),
+  });
+
+  // While the ball is in play, re-read the feed every POLL_MS so an event is acted on within
+  // seconds of ESPN publishing it. Each poll runs the commands due before the next one; the
+  // last poll also covers the gap until the next pass is claimed.
+  for (;;) {
+    const pollAt = now();
     try {
-      if (cmd.kind !== "restore" && transport.applyCommand) {
-        const handled = await transport.applyCommand(cmd, colors).catch((e) => {
-          errors.push(`stream: ${(e as Error).message}`);
-          return false;
-        });
-        if (handled) {
-          recent.push(mirrorOf(cmd, c.at));
-          continue;
-        }
-      }
-      if (cmd.kind === "split") {
-        resting = splitPoints(cmd.homeShare, transport.points, colors);
-        await transport.setGradient(resting, 1500);
-      } else if (cmd.kind === "fill") {
-        resting = fillPoints(cmd.fraction, cmd.lead, transport.points, colors);
-        await transport.setGradient(resting, 800);
-      } else if (cmd.kind === "effect") {
-        // The same frames the virtual strip draws, as REST keyframes. An effect that
-        // queued behind another in this pass joins at the point the virtual strip has
-        // reached. Lateness from before this pass started (it fell between two ticks)
-        // doesn't count: the effect would otherwise be "already over" and never play.
-        const fx = EFFECTS[cmd.effect];
-        if (fx)
-          await playFrames(
-            transport,
-            fx,
-            { ...colors, side: cmd.side, winner },
-            resting,
-            sleep,
-            now() - Math.max(c.at, t0),
-          );
-      } else if (cmd.kind === "restore") {
-        await transport.restore(lightSnapshot);
-        status = "ended";
-        ended = true;
-      }
+      parsed = await read(pollAt);
     } catch (e) {
-      errors.push(`${cmd.kind}: ${(e as Error).message}`);
+      // A failed first read fails the pass; a later one just ends it early.
+      if (!parsed) throw e;
+      errors.push(`feed: ${(e as Error).message}`);
+      break;
     }
-    recent.push(mirrorOf(cmd, c.at));
-  }
-  if (parsed.snapshot.phase === "suspended") {
-    status = "ended";
-    ended = true;
+    const last =
+      pollAt + POLL_MS >= t0 + PASS_MS || !IN_PLAY.has(parsed.snapshot.phase);
+    const horizonMs = last ? HORIZON_MS : POLL_MS;
+    const strip = pickStripColors(parsed.snapshot.home, parsed.snapshot.away);
+    colors = { home: strip.home as Rgb, away: strip.away as Rgb };
+    resting ??= restingFromRecent(recent, transport.points, colors);
+    const score = parsed.snapshot.score;
+    const winner =
+      score.home > score.away
+        ? "home"
+        : score.away > score.home
+          ? "away"
+          : null;
+
+    const result = tick(state, {
+      snapshot: parsed.snapshot,
+      events: parsed.events,
+      now: pollAt,
+      delayMs: row.delay_ms,
+      horizonMs,
+    });
+    state = result.state;
+    activeStat = result.activeStat;
+
+    // Mirror what's coming before playing it, so the viewer's strip starts it on time too.
+    const mirrored = new Map(
+      result.commands.map((c) => [c, mirrorOf(c.item, c.at)] as const),
+    );
+    if (result.commands.length) {
+      recent.push(...mirrored.values());
+      await deps.publish?.(mirrorNow()).catch((e) => {
+        errors.push(`publish: ${(e as Error).message}`);
+      });
+    }
+
+    for (const [i, c] of result.commands.entries()) {
+      if (now() >= t0 + BUDGET_MS) {
+        // Out of time: hand the rest to the next pass instead of overrunning the route.
+        const rest = result.commands.slice(i);
+        state = {
+          ...state,
+          pending: [...rest, ...state.pending].sort(
+            (a, b) => a.at - b.at || a.seq - b.seq,
+          ),
+        };
+        for (const r of rest) {
+          const m = mirrored.get(r);
+          if (m) recent.splice(recent.indexOf(m), 1);
+        }
+        break;
+      }
+      const wait = c.at - now();
+      if (wait > 0) await sleep(Math.min(wait, HORIZON_MS));
+      const cmd = c.item;
+      executed.push(c);
+      try {
+        if (cmd.kind !== "restore" && transport.applyCommand) {
+          const handled = await transport
+            .applyCommand(cmd, colors)
+            .catch((e) => {
+              errors.push(`stream: ${(e as Error).message}`);
+              return false;
+            });
+          if (handled) continue;
+        }
+        if (cmd.kind === "split") {
+          resting = splitPoints(cmd.homeShare, transport.points, colors);
+          await transport.setGradient(resting, 1500);
+        } else if (cmd.kind === "fill") {
+          resting = fillPoints(
+            cmd.fraction,
+            cmd.lead,
+            transport.points,
+            colors,
+          );
+          await transport.setGradient(resting, 800);
+        } else if (cmd.kind === "effect") {
+          // The same frames the virtual strip draws, as REST keyframes. An effect that
+          // queued behind another in this pass joins at the point the virtual strip has
+          // reached. Lateness from before this pass started (it fell between two passes)
+          // doesn't count: the effect would otherwise be "already over" and never play.
+          const fx = EFFECTS[cmd.effect];
+          if (fx)
+            await playFrames(
+              transport,
+              fx,
+              { ...colors, side: cmd.side, winner },
+              resting,
+              sleep,
+              now() - Math.max(c.at, t0),
+            );
+        } else if (cmd.kind === "restore") {
+          await transport.restore(lightSnapshot);
+          status = "ended";
+          ended = true;
+        }
+      } catch (e) {
+        errors.push(`${cmd.kind}: ${(e as Error).message}`);
+      }
+    }
+    if (parsed.snapshot.phase === "suspended") {
+      status = "ended";
+      ended = true;
+    }
+    if (ended || last) break;
+    const until = pollAt + POLL_MS - now();
+    if (until > 0) await sleep(until);
   }
 
   const after = now();
-  const mirror: SessionMirror = {
-    match: parsed.snapshot,
-    stat: row.stat as StatKey,
-    activeStat: result.activeStat,
-    colors,
-    recent: trimRecent(recent),
-    updatedAt: after,
-  };
-
+  const mirror = mirrorNow();
+  const snapshot = (parsed as ParsedMatch).snapshot;
   return {
     update: {
-      runner_state: { ...result.state, recent: mirror.recent },
+      runner_state: { ...state, recent: mirror.recent },
       snapshot: mirror,
       light_snapshot: lightSnapshot ?? null,
       status,
-      // Due again where this pass's window ends, not a window after it finished, so
-      // commands scheduled in between aren't picked up late.
+      // In play, a pass already polled right up to now, so the next is due straight away.
+      // Otherwise wait as long as the phase allows, counted from when this pass started.
       next_due_at: ended
         ? after
-        : row.league === "replay"
-          ? t0 + HORIZON_MS
-          : nextDue(parsed.snapshot, t0, result.state.pending.length > 0),
+        : IN_PLAY.has(snapshot.phase)
+          ? after
+          : row.league === "replay"
+            ? t0 + HORIZON_MS
+            : nextDue(snapshot, t0, state.pending.length > 0),
       ended,
     },
-    executed: result.commands,
+    executed,
     errors,
   };
 }

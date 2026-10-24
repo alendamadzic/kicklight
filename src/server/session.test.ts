@@ -1,9 +1,17 @@
 import { describe, expect, test } from "bun:test";
 import type { Rgb } from "@/engine/colors";
 import type { SignalFallback } from "@/engine/effects";
-import { EMPTY_SIDE_STATS } from "@/engine/model";
+import type { ParsedMatch } from "@/engine/feed/espn";
+import {
+  EMPTY_SIDE_STATS,
+  type MatchEvent,
+  type MatchSnapshot,
+} from "@/engine/model";
 import type { LightTransport } from "@/lights/transport";
 import {
+  BUDGET_MS,
+  PASS_MS,
+  POLL_MS,
   processSession,
   type SessionDeps,
   type SessionRow,
@@ -62,18 +70,58 @@ const base = (created: number): SessionRow => ({
   created_at: created,
 });
 
+const team = (id: string, color: string) => ({
+  id,
+  name: id,
+  short: id,
+  color,
+  alternateColor: "#ffffff",
+});
+
+/** A live match as the feed reports it. */
+const liveMatch = (
+  phase: MatchSnapshot["phase"],
+  events: MatchEvent[] = [],
+): ParsedMatch => ({
+  snapshot: {
+    id: "m1",
+    league: "eng.1",
+    phase,
+    minute: phase === "half_time" ? 45 : 60,
+    home: team("HOM", "#cc0000"),
+    away: team("AWA", "#0000cc"),
+    score: { home: 0, away: 0 },
+    stats: {
+      home: { ...EMPTY_SIDE_STATS, possession: 55 },
+      away: { ...EMPTY_SIDE_STATS, possession: 45 },
+    },
+  },
+  events,
+});
+
+const liveRow = (
+  h: ReturnType<typeof harness>,
+  over: Partial<SessionRow> = {},
+): SessionRow => ({
+  ...base(h.now() - 60_000),
+  league: "eng.1",
+  event_id: "m1",
+  light_snapshot: { saved: true },
+  ...over,
+});
+
 describe("processSession (replay)", () => {
   test("first cycle snapshots the strip, sets a split, mirrors the match, and schedules the next poll", async () => {
     const h = harness();
     const row = base(h.now() - 30_000); // 28 s of match time have passed
-    const t0 = h.now();
     const r = await processSession(row, h.deps);
     expect(h.log[0]).toBe("snapshot");
     expect(h.grads.length).toBeGreaterThan(0);
     expect(r.update.light_snapshot).toEqual({ saved: true });
     expect(r.update.snapshot.match.score).toEqual({ home: 1, away: 0 });
     expect(r.update.snapshot.colors.home).toBeDefined();
-    expect(r.update.next_due_at).toBe(t0 + 10_000);
+    // In play the pass polled right up to its end, so the next one is due straight away.
+    expect(r.update.next_due_at).toBe(h.now());
     expect(r.update.status).toBe("active");
   });
 
@@ -105,16 +153,19 @@ describe("processSession (replay)", () => {
     const h = harness();
     // 20 s in: the goal at match minute 24 is 6 s away, inside the 10 s look-ahead.
     const created = h.now() - 20_000;
-    const t0 = h.now();
+    const scores: string[] = [];
+    h.deps.publish = async (m) => {
+      scores.push(`${m.match.score.home}-${m.match.score.away}`);
+    };
     const r = await processSession(base(created), h.deps);
-    expect(r.update.next_due_at).toBe(t0 + 10_000);
+    expect(r.update.next_due_at).toBe(h.now());
     const goal = r.executed.find(
       (c) => c.item.kind === "effect" && c.item.effect === "goal",
     );
     expect(goal?.at).toBe(created + 2_000 + 24 * 1_000);
     expect(h.signals).toHaveLength(0);
-    // The scoreboard still shows the present, not the look-ahead.
-    expect(r.update.snapshot.match.score).toEqual({ home: 0, away: 0 });
+    // When the goal was queued the scoreboard still showed the present, not the look-ahead.
+    expect(scores[0]).toBe("0-0");
   });
 
   test("a replay still in its lead-in is polled again in one window, not five minutes", async () => {
@@ -174,33 +225,9 @@ describe("processSession (replay)", () => {
 
   test("an effect that fell between two ticks still plays in full", async () => {
     const h = harness();
-    // A live match at half time with nothing new in the feed, so only the queued effect
-    // touches the strip.
-    const team = (id: string, color: string) => ({
-      id,
-      name: id,
-      short: id,
-      color,
-      alternateColor: "#ffffff",
-    });
-    h.deps.fetchMatch = async () => ({
-      snapshot: {
-        id: "m1",
-        league: "eng.1",
-        phase: "half_time",
-        minute: 45,
-        home: team("HOM", "#cc0000"),
-        away: team("AWA", "#0000cc"),
-        score: { home: 0, away: 0 },
-        stats: { home: EMPTY_SIDE_STATS, away: EMPTY_SIDE_STATS },
-      },
-      events: [],
-    });
-    const row: SessionRow = {
-      ...base(h.now() - 60_000),
-      league: "eng.1",
-      event_id: "m1",
-      light_snapshot: { saved: true },
+    // Half time with nothing new in the feed, so only the queued effect touches the strip.
+    h.deps.fetchMatch = async () => liveMatch("half_time");
+    const row = liveRow(h, {
       runner_state: {
         started: true,
         // Due 8 s ago: after the last pass's window closed, before this pass began.
@@ -212,19 +239,112 @@ describe("processSession (replay)", () => {
           },
         ],
       },
-    };
+    });
     await processSession(row, h.deps);
     // A 2.4 s animation at ~3 keyframes a second, then back to rest.
     expect(h.grads.length).toBeGreaterThan(5);
   });
 
-  test("the next pass is due where this one's window ends, not a window after it finished", async () => {
+  test("in play, a pass re-reads the feed every few seconds and is due again as it ends", async () => {
+    const h = harness();
+    let reads = 0;
+    h.deps.fetchMatch = async () => {
+      reads++;
+      return liveMatch("second_half");
+    };
+    const t0 = h.now();
+    const r = await processSession(liveRow(h), h.deps);
+    expect(reads).toBe(PASS_MS / POLL_MS);
+    expect(h.now() - t0).toBeLessThanOrEqual(BUDGET_MS);
+    expect(r.update.next_due_at).toBe(h.now());
+  });
+
+  test("an event published mid-pass lights the strip at the next poll, not the next pass", async () => {
     const h = harness();
     const t0 = h.now();
-    // Mid-match, so this pass sleeps and plays effects well past its start.
-    const r = await processSession(base(h.now() - 20_000), h.deps);
-    expect(h.now()).toBeGreaterThan(t0 + 10_000);
-    expect(r.update.next_due_at).toBe(t0 + 10_000);
+    let seenAt: number | null = null;
+    h.deps.fetchMatch = async () => {
+      // ESPN publishes a yellow card 7 s into the pass, a minute after it happened.
+      if (h.now() - t0 < 7_000) return liveMatch("second_half");
+      seenAt ??= h.now();
+      return liveMatch("second_half", [
+        {
+          id: "k1",
+          type: "yellow_card",
+          side: "away",
+          minute: 60,
+          wallclock: t0 - 60_000,
+        },
+      ]);
+    };
+    const row = liveRow(h, { runner_state: { started: true } });
+    const r = await processSession(row, h.deps);
+    const card = r.executed.find(
+      (c) => c.item.kind === "effect" && c.item.effect === "yellow_card",
+    );
+    expect(card).toBeDefined();
+    expect(seenAt).not.toBeNull();
+    expect((card?.at ?? 0) - (seenAt ?? 0)).toBeLessThanOrEqual(POLL_MS);
+  });
+
+  test("upcoming commands are published before they play, so the viewer's strip keeps time", async () => {
+    const h = harness();
+    const published: number[] = [];
+    h.deps.publish = async (m) => {
+      published.push(h.grads.length);
+      expect(m.recent.some((c) => c.kind === "effect")).toBe(true);
+    };
+    h.deps.fetchMatch = async () => liveMatch("half_time");
+    const row = liveRow(h, {
+      runner_state: {
+        started: true,
+        pending: [
+          {
+            at: h.now() + 1_000,
+            seq: 0,
+            item: { kind: "effect", effect: "goal", side: "home" },
+          },
+        ],
+      },
+    });
+    await processSession(row, h.deps);
+    // Published once, before the first keyframe went to the strip.
+    expect(published).toEqual([0]);
+  });
+
+  test("a pass that runs out of time hands the rest back instead of overrunning", async () => {
+    const h = harness();
+    h.deps.fetchMatch = async () => liveMatch("second_half");
+    const t0 = h.now();
+    const goal = (at: number, seq: number) => ({
+      at: t0 + at,
+      seq,
+      item: {
+        kind: "effect" as const,
+        effect: "goal" as const,
+        side: "home" as const,
+      },
+    });
+    // The first goal plays until past the budget, so the second would overrun the route.
+    const r = await processSession(
+      liveRow(h, {
+        runner_state: {
+          started: true,
+          pending: [goal(18_500, 0), goal(18_900, 1)],
+        },
+      }),
+      h.deps,
+    );
+    const played = r.executed.filter((c) => c.item.kind === "effect");
+    expect(played.map((c) => c.at)).toEqual([t0 + 18_500]);
+    expect(r.update.runner_state.pending?.map((c) => c.at)).toEqual([
+      t0 + 18_900,
+    ]);
+    // The mirror only shows what actually played; the rest is mirrored when it does.
+    expect(
+      r.update.snapshot.recent.filter((c) => c.kind === "effect"),
+    ).toHaveLength(1);
+    expect(h.now() - t0).toBeLessThan(BUDGET_MS + 7_000);
   });
 
   test("an unknown scenario fails loudly", async () => {

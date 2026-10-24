@@ -29,6 +29,14 @@ export interface RunnerState {
   appliedStat: StatKey | null;
   /** The concrete stat currently on the strip. */
   shown: ConcreteStat | "clock" | null;
+  /** Effects scheduled lately, to spot the feed re-publishing one under a new id. */
+  recentFx?: {
+    effect: EffectKey;
+    side: Side | null;
+    minute: number;
+    at: number;
+    source?: string;
+  }[];
 }
 
 export interface TickInput {
@@ -60,6 +68,26 @@ const FEED_LAG_MS = 180_000;
 /** After the final whistle, hold the colours this long before handing the lights back. */
 const FULL_TIME_HOLD_MS = 30_000;
 const NERVES_MS = 4_000;
+/**
+ * The same moment can arrive twice under different ids: ESPN posts a commentary line before
+ * attaching its play, then again with it, and a second feed reports what ESPN does. An effect
+ * matching one from the last few minutes (same side, within a minute) is that repeat. A goal
+ * only counts as a repeat of another feed's goal: within one feed, goals come from key events
+ * with stable ids, and a real second goal must never be swallowed.
+ */
+const REPEAT_MS = 180_000;
+const isRepeat = (
+  recent: NonNullable<RunnerState["recentFx"]>,
+  fx: { effect: EffectKey; side: Side | null },
+  e: MatchEvent,
+) =>
+  recent.some(
+    (r) =>
+      r.effect === fx.effect &&
+      r.side === fx.side &&
+      Math.abs(r.minute - e.minute) <= 1 &&
+      (fx.effect !== "goal" || (r.source ?? "espn") !== (e.source ?? "espn")),
+  );
 
 export function initialState(stat: StatKey = "possession"): RunnerState {
   return {
@@ -98,6 +126,7 @@ export function tick(prev: RunnerState, input: TickInput): TickResult {
   const seen = new Set(state.seen);
   let pending = state.pending;
   const maxAge = prev.started ? FEED_LAG_MS : STALE_MS;
+  const recentFx = (prev.recentFx ?? []).filter((r) => r.at >= now - REPEAT_MS);
 
   // 1. New events → effects at wallclock + delay, or now if the feed was late with them.
   for (const e of events) {
@@ -106,7 +135,8 @@ export function tick(prev: RunnerState, input: TickInput): TickResult {
     const at = e.wallclock + delayMs;
     if (at < now - maxAge) continue;
     const fx = effectFor(e);
-    if (!fx) continue;
+    if (!fx || isRepeat(recentFx, fx, e)) continue;
+    recentFx.push({ ...fx, minute: e.minute, at: now, source: e.source });
     pending = schedule(pending, Math.max(at, now), {
       kind: "effect",
       ...fx,
@@ -209,6 +239,7 @@ export function tick(prev: RunnerState, input: TickInput): TickResult {
   state = {
     ...state,
     seen: [...seen],
+    recentFx,
     pending: rest,
     started: true,
     lastPhase: snapshot.phase,

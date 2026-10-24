@@ -1,6 +1,6 @@
 # Deploying kicklight (cloud mode)
 
-Vercel hosts the app, Supabase holds data and runs the 10-second cron, Philips' Remote API
+Vercel hosts the app, Supabase holds data and runs the 5-second cron, Philips' Remote API
 reaches the bridge. Local mode (self-hosted on your network) is in `docs/local-mode.md`.
 
 ## 1. Environment variables (Vercel, all environments)
@@ -31,7 +31,14 @@ select vault.create_secret('https://kicklight.alen.world', 'site_url');
 select vault.create_secret('<CRON_SECRET value>', 'cron_secret');
 ```
 
-then apply `supabase/migrations/20261013170000_cron_tick.sql`.
+then apply `supabase/migrations/20261013170000_cron_tick.sql` and
+`supabase/migrations/20261024130000_cron_tick_5s.sql`.
+
+While the ball is in play each cron call runs a ~12 s pass that re-reads the feed every 3 s, so
+an event reaches the strip within a few seconds of the feed publishing it.
+
+`.env.local` points at the production database. `next dev` does not drive live sessions unless
+`KICKLIGHT_DEV_LOOP=1`; with it on, the dev server competes with the deployed site for them.
 
 ## 3. Hue Remote API app
 

@@ -1,0 +1,66 @@
+{
+  "leagues": [
+    {
+      "id": 47,
+      "name": "Premier League",
+      "matches": [
+        {
+          "id": 5795486,
+          "home": {
+            "name": "Aston Villa",
+            "longName": "Aston Villa"
+          },
+          "away": {
+            "name": "Manchester City",
+            "longName": "Manchester City"
+          },
+          "status": {
+            "utcTime": "2026-10-24T11:30:00.000Z"
+          }
+        },
+        {
+          "id": 5795485,
+          "home": {
+            "name": "Arsenal",
+            "longName": "Arsenal"
+          },
+          "away": {
+            "name": "Everton",
+            "longName": "Everton"
+          },
+          "status": {
+            "utcTime": "2026-10-24T14:00:00.000Z"
+          }
+        },
+        {
+          "id": 5795488,
+          "home": {
+            "name": "Coventry City",
+            "longName": "Coventry City"
+          },
+          "away": {
+            "name": "Fulham",
+            "longName": "Fulham"
+          },
+          "status": {
+            "utcTime": "2026-10-24T14:00:00.000Z"
+          }
+        },
+        {
+          "id": 5795487,
+          "home": {
+            "name": "Chelsea",
+            "longName": "Chelsea"
+          },
+          "away": {
+            "name": "Tottenham Hotspur",
+            "longName": "Tottenham Hotspur"
+          },
+          "status": {
+            "utcTime": "2026-10-24T16:30:00.000Z"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -260,9 +260,20 @@ export function parseEspnSummary(
     seen.add(e.id);
     events.push(e);
   };
+  // Lines ESPN hasn't stamped yet (a commentary line before its play is attached) are new, so
+  // they're placed by the current period's kick-off, not the match's: counting from kick-off
+  // puts a second-half event a whole half-time break in the past, where it'd be dropped as stale.
+  const period = num(comp?.status?.period);
+  const periodStart = periodStartedAt(json?.keyEvents, period);
+  const periodFromMin = (PERIOD_FROM[period] ?? 0) / 60;
   const wallclockOf = (iso: unknown, minuteAt: number) => {
     const ms = typeof iso === "string" ? Date.parse(iso) : Number.NaN;
-    return Number.isFinite(ms) ? ms : kickoffMs + minuteAt * 60_000;
+    if (Number.isFinite(ms)) return ms;
+    const estimate =
+      periodStart != null && minuteAt > periodFromMin
+        ? periodStart + (minuteAt - periodFromMin - 0.5) * 60_000
+        : kickoffMs + minuteAt * 60_000;
+    return Math.min(estimate, observedAt);
   };
 
   for (const k of json?.keyEvents ?? []) {
@@ -328,13 +339,7 @@ export function parseEspnSummary(
     league,
     phase,
     minute,
-    clock: clockReading(
-      comp?.status,
-      phase,
-      minute,
-      observedAt,
-      periodStartedAt(json?.keyEvents, num(comp?.status?.period)),
-    ),
+    clock: clockReading(comp?.status, phase, minute, observedAt, periodStart),
     kickoff: kickoffMs || undefined,
     home,
     away,

@@ -41,6 +41,8 @@ export interface MatchEvent {
   minute: number;
   /** Real-world time the event happened, ms since epoch. Drives TV-delay scheduling. */
   wallclock: number;
+  /** Which feed reported it, when more than one is merged; ESPN when absent. */
+  source?: string;
 }
 
 export interface TeamInfo {

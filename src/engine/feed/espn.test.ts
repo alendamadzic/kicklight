@@ -128,4 +128,28 @@ describe("espn commentary", () => {
       events.filter((e) => e.type === "offside" && e.side === "away").length,
     ).toBe(snapshot.stats.away.offsides);
   });
+
+  test("a line ESPN hasn't stamped yet is placed from the current period's kick-off", () => {
+    // Mid second half; a corner arrives without its play (so no wallclock) at 60'.
+    const live = structuredClone(fixture) as typeof fixture;
+    const comp = live.header.competitions[0] as Record<string, unknown>;
+    comp.status = {
+      period: 2,
+      displayClock: "60'",
+      type: { name: "STATUS_SECOND_HALF" },
+    };
+    (live.commentary as unknown[]).push({
+      sequence: 999,
+      text: "Corner, Newcastle United. Conceded by Bobby Thomas.",
+      time: { displayValue: "60'" },
+    });
+    const secondHalf = Date.parse("2026-10-12T20:02:57Z");
+    const observedAt = secondHalf + 15 * 60_000;
+    const corner = parseEspnSummary(live, "eng.1", observedAt).events.find(
+      (e) => e.id === "c999",
+    );
+    expect(corner?.side).toBe("away");
+    // 14.5 minutes into the half, not 60 minutes from the first kick-off (half-time ago).
+    expect(corner?.wallclock).toBe(secondHalf + 14.5 * 60_000);
+  });
 });

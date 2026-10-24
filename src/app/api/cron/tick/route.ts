@@ -8,9 +8,10 @@ import { liveFeed } from "@/server/recording";
 import { runDueSessions } from "@/server/tick";
 
 // Called every ~10 s by Supabase Cron (pg_cron + pg_net). The work itself is in
-// src/server/tick.ts, which the local-mode loop shares.
+// src/server/tick.ts, which the local-mode loop shares. A pass polls the feed for ~12 s and
+// can finish an effect after that, so it gets well over its ~27 s worst case.
 
-export const maxDuration = 30;
+export const maxDuration = 60;
 export const dynamic = "force-dynamic";
 
 function authorised(request: NextRequest): boolean {

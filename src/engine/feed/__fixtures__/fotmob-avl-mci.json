@@ -1,0 +1,124 @@
+{
+  "general": {
+    "matchId": "5795486",
+    "leagueId": 47,
+    "homeTeam": {
+      "name": "Aston Villa",
+      "id": 10252
+    },
+    "awayTeam": {
+      "name": "Manchester City",
+      "id": 8456
+    },
+    "matchTimeUTCDate": "2026-10-24T11:30:00.000Z"
+  },
+  "content": {
+    "matchFacts": {
+      "events": {
+        "events": [
+          {
+            "reactKey": "undefined45HalfNaNundefinedundefined",
+            "timeStr": 45,
+            "type": "Half",
+            "time": 45,
+            "overloadTime": null,
+            "homeScore": 1,
+            "awayScore": 0,
+            "halfStrShort": "HT",
+            "halfStrKey": "halftime_short"
+          },
+          {
+            "reactKey": "undefined45AddedTimeNaNundefinedundefined",
+            "timeStr": 45,
+            "type": "AddedTime",
+            "time": 45,
+            "overloadTime": null,
+            "homeScore": 1,
+            "awayScore": 0,
+            "minutesAddedStr": "+ 1 minute added",
+            "minutesAddedKey": "added_injury_time",
+            "minutesAddedInput": 1
+          },
+          {
+            "reactKey": "1462518738Card1104053undefinedfalse",
+            "timeStr": 38,
+            "type": "Card",
+            "time": 38,
+            "overloadTime": null,
+            "eventId": 14625187,
+            "homeScore": 1,
+            "awayScore": 0,
+            "profileUrl": "/players/1104053/rayan-cherki",
+            "overloadTimeStr": false,
+            "isHome": false,
+            "nameStr": "Rayan Cherki",
+            "firstName": "Rayan",
+            "lastName": "Cherki",
+            "fullName": "Rayan Cherki",
+            "playerId": 1104053,
+            "card": "Yellow",
+            "cardDescription": null,
+            "cardReason": {
+              "localizedKey": "card_desc_foul",
+              "defaultText": "Foul"
+            }
+          },
+          {
+            "reactKey": "1462510932Card844425undefinedfalse",
+            "timeStr": 32,
+            "type": "Card",
+            "time": 32,
+            "overloadTime": null,
+            "eventId": 14625109,
+            "homeScore": 1,
+            "awayScore": 0,
+            "profileUrl": "/players/844425/marc-guehi",
+            "overloadTimeStr": false,
+            "isHome": false,
+            "nameStr": "Marc Guéhi",
+            "firstName": "Marc",
+            "lastName": "Guéhi",
+            "fullName": "Marc Guéhi",
+            "playerId": 844425,
+            "card": "Yellow",
+            "cardDescription": null,
+            "cardReason": {
+              "localizedKey": "card_desc_foul",
+              "defaultText": "Foul"
+            }
+          },
+          {
+            "reactKey": "146249206Goal1197347undefinedtrue",
+            "timeStr": 6,
+            "type": "Goal",
+            "time": 6,
+            "overloadTime": null,
+            "eventId": 14624920,
+            "homeScore": 0,
+            "awayScore": 0,
+            "profileUrl": "/players/1197347/nicolas-jackson",
+            "overloadTimeStr": false,
+            "isHome": true,
+            "ownGoal": null,
+            "goalDescription": null,
+            "goalDescriptionKey": null,
+            "suffix": null,
+            "suffixKey": null,
+            "isPenaltyShootoutEvent": false,
+            "nameStr": "Nicolas Jackson",
+            "firstName": "Nicolas",
+            "lastName": "Jackson",
+            "fullName": "Nicolas Jackson",
+            "playerId": 1197347,
+            "newScore": [1, 0],
+            "penShootoutScore": null,
+            "assistStr": "assist by John McGinn",
+            "assistProfileUrl": "/players/356406/john-mcginn",
+            "assistPlayerId": 356406,
+            "assistKey": "assist_by"
+          }
+        ]
+      }
+    }
+  }
+}

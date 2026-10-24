@@ -101,6 +101,76 @@ describe("runner", () => {
     expect(fx?.at).toBe(NOW + 40_000);
   });
 
+  test("an event the feed re-posts under a new id fires once; a real second goal still fires", () => {
+    const input = { snapshot: snap(), delayMs: 0, horizonMs: 60_000 };
+    const card = (id: string, minute: number): MatchEvent => ({
+      id,
+      type: "yellow_card",
+      side: "away",
+      minute,
+      wallclock: NOW,
+    });
+    const a = tick(initialState(), {
+      ...input,
+      events: [card("c-seq-57", 32), goal("k1", NOW)],
+      now: NOW,
+    });
+    // 20 s later ESPN attaches the play: same card, new id. And a second, real goal.
+    const b = tick(a.state, {
+      ...input,
+      events: [
+        card("c-seq-57", 32),
+        card("c54147949", 32),
+        goal("k1", NOW),
+        goal("k2", NOW + 20_000),
+      ],
+      now: NOW + 20_000,
+    });
+    const fired = [...a.commands, ...b.commands].flatMap((c) =>
+      c.item.kind === "effect" ? [c.item.effect] : [],
+    );
+    expect(fired.filter((f) => f === "yellow_card")).toHaveLength(1);
+    expect(fired.filter((f) => f === "goal")).toHaveLength(2);
+  });
+
+  test("a goal FotMob reports first fires once, even when ESPN's copy says a minute earlier", () => {
+    // Villa v City, 24 Oct: scored 12:39:52; FotMob had it at 12:40:10 (as 53'), ESPN at
+    // 12:40:52 (as 52'). Placed by FotMob's lag, it lands about when the TV, 40 s behind, shows it.
+    const scored = Date.parse("2026-10-24T12:39:52Z");
+    const input = { snapshot: snap(), delayMs: 40_000, horizonMs: 60_000 };
+    const fotmob: MatchEvent = {
+      id: "f14625674",
+      type: "goal",
+      side: "away",
+      minute: 53,
+      wallclock: scored + 18_000 - 15_000,
+      source: "fotmob",
+    };
+    const espn: MatchEvent = {
+      id: "k54149975",
+      type: "goal",
+      side: "away",
+      minute: 52,
+      wallclock: scored,
+    };
+    const first = tick(
+      { ...initialState(), started: true },
+      { ...input, events: [fotmob], now: scored + 18_000 },
+    );
+    const later = tick(first.state, {
+      ...input,
+      events: [fotmob, espn],
+      now: scored + 61_000,
+    });
+    const goals = [...first.commands, ...later.commands].filter(
+      (c) => c.item.kind === "effect" && c.item.effect === "goal",
+    );
+    expect(goals).toHaveLength(1);
+    expect(Math.abs(goals[0].at - (scored + 40_000))).toBeLessThanOrEqual(
+      5_000,
+    );
+  });
+
   test("an own goal lights the other team's colour", () => {
     const r = tick(initialState(), {
       snapshot: snap(),
