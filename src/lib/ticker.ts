@@ -33,8 +33,13 @@ export const EFFECT_TINT: Record<string, string> = {
 };
 
 /** Too frequent to be worth a row, unless fired by hand from the pad. */
+const UNLISTED: ReadonlySet<EffectKey> = new Set<EffectKey>([
+  "corner",
+  "offside",
+]);
+
 export const inTicker = (item: TickerItem): boolean =>
-  item.pad || item.effect !== "corner";
+  item.pad || !UNLISTED.has(item.effect);
 
 export const effectLabel = (key: EffectKey): string =>
   EFFECTS[key]?.label ?? key;
