@@ -1,4 +1,5 @@
 import {
+  type ClockReading,
   EMPTY_SIDE_STATS,
   type EventType,
   type MatchEvent,
@@ -174,7 +175,53 @@ export interface ParsedMatch {
   events: MatchEvent[];
 }
 
-export function parseEspnSummary(json: Json, league: string): ParsedMatch {
+const RUNNING: ReadonlySet<MatchPhase> = new Set([
+  "first_half",
+  "second_half",
+  "extra_time",
+]);
+
+/** Where each period's clock starts, in seconds, by ESPN period number. */
+const PERIOD_FROM = [0, 0, 2700, 5400, 6300];
+
+/**
+ * The clock to the second. ESPN only shows it to the minute, but stamps the kick-off of
+ * each period with a wallclock, the same time base goals are stamped with, so the clock
+ * runs from there (and on through added time). Without one, it floors at the minute shown.
+ */
+export function clockReading(
+  status: Json,
+  phase: MatchPhase,
+  minute: number | null,
+  at: number,
+  periodStartedAt?: number,
+): ClockReading | undefined {
+  if (phase === "scheduled" || minute == null) return undefined;
+  const from = PERIOD_FROM[num(status?.period)] ?? 0;
+  const seconds =
+    periodStartedAt != null
+      ? from + Math.max(0, at - periodStartedAt) / 1000
+      : Math.max(num(status?.clock), (minute - 1) * 60, 0);
+  return { seconds, at, running: RUNNING.has(phase), from };
+}
+
+/** When the current period kicked off: "kickoff", "start-2nd-half", "start-…" key events. */
+function periodStartedAt(keyEvents: Json, period: number): number | undefined {
+  const k = (Array.isArray(keyEvents) ? keyEvents : []).find(
+    (k: Json) =>
+      num(k?.period?.number) === period &&
+      /^(kickoff|start)/.test(k?.type?.type ?? ""),
+  );
+  const ms = typeof k?.wallclock === "string" ? Date.parse(k.wallclock) : NaN;
+  return Number.isFinite(ms) ? ms : undefined;
+}
+
+/** `observedAt` is when the payload was fetched, for running the clock on. */
+export function parseEspnSummary(
+  json: Json,
+  league: string,
+  observedAt = Date.now(),
+): ParsedMatch {
   const comp = json?.header?.competitions?.[0];
   const competitors: Json[] = comp?.competitors ?? [];
   const homeC = competitors.find((c) => c.homeAway === "home");
@@ -281,6 +328,13 @@ export function parseEspnSummary(json: Json, league: string): ParsedMatch {
     league,
     phase,
     minute,
+    clock: clockReading(
+      comp?.status,
+      phase,
+      minute,
+      observedAt,
+      periodStartedAt(json?.keyEvents, num(comp?.status?.period)),
+    ),
     kickoff: kickoffMs || undefined,
     home,
     away,

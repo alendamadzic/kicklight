@@ -35,7 +35,9 @@ export function scriptFromRecordings(
 ): ReplayScript {
   if (recordings.length === 0) throw new Error("no recordings");
   const sorted = [...recordings].sort((a, b) => a.capturedAt - b.capturedAt);
-  const parsed = sorted.map((r) => parseEspnSummary(r.payload, meta.league));
+  const parsed = sorted.map((r) =>
+    parseEspnSummary(r.payload, meta.league, r.capturedAt),
+  );
   const last = parsed[parsed.length - 1];
 
   // Possession is a moving number: take it from every snapshot, keyed by match minute.

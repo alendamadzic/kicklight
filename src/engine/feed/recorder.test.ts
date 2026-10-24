@@ -58,8 +58,8 @@ describe("trimEspnPayload", () => {
     expect(JSON.stringify(trimmed).length).toBeLessThan(
       JSON.stringify(bloated).length / 2,
     );
-    expect(parseEspnSummary(trimmed, "eng.1")).toEqual(
-      parseEspnSummary(bloated, "eng.1"),
+    expect(parseEspnSummary(trimmed, "eng.1", 1)).toEqual(
+      parseEspnSummary(bloated, "eng.1", 1),
     );
   });
 

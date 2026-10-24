@@ -11,6 +11,7 @@ import { LiveReadout } from "@/components/match/LiveReadout";
 import { ScoreBug } from "@/components/match/ScoreBug";
 import { STAT_LABEL, StatChannels } from "@/components/match/StatChannels";
 import { Ticker } from "@/components/match/Ticker";
+import { TvClock } from "@/components/match/TvClock";
 import {
   frameFromMirror,
   resolveMirror,
@@ -491,7 +492,19 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
           </section>
 
           <section className="kl-panel p-4" aria-label="TV delay">
-            <DelaySlider valueMs={delayMs} onCommit={commitDelay} />
+            {/* Scripted matches run minutes as seconds, so there's no clock to match. */}
+            {mode === "sim" ||
+            league === REPLAY_LEAGUE ||
+            preview.source === "sample" ? (
+              <DelaySlider valueMs={delayMs} onCommit={commitDelay} />
+            ) : (
+              <TvClock
+                clock={snapshot.clock}
+                phase={snapshot.phase}
+                delayMs={delayMs}
+                onCommit={commitDelay}
+              />
+            )}
           </section>
         </div>
       </div>

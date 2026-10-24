@@ -66,11 +66,25 @@ export interface SideStats {
   offsides: number;
 }
 
+/** The match clock as the feed read it, so a viewer can run it on to the second. */
+export interface ClockReading {
+  /** Seconds played, with added time counted on (90'+4' reads past 93:00). */
+  seconds: number;
+  /** ms since epoch the feed was read. */
+  at: number;
+  /** False at the breaks and full time, when the clock stands still. */
+  running: boolean;
+  /** Where this period's clock started, in seconds: 0, 2700, 5400... */
+  from: number;
+}
+
 export interface MatchSnapshot {
   id: string;
   league: string;
   phase: MatchPhase;
   minute: number | null;
+  /** Absent before kick-off, for scripted matches and on older rows. */
+  clock?: ClockReading;
   /** Scheduled kick-off, ms since epoch, when the feed knows it. */
   kickoff?: number;
   home: TeamInfo;
