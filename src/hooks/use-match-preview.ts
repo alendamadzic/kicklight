@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { api } from "@/lib/api";
 import type { MatchResponse } from "@/lib/api-types";
 import { REPLAY_LEAGUE, sampleMatch } from "@/lib/sample-data";
+import { rememberTeams } from "@/lib/team-cache";
 
 export interface MatchPreviewState {
   data: MatchResponse | null;
@@ -25,7 +26,10 @@ interface Preview {
 async function loadPreview(league: string, id: string): Promise<Preview> {
   if (league !== REPLAY_LEAGUE) {
     try {
-      return { match: await api.match(league, id), source: "api" };
+      const match = await api.match(league, id);
+      // Summaries carry both kit colours; Setup's strip colour picker offers the alternate.
+      rememberTeams([match.snapshot.home, match.snapshot.away]);
+      return { match, source: "api" };
     } catch (e) {
       const sample = sampleMatch(id);
       if (!sample) throw e;

@@ -50,7 +50,7 @@ export function StatChannels({
             aria-label={statLabel(key)}
             aria-busy={pending && key === value ? true : undefined}
             className={cn(
-              "kl-display h-11 min-w-11 rounded-md bg-secondary px-3.5 text-[0.9375rem] leading-none text-muted-foreground",
+              "h-10 min-w-11 rounded-full bg-secondary px-3.5 text-sm font-medium text-muted-foreground",
               "hover:bg-accent hover:text-foreground aria-pressed:bg-foreground aria-pressed:text-background",
               "kl-press aria-busy:animate-pulse",
             )}

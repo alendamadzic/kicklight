@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { SettingsView } from "@/components/settings/settings-view";
+import { SetupView } from "@/components/setup/setup-view";
 
 export const metadata: Metadata = {
   title: "Setup",
 };
 
 export default function SetupPage() {
-  return <SettingsView />;
+  return <SetupView />;
 }
