@@ -204,7 +204,9 @@ export async function processSession(
         await transport.setGradient(resting, 800);
       } else if (cmd.kind === "effect") {
         // The same frames the virtual strip draws, as REST keyframes. An effect that
-        // queued behind another joins at the point the virtual strip has reached.
+        // queued behind another in this pass joins at the point the virtual strip has
+        // reached. Lateness from before this pass started (it fell between two ticks)
+        // doesn't count: the effect would otherwise be "already over" and never play.
         const fx = EFFECTS[cmd.effect];
         if (fx)
           await playFrames(
@@ -213,7 +215,7 @@ export async function processSession(
             { ...colors, side: cmd.side, winner },
             resting,
             sleep,
-            now() - c.at,
+            now() - Math.max(c.at, t0),
           );
       } else if (cmd.kind === "restore") {
         await transport.restore(lightSnapshot);
@@ -246,11 +248,13 @@ export async function processSession(
       snapshot: mirror,
       light_snapshot: lightSnapshot ?? null,
       status,
+      // Due again where this pass's window ends, not a window after it finished, so
+      // commands scheduled in between aren't picked up late.
       next_due_at: ended
         ? after
         : row.league === "replay"
-          ? after + HORIZON_MS
-          : nextDue(parsed.snapshot, after, result.state.pending.length > 0),
+          ? t0 + HORIZON_MS
+          : nextDue(parsed.snapshot, t0, result.state.pending.length > 0),
       ended,
     },
     executed: result.commands,
