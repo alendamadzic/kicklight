@@ -117,6 +117,16 @@ describe("RemoteTransport", () => {
     expect(body.on.on).toBe(true);
   });
 
+  test("setGradient dims with the colours, so a uniform dim isn't lost to xy", async () => {
+    const { f, calls } = fake(() => ({ body: { data: [], errors: [] } }));
+    const t = new RemoteTransport({ ...cfg, fetchImpl: f });
+    await t.setGradient([[255, 0, 0]]);
+    await t.setGradient([[128, 0, 0]]);
+    const [full, half] = calls.map((c) => JSON.parse(String(c.init.body)));
+    expect(full.dimming.brightness).toBe(100);
+    expect(half.dimming.brightness).toBe(50);
+  });
+
   test("signal sends at most two colours", async () => {
     const { f, calls } = fake(() => ({ body: {} }));
     await new RemoteTransport({ ...cfg, fetchImpl: f }).signal({

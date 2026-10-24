@@ -1,5 +1,6 @@
 import type { Rgb } from "@/engine/colors";
 import type { SignalFallback } from "@/engine/effects";
+import { brightnessFor } from "./local/transport";
 import type { LightTransport } from "./transport";
 import { rgbToXy, type Xy } from "./xy";
 
@@ -245,7 +246,11 @@ export class RemoteTransport implements LightTransport {
       method: "PUT",
       body: JSON.stringify({
         on: { on: true },
-        dimming: { brightness: this.cfg.brightness ?? 100 },
+        // The dimmer follows the brightest point, as on the local API, so a uniform dim
+        // (the nerves pulse) shows instead of collapsing to the same xy at full brightness.
+        dimming: {
+          brightness: brightnessFor(colors, this.cfg.brightness ?? 100),
+        },
         gradient: { mode: "segmented_palette", points: pts },
         dynamics: { duration: Math.max(0, Math.round(transitionMs)) },
       }),
