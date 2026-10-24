@@ -1,12 +1,11 @@
 "use client";
 
-import { LightbulbIcon, PlayIcon, SearchIcon, StarIcon } from "lucide-react";
+import { SearchIcon, StarIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { LedBar } from "@/components/chrome/led-bar";
 import { MatchCard } from "@/components/match/match-card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { buttonVariants } from "@/components/ui/button";
 import {
   CommandDialog,
   CommandEmpty,
@@ -16,12 +15,14 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { LEAGUES, leagueName } from "@/engine/feed/leagues";
 import { useAuth } from "@/hooks/use-auth";
 import { useAllMatches, useFixtures } from "@/hooks/use-fixtures";
+import { useLiveSession } from "@/hooks/use-live-session";
 import { usePreferences } from "@/hooks/use-preferences";
+import type { MatchListItem } from "@/lib/api-types";
+import { isLivePhase } from "@/lib/format";
 import { REPLAY_LEAGUE } from "@/lib/sample-data";
 import { cn } from "@/lib/utils";
 
@@ -31,14 +32,37 @@ const DAYS = [
   { value: "1", label: "Tomorrow" },
 ];
 
+/** "all", "mine", or a league slug. */
+type Filter = string;
+
+const DISMISS_KEY = "kl:dismiss-signin";
+
+interface Section {
+  slug: string;
+  name: string;
+  group: string;
+  matches: MatchListItem[];
+}
+
 export function FixturesView() {
   const [day, setDay] = useState(0);
   const { byLeague, loading, source, reason } = useFixtures(day);
   const all = useAllMatches(byLeague);
   const { prefs, update } = usePreferences();
   const { user, ready } = useAuth();
+  const { session } = useLiveSession();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [filter, setFilter] = useState<Filter>("all");
+  const [dismissed, setDismissed] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+    try {
+      setDismissed(localStorage.getItem(DISMISS_KEY) === "1");
+    } catch {
+      setDismissed(false);
+    }
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -61,12 +85,12 @@ export function FixturesView() {
         ? prefs.followed_teams.filter((t) => t !== id)
         : [...prefs.followed_teams, id],
     });
+  const isMine = (m: MatchListItem) =>
+    followed.has(m.home.id) || followed.has(m.away.id);
+  const onLights = (m: MatchListItem) =>
+    !!session && session.league === m.league && session.event_id === m.id;
 
-  const mine = all.filter(
-    (m) => followed.has(m.home.id) || followed.has(m.away.id),
-  );
-
-  const sections = [
+  const sections: Section[] = [
     ...LEAGUES.filter((l) => byLeague[l.slug]?.length).map((l) => ({
       slug: l.slug,
       name: l.name,
@@ -85,180 +109,218 @@ export function FixturesView() {
       : []),
   ];
 
+  // If the chosen league has nothing on the new day, fall back to everything.
+  const active =
+    filter === "all" ||
+    filter === "mine" ||
+    sections.some((s) => s.slug === filter)
+      ? filter
+      : "all";
+  const keep = (m: MatchListItem) =>
+    active === "all" || (active === "mine" ? isMine(m) : m.league === active);
+
+  const live = all.filter((m) => isLivePhase(m.phase) && keep(m));
+  const shown = sections
+    .map((s) => ({
+      ...s,
+      matches: s.matches.filter((m) => keep(m) && !isLivePhase(m.phase)),
+    }))
+    .filter((s) => s.matches.length);
+
+  const filters = [
+    { value: "mine", label: "Mine" },
+    { value: "all", label: "All" },
+    ...sections.map((s) => ({ value: s.slug, label: s.name })),
+  ];
+
+  const card = (m: MatchListItem) => (
+    <MatchCard
+      key={`${m.league}:${m.id}`}
+      match={m}
+      followedIds={followed}
+      onToggleFollow={user ? toggleFollow : undefined}
+      onYourLights={onLights(m)}
+      kitOverrides={prefs.kit_overrides}
+    />
+  );
+
+  const dismiss = () => {
+    setDismissed(true);
+    try {
+      localStorage.setItem(DISMISS_KEY, "1");
+    } catch {
+      // Storage blocked: it stays hidden for this visit.
+    }
+  };
+
+  const notice =
+    source === "sample" && reason === "unavailable" ? (
+      <p className="text-sm text-muted-foreground">
+        The match feed isn't answering, so these are scripted samples.{" "}
+        <Link
+          href="/demo"
+          className="text-foreground underline underline-offset-4"
+        >
+          Watch a demo match
+        </Link>
+      </p>
+    ) : ready && !user && !dismissed ? (
+      <div className="flex items-center gap-3 rounded-xl bg-muted px-3 py-2 text-sm">
+        <span className="min-w-0 flex-1">
+          {source === "sample" ? "These are samples. " : null}
+          <Link
+            href="/login"
+            className="font-semibold underline underline-offset-4"
+          >
+            Sign in
+          </Link>{" "}
+          to follow teams and start your lights.
+        </span>
+        <button
+          type="button"
+          onClick={dismiss}
+          aria-label="Dismiss"
+          className="grid size-9 shrink-0 place-items-center rounded-lg text-muted-foreground hover:text-foreground"
+        >
+          <XIcon className="size-4" />
+        </button>
+      </div>
+    ) : null;
+
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-3">
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <p className="kl-eyebrow">Fixtures</p>
-            <h1 className="kl-display text-4xl leading-none sm:text-5xl">
-              Pick a match
-            </h1>
-          </div>
-        </div>
+    <div className="flex flex-col gap-4">
+      <header className="flex items-center justify-between gap-3">
+        <h1 className="kl-headline text-4xl sm:text-5xl">Matches</h1>
         <button
           type="button"
           onClick={() => setSearchOpen(true)}
-          className="kl-press flex h-12 w-full items-center gap-3 rounded-xl border border-border bg-card px-4 text-left text-muted-foreground outline-none transition-colors hover:border-foreground/25 focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label="Search teams, matches and leagues"
+          className="kl-press flex h-11 items-center gap-2 rounded-xl border border-border bg-card px-3 text-sm text-muted-foreground outline-none transition-colors hover:border-foreground/25 focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <SearchIcon className="size-4 shrink-0" />
-          <span className="flex-1 truncate text-sm">
-            Search teams, matches, leagues
-          </span>
-          <kbd className="hidden rounded border border-border px-1.5 py-0.5 font-mono text-[0.6875rem] sm:block">
+          <SearchIcon className="size-4" />
+          <span className="hidden sm:inline">Search</span>
+          <kbd className="hidden rounded border border-border px-1.5 py-0.5 font-mono text-[0.6875rem] lg:block">
             ⌘K
           </kbd>
         </button>
+      </header>
+
+      {/* Day and league filters stay in reach while the list scrolls. */}
+      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-20 -mx-4 flex flex-col gap-2 border-b border-border/60 bg-background/95 px-4 pt-1 pb-2 backdrop-blur-md lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:px-0 lg:backdrop-blur-none">
         <ToggleGroup
           value={[String(day)]}
           onValueChange={(v) => v[0] && setDay(Number(v[0]))}
           spacing={1}
           aria-label="Day"
-          className="w-full"
+          className="w-full lg:w-auto lg:self-start"
         >
           {DAYS.map((d) => (
             <ToggleGroupItem
               key={d.value}
               value={d.value}
-              className="kl-display kl-press h-11 flex-1 rounded-md bg-secondary text-base leading-none text-muted-foreground hover:bg-accent hover:text-foreground aria-pressed:bg-foreground aria-pressed:text-background"
+              className="kl-press h-10 flex-1 rounded-lg bg-secondary px-4 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground aria-pressed:bg-foreground aria-pressed:text-background lg:flex-none"
             >
               {d.label}
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
-      </header>
+        <div className="kl-scroll-x -mx-4 overflow-x-auto px-4 [mask-image:linear-gradient(90deg,transparent,#000_16px,#000_calc(100%-24px),transparent)] lg:hidden">
+          <FilterChips
+            filters={filters}
+            value={active}
+            onChange={setFilter}
+            className="w-max"
+          />
+        </div>
+      </div>
 
-      {source === "sample" ? (
-        <Alert>
-          <LightbulbIcon />
-          <AlertTitle>
-            {reason === "signed_out"
-              ? "Sign in for real fixtures"
-              : "Showing sample matches"}
-          </AlertTitle>
-          <AlertDescription>
-            <span>
-              {reason === "signed_out"
-                ? "These are scripted samples. Sign in to see today's matches and follow your teams."
-                : "The match feed isn't reachable, so these are scripted samples."}
-            </span>
-            <span className="mt-3 flex flex-wrap gap-2">
-              {reason === "signed_out" ? (
-                <Link href="/login" className={buttonVariants({ size: "sm" })}>
-                  Sign in
-                </Link>
+      {notice}
+
+      <div className="grid gap-6 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-8">
+        <nav
+          aria-label="Leagues"
+          className="hidden lg:sticky lg:top-[calc(4.5rem+env(safe-area-inset-top))] lg:flex lg:flex-col lg:gap-1 lg:self-start"
+        >
+          <span className="kl-eyebrow mb-1 px-3">Show</span>
+          {filters.map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              onClick={() => setFilter(f.value)}
+              aria-pressed={active === f.value}
+              className={cn(
+                "flex h-10 items-center gap-2 rounded-lg px-3 text-left text-sm transition-colors",
+                active === f.value
+                  ? "bg-secondary font-semibold text-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              )}
+            >
+              {f.value === "mine" ? (
+                <StarIcon className="size-3.5 fill-amber stroke-amber" />
               ) : null}
-              <Link
-                href="/demo"
-                className={buttonVariants({ variant: "outline", size: "sm" })}
+              <span className="truncate">{f.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="flex min-w-0 flex-col gap-6">
+          {loading && !sections.length ? (
+            <div className="flex flex-col gap-2" aria-busy>
+              <LedBar variant="chase" className="mb-1" />
+              <Skeleton className="h-[5.5rem] w-full rounded-xl" />
+              <Skeleton className="h-[5.5rem] w-full rounded-xl" />
+            </div>
+          ) : null}
+
+          {live.length ? (
+            <section aria-labelledby="live-now" className="flex flex-col gap-3">
+              <h2
+                id="live-now"
+                className="flex items-center gap-2 text-sm font-semibold text-live"
               >
-                <PlayIcon data-icon="inline-start" />
-                Try the demo
-              </Link>
-            </span>
-          </AlertDescription>
-        </Alert>
-      ) : null}
+                <span className="kl-live-dot size-2 rounded-full bg-live" />
+                Live now
+              </h2>
+              <div className="grid gap-2 xl:grid-cols-2">{live.map(card)}</div>
+            </section>
+          ) : null}
 
-      {ready && !user && source === "api" ? (
-        <Alert>
-          <AlertTitle>Sign in to light up your strip</AlertTitle>
-          <AlertDescription>
-            <Link href="/login" className="underline underline-offset-2">
-              Get a magic link
-            </Link>{" "}
-            to follow teams and start a match.
-          </AlertDescription>
-        </Alert>
-      ) : null}
+          {shown.map((s) => (
+            <section
+              key={s.slug}
+              id={`league-${s.slug}`}
+              aria-labelledby={`h-${s.slug}`}
+              className="flex scroll-mt-32 flex-col gap-3"
+            >
+              <div className="flex items-baseline gap-2">
+                <h2 id={`h-${s.slug}`} className="kl-headline text-2xl">
+                  {s.name}
+                </h2>
+                <span className="kl-eyebrow">{s.group}</span>
+              </div>
+              <div className="grid gap-2 xl:grid-cols-2">
+                {s.matches.map(card)}
+              </div>
+            </section>
+          ))}
 
-      <section aria-labelledby="my-teams" className="flex flex-col gap-3">
-        <SectionTitle
-          id="my-teams"
-          icon={<StarIcon className="size-4 fill-amber stroke-amber" />}
-        >
-          My teams
-        </SectionTitle>
-        {mine.length ? (
-          <div className="grid gap-2 sm:grid-cols-2">
-            {mine.map((m) => (
-              <MatchCard
-                key={`${m.league}:${m.id}`}
-                match={m}
-                followedIds={followed}
-                onToggleFollow={toggleFollow}
-              />
-            ))}
-          </div>
-        ) : (
-          <p className="rounded-xl border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
-            {followed.size
-              ? "None of your teams play on this day."
-              : "Tap the star next to a team and its matches are pinned here first."}
-          </p>
-        )}
-      </section>
-
-      <section
-        aria-labelledby="auto-start"
-        className="kl-panel flex items-center gap-3 p-4"
-      >
-        <div className="min-w-0 flex-1">
-          <h2 id="auto-start" className="kl-display text-lg leading-none">
-            Auto-start 10 min before kick-off
-          </h2>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Your lights join in on their own when a followed team is about to
-            play.
-          </p>
+          {!loading && !live.length && !shown.length ? (
+            <p className="rounded-xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
+              {active === "mine"
+                ? followed.size
+                  ? "None of your teams play on this day."
+                  : "Follow a team from a match card's ⋯ menu and its matches show up here."
+                : "No matches on this day. Try another day, or "}
+              {active === "mine" ? null : (
+                <Link href="/demo" className="underline underline-offset-2">
+                  watch a demo match
+                </Link>
+              )}
+              {active === "mine" ? null : "."}
+            </p>
+          ) : null}
         </div>
-        <Switch
-          aria-labelledby="auto-start"
-          checked={prefs.auto_start}
-          onCheckedChange={(v) => update({ auto_start: v })}
-        />
-      </section>
-
-      {loading && !sections.length ? (
-        <div className="flex flex-col gap-2" aria-busy>
-          <Skeleton className="h-6 w-40" />
-          <Skeleton className="h-[5.5rem] w-full rounded-xl" />
-          <Skeleton className="h-[5.5rem] w-full rounded-xl" />
-        </div>
-      ) : null}
-
-      {sections.map((s) => (
-        <section
-          key={s.slug}
-          id={`league-${s.slug}`}
-          aria-labelledby={`h-${s.slug}`}
-          className="flex scroll-mt-20 flex-col gap-3"
-        >
-          <SectionTitle id={`h-${s.slug}`} sub={s.group}>
-            {s.name}
-          </SectionTitle>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {s.matches.map((m) => (
-              <MatchCard
-                key={`${m.league}:${m.id}`}
-                match={m}
-                followedIds={followed}
-                onToggleFollow={toggleFollow}
-              />
-            ))}
-          </div>
-        </section>
-      ))}
-
-      {!loading && !sections.length ? (
-        <p className="rounded-xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
-          No matches on this day. Try another day, or{" "}
-          <Link href="/demo" className="underline underline-offset-2">
-            play a scripted match
-          </Link>
-          .
-        </p>
-      ) : null}
+      </div>
 
       <CommandDialog
         open={searchOpen}
@@ -293,20 +355,18 @@ export function FixturesView() {
             </CommandGroup>
           ) : null}
           <CommandGroup heading="Leagues">
-            {LEAGUES.map((l) => (
+            {sections.map((s) => (
               <CommandItem
-                key={l.slug}
-                value={`league ${l.name} ${l.group}`}
+                key={s.slug}
+                value={`league ${s.name} ${s.group}`}
                 onSelect={() => {
                   setSearchOpen(false);
-                  document
-                    .getElementById(`league-${l.slug}`)
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  setFilter(s.slug);
                 }}
               >
-                {l.name}
+                {s.name}
                 <span className="ml-auto text-xs text-muted-foreground">
-                  {l.group}
+                  {s.group}
                 </span>
               </CommandItem>
             ))}
@@ -317,24 +377,40 @@ export function FixturesView() {
   );
 }
 
-function SectionTitle({
-  id,
-  children,
-  sub,
-  icon,
+function FilterChips({
+  filters,
+  value,
+  onChange,
+  className,
 }: {
-  id: string;
-  children: React.ReactNode;
-  sub?: string;
-  icon?: React.ReactNode;
+  filters: { value: string; label: string }[];
+  value: string;
+  onChange: (v: string) => void;
+  className?: string;
 }) {
   return (
-    <div className="flex items-baseline gap-2">
-      {icon}
-      <h2 id={id} className="kl-display text-2xl leading-none">
-        {children}
-      </h2>
-      {sub ? <span className={cn("kl-eyebrow")}>{sub}</span> : null}
-    </div>
+    <ToggleGroup
+      value={[value]}
+      onValueChange={(v) => v[0] && onChange(v[0])}
+      spacing={1}
+      aria-label="Show"
+      className={className}
+    >
+      {filters.map((f) => (
+        <ToggleGroupItem
+          key={f.value}
+          value={f.value}
+          className="kl-press h-9 rounded-full bg-secondary px-3.5 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground aria-pressed:bg-foreground aria-pressed:text-background"
+        >
+          {f.value === "mine" ? (
+            <StarIcon
+              data-icon="inline-start"
+              className="fill-amber stroke-amber"
+            />
+          ) : null}
+          {f.label}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
   );
 }
