@@ -36,6 +36,7 @@ export const EFFECT_TINT: Record<string, string> = {
 const UNLISTED: ReadonlySet<EffectKey> = new Set<EffectKey>([
   "corner",
   "offside",
+  "nerves",
 ]);
 
 export const inTicker = (item: TickerItem): boolean =>
