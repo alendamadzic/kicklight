@@ -227,7 +227,7 @@ export function SettingsView() {
             </span>
             {ready ? (
               <Link
-                href="/login?next=/settings"
+                href="/login?next=/setup"
                 className={buttonVariants({
                   className: "kl-display h-11 rounded-lg px-4 text-base",
                 })}

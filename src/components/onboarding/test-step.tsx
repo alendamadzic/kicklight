@@ -79,7 +79,7 @@ export function TestStep({
           </p>
           <div className="grid grid-cols-[1fr_auto] gap-2">
             <Link
-              href="/"
+              href="/matches"
               className={buttonVariants({
                 size: "lg",
                 className: "kl-display h-12 rounded-xl text-lg",

@@ -23,7 +23,7 @@ export default function NotFound() {
           <EmptyDescription>There's no page at this address.</EmptyDescription>
         </EmptyHeader>
         <div className="flex gap-2">
-          <Link href="/" className={buttonVariants()}>
+          <Link href="/matches" className={buttonVariants()}>
             All matches
           </Link>
           <Link href="/demo" className={buttonVariants({ variant: "outline" })}>

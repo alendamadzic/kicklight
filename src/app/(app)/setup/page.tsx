@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { SettingsView } from "@/components/settings/settings-view";
 
 export const metadata: Metadata = {
-  title: "Settings",
+  title: "Setup",
 };
 
-export default function SettingsPage() {
+export default function SetupPage() {
   return <SettingsView />;
 }

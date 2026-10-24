@@ -12,6 +12,10 @@ const nextConfig: NextConfig = {
     "node-aead-crypto",
     "multicast-dns",
   ],
+  // Settings became Setup in the redesign; keep old links and bookmarks working.
+  async redirects() {
+    return [{ source: "/settings", destination: "/setup", permanent: true }];
+  },
   // Pin the workspace root so builds inside a git worktree don't pick up a parent checkout.
   turbopack: { root: path.resolve(__dirname) },
 };

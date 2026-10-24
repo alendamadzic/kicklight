@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import type { Rgb } from "@/engine/colors";
 import { rgba } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -20,6 +20,11 @@ export interface VirtualStripProps {
   variant?: "tv" | "linear";
   label?: string;
   className?: string;
+  /**
+   * Drawn over the TV's screen (the `tv` variant only), e.g. the score bug in the
+   * corner as on a real broadcast. Positioned to the screen the canvas draws.
+   */
+  screen?: ReactNode;
 }
 
 interface Geometry {
@@ -161,8 +166,10 @@ export function VirtualStrip({
   variant = "tv",
   label = "Virtual light strip",
   className,
+  screen,
 }: VirtualStripProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const screenRef = useRef<HTMLDivElement>(null);
   const colorsRef = useRef(colors);
   const frameRef = useRef(frame);
   const wakeRef = useRef<() => void>(() => {});
@@ -201,6 +208,14 @@ export function VirtualStrip({
       canvas.width = Math.round(r.width * dpr);
       canvas.height = Math.round(r.height * dpr);
       geom = layout(r.width, r.height, dpr, n, variant);
+      const box = screenRef.current;
+      if (box && geom.tv) {
+        box.style.left = `${geom.tv.x}px`;
+        box.style.top = `${geom.tv.y}px`;
+        box.style.width = `${geom.tv.w}px`;
+        box.style.height = `${geom.tv.h}px`;
+        box.style.visibility = "visible";
+      }
       wake();
     };
 
@@ -265,7 +280,7 @@ export function VirtualStrip({
     };
   }, [count, variant]);
 
-  return (
+  const canvas = (
     <canvas
       ref={canvasRef}
       role="img"
@@ -276,5 +291,19 @@ export function VirtualStrip({
         className,
       )}
     />
+  );
+  // The tv variant always keeps the same tree, so the canvas the draw loop holds
+  // never gets swapped out when a screen overlay appears.
+  if (variant !== "tv") return canvas;
+  return (
+    <div className="relative">
+      {canvas}
+      <div
+        ref={screenRef}
+        className="invisible absolute overflow-hidden rounded-[4px]"
+      >
+        {screen}
+      </div>
+    </div>
   );
 }

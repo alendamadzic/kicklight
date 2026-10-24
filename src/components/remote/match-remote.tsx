@@ -81,7 +81,10 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
         </EmptyHeader>
         <div className="flex gap-2">
           <Button onClick={preview.retry}>Try again</Button>
-          <Link href="/" className={buttonVariants({ variant: "outline" })}>
+          <Link
+            href="/matches"
+            className={buttonVariants({ variant: "outline" })}
+          >
             All matches
           </Link>
         </div>
@@ -105,7 +108,7 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
     <div className="flex flex-col gap-4 lg:gap-6">
       <div className="flex items-center justify-between">
         <Link
-          href="/"
+          href="/matches"
           className="kl-display -ml-2 inline-flex h-11 items-center gap-1.5 rounded-md px-2 text-base text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeftIcon className="size-4" />

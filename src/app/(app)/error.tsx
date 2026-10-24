@@ -34,7 +34,10 @@ export default function AppError({
       </EmptyHeader>
       <div className="flex gap-2">
         <Button onClick={() => unstable_retry()}>Try again</Button>
-        <Link href="/" className={buttonVariants({ variant: "outline" })}>
+        <Link
+          href="/matches"
+          className={buttonVariants({ variant: "outline" })}
+        >
           All matches
         </Link>
       </div>
