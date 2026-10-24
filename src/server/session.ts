@@ -1,10 +1,8 @@
-import type { Rgb } from "@/engine/colors";
-import { pickStripColors } from "@/engine/colors";
+import { pickStripColors, type Rgb, type TeamColors } from "@/engine/colors";
 import { EFFECTS } from "@/engine/effects";
-import type { ParsedMatch } from "@/engine/feed/espn";
 import { replayAt } from "@/engine/feed/replay";
 import { SCENARIOS } from "@/engine/feed/scenarios";
-import type { MatchSnapshot } from "@/engine/model";
+import { leaderOf, type MatchSnapshot, type ParsedMatch } from "@/engine/model";
 import {
   type Command,
   initialState,
@@ -183,7 +181,7 @@ export async function processSession(
   let status: SessionRow["status"] = row.status;
   let ended = false;
   let parsed: ParsedMatch | null = null;
-  let colors: { home: Rgb; away: Rgb } | null = null;
+  let colors: TeamColors | null = null;
   let activeStat = state.stat;
   // Effects play over this and settle back onto it.
   let resting: Rgb[] | null = null;
@@ -192,7 +190,7 @@ export async function processSession(
     match: (parsed as ParsedMatch).snapshot,
     stat: row.stat as StatKey,
     activeStat,
-    colors: colors as { home: Rgb; away: Rgb },
+    colors: colors as TeamColors,
     recent: trimRecent(recent),
     updatedAt: now(),
   });
@@ -213,16 +211,13 @@ export async function processSession(
     const last =
       pollAt + POLL_MS >= t0 + PASS_MS || !IN_PLAY.has(parsed.snapshot.phase);
     const horizonMs = last ? HORIZON_MS : POLL_MS;
-    const strip = pickStripColors(parsed.snapshot.home, parsed.snapshot.away);
-    colors = { home: strip.home as Rgb, away: strip.away as Rgb };
+    const { home, away } = pickStripColors(
+      parsed.snapshot.home,
+      parsed.snapshot.away,
+    );
+    colors = { home, away };
     resting ??= restingFromRecent(recent, transport.points, colors);
-    const score = parsed.snapshot.score;
-    const winner =
-      score.home > score.away
-        ? "home"
-        : score.away > score.home
-          ? "away"
-          : null;
+    const winner = leaderOf(parsed.snapshot.score);
 
     const result = tick(state, {
       snapshot: parsed.snapshot,

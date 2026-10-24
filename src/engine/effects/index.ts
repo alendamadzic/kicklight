@@ -1,4 +1,4 @@
-import { luminance, type Rgb } from "../colors";
+import type { Rgb, TeamColors } from "../colors";
 import type { EventType, Side } from "../model";
 
 // Every effect is a pure function of time: given seconds since it started and the
@@ -7,9 +7,7 @@ import type { EventType, Side } from "../model";
 
 export type EffectKey = EventType | "nerves";
 
-export interface EffectContext {
-  home: Rgb;
-  away: Rgb;
+export interface EffectContext extends TeamColors {
   /** Side the event belongs to; null for match-level events. */
   side: Side | null;
   /** Who is ahead at full time, null if level. */
@@ -388,10 +386,3 @@ export const PAD_ORDER: EffectKey[] = [
   "kickoff",
   "full_time",
 ];
-
-/** Dimmest a lit LED may go before we'd rather turn the channel off. */
-export const isVisible = (c: Rgb) => luminance(c) > 6;
-
-export function getEffect(key: EffectKey): Effect | undefined {
-  return EFFECTS[key];
-}

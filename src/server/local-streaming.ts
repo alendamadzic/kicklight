@@ -30,6 +30,11 @@ export function activeStreamFor(userId: string): StreamingTransport | null {
   return st?.isStreaming ? st : null;
 }
 
+/** The user's stream transport, streaming or not. Ending a session must go through it. */
+export function streamTransportFor(userId: string): StreamingTransport | null {
+  return live.get(userId) ?? null;
+}
+
 export async function localTransportWithStreaming(
   admin: SupabaseClient,
   userId: string,
@@ -42,13 +47,9 @@ export async function localTransportWithStreaming(
   if (existing) return existing;
 
   try {
-    const { data: sec } = await admin
-      .from("hue_secrets")
-      .select("app_key_enc, client_key_enc")
-      .eq("user_id", userId)
-      .maybeSingle();
-    if (!sec?.client_key_enc || !sec.app_key_enc) return base.transport; // paired elsewhere: no clientkey
-    const { link } = base;
+    const { link, secrets } = base;
+    // Paired elsewhere (no clientkey) or not fully set up: plain REST.
+    if (!secrets?.client_key_enc || !secrets.app_key_enc) return base.transport;
     if (!link.bridge_ip || !link.cert_fingerprint || !link.light_id)
       return base.transport;
 
@@ -58,22 +59,23 @@ export async function localTransportWithStreaming(
         trust: { pin: link.cert_fingerprint },
       }),
       ip: link.bridge_ip,
-      applicationKey: decrypt(sec.app_key_enc as string),
+      applicationKey: decrypt(secrets.app_key_enc),
     };
     const config = await ensureConfiguration(api, link.light_id, {
       name: "Kicklight",
     });
     if (config.id !== link.entertainment_config_id) {
-      await admin
+      const { error } = await admin
         .from("hue_links")
         .update({ entertainment_config_id: config.id })
         .eq("user_id", userId);
+      if (error) throw new Error(error.message);
     }
     const session = new EntertainmentSession({
       api,
       config,
       identity: await fetchApplicationId(api),
-      clientKey: decrypt(sec.client_key_enc as string),
+      clientKey: decrypt(secrets.client_key_enc),
       onClose: (err) =>
         console.error(
           "[kicklight] entertainment stream closed",

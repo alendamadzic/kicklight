@@ -1,15 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
+import { readSupabaseEnv } from "@/lib/supabase/env";
 
 // Next 16 renamed middleware to proxy. This only keeps the Supabase auth cookie fresh;
 // access control lives in the routes and in RLS, not here.
 export async function proxy(request: NextRequest) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   let response = NextResponse.next({ request });
-  if (!url || !key) return response;
+  const env = readSupabaseEnv();
+  if (!env) return response;
 
-  const supabase = createServerClient(url, key, {
+  const supabase = createServerClient(env.url, env.key, {
     cookies: {
       getAll: () => request.cookies.getAll(),
       setAll: (all) => {

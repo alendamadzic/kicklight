@@ -11,7 +11,7 @@ export interface DiscoveredBridge {
   /** Bridge id as it appears in the certificate CN and /api/config, upper-case 16 hex. */
   id: string;
   ip: string;
-  source: "mdns" | "cloud" | "manual";
+  source: "mdns" | "cloud";
 }
 
 /** What an mDNS sweep yields before ids are resolved. */
@@ -191,13 +191,4 @@ export async function discoverBridges(
     }
   }
   return [...found.values()];
-}
-
-/** The user typed an address. Returns null when it doesn't answer like a bridge. */
-export async function manualBridge(
-  ip: string,
-  deps: DiscoveryDeps = {},
-): Promise<DiscoveredBridge | null> {
-  const id = await resolveBridgeId(ip, deps);
-  return id ? { id, ip, source: "manual" } : null;
 }

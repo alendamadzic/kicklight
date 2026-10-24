@@ -3,7 +3,6 @@ import type { FetchLike } from "./agent";
 import {
   type DnsPacket,
   discoverBridges,
-  manualBridge,
   parseMdnsPackets,
   resolveBridgeId,
 } from "./discovery";
@@ -134,19 +133,17 @@ describe("discoverBridges", () => {
   });
 });
 
-describe("manual path", () => {
+describe("resolveBridgeId", () => {
   test("accepts an address that answers /api/config", async () => {
     const fetch: FetchLike = async () => json({ bridgeid: "C42996FFFEC6FCDA" });
-    expect(await manualBridge("192.168.1.225", { fetch })).toEqual({
-      id: "C42996FFFEC6FCDA",
-      ip: "192.168.1.225",
-      source: "manual",
-    });
+    expect(await resolveBridgeId("192.168.1.225", { fetch })).toBe(
+      "C42996FFFEC6FCDA",
+    );
   });
 
   test("rejects an address that isn't a bridge", async () => {
     const fetch: FetchLike = async () => json({ hello: "world" });
-    expect(await manualBridge("10.0.0.1", { fetch })).toBeNull();
+    expect(await resolveBridgeId("10.0.0.1", { fetch })).toBeNull();
   });
 
   test("falls back to the certificate CN when config is unreachable", async () => {

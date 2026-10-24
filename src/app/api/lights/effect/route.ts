@@ -1,15 +1,12 @@
 import type { NextRequest } from "next/server";
-import { EFFECTS, type EffectKey } from "@/engine/effects";
-import type { Side } from "@/engine/model";
+import { EFFECTS } from "@/engine/effects";
 import type { MirroredCommand } from "@/lib/api-types";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { playFrames } from "@/lights/play";
-import { HueRemoteError } from "@/lights/remote";
 import { restingFromRecent } from "@/lights/render";
-import { apiError, json, requireUser } from "@/server/auth";
-import { transportFor } from "@/server/hue-link";
+import { apiError, json, readJson, requireUser } from "@/server/http";
 import { activeStreamFor } from "@/server/local-streaming";
-import { isRgb } from "@/server/validate";
+import { parseFireEffect } from "@/server/validate";
+import { withUserTransport } from "@/server/with-transport";
 
 // A replay waits for the whole animation (up to ~7 s) before answering.
 export const maxDuration = 30;
@@ -23,35 +20,20 @@ export const maxDuration = 30;
 export async function POST(request: NextRequest) {
   const { user, response } = await requireUser();
   if (!user) return response;
-  const b = (await request.json().catch(() => null)) as {
-    effect?: string;
-    side?: unknown;
-    home?: unknown;
-    away?: unknown;
-  } | null;
-  const fx = b?.effect ? EFFECTS[b.effect as EffectKey] : undefined;
-  if (!fx || !isRgb(b?.home) || !isRgb(b?.away))
-    return apiError("bad_effect", 400);
-  const side: Side | null =
-    b?.side === "home" || b?.side === "away" ? b.side : null;
+  const body = parseFireEffect(await readJson(request));
+  const fx = body && EFFECTS[body.effect];
+  if (!body || !fx)
+    return apiError("bad_request", 400, "Unknown effect or colours");
+  const { effect, side, home, away } = body;
 
   const stream = activeStreamFor(user.id);
-  if (
-    stream &&
-    (await stream
-      .applyCommand(
-        { kind: "effect", effect: fx.key, side },
-        { home: b.home, away: b.away },
-      )
-      .catch(() => false))
-  )
-    return json({ ok: true, skipped: false });
+  const streamed = await stream
+    ?.applyCommand({ kind: "effect", effect, side }, { home, away })
+    .catch(() => false);
+  if (streamed) return json({ ok: true });
 
-  const admin = createAdminClient();
-  const t = await transportFor(admin, user.id);
-  if (!t?.link.light_id) return apiError("not_linked", 409);
-  const ctx = { home: b.home, away: b.away, side, winner: null };
-  try {
+  return withUserTransport(user.id, async ({ transport }, admin) => {
+    // Settle back onto whatever the live session last showed, if one is running.
     const { data } = await admin
       .from("sessions")
       .select("runner_state")
@@ -61,16 +43,13 @@ export async function POST(request: NextRequest) {
       .limit(1)
       .maybeSingle();
     const recent = (data?.runner_state?.recent ?? []) as MirroredCommand[];
+    const ctx = { home, away, side, winner: null };
     await playFrames(
-      t.transport,
+      transport,
       fx,
       ctx,
-      restingFromRecent(recent, t.transport.points, ctx),
+      restingFromRecent(recent, transport.points, ctx),
     );
-    return json({ ok: true, skipped: false });
-  } catch (e) {
-    if (e instanceof HueRemoteError && e.unauthorized)
-      return apiError("hue_unauthorized", 401);
-    return apiError("hue_unavailable", 502, (e as Error).message);
-  }
+    return json({ ok: true });
+  });
 }

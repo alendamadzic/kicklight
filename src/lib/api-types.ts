@@ -1,41 +1,16 @@
 // Shared request/response shapes between the API routes and the UI.
 // The server owns these; the UI imports them. Change both sides together.
 
-import type { Rgb } from "@/engine/colors";
+import type { Rgb, TeamColors } from "@/engine/colors";
 import type { EffectKey } from "@/engine/effects";
-import type {
-  MatchEvent,
-  MatchPhase,
-  MatchSnapshot,
-  Side,
-} from "@/engine/model";
+import type { ScoreboardMatch } from "@/engine/feed/espn-scoreboard";
+import type { MatchEvent, MatchSnapshot, Side } from "@/engine/model";
 import type { StatKey } from "@/engine/stats";
 
 export type AppMode = "cloud" | "local";
 
-export interface MatchListItem {
-  id: string;
-  league: string;
-  /** ISO kick-off time. */
-  kickoff: string;
-  phase: MatchPhase;
-  minute: number | null;
-  home: {
-    id: string;
-    name: string;
-    short: string;
-    color: string;
-    crest?: string;
-  };
-  away: {
-    id: string;
-    name: string;
-    short: string;
-    color: string;
-    crest?: string;
-  };
-  score: { home: number; away: number };
-}
+/** One row of a fixture list (GET /api/matches). */
+export type MatchListItem = ScoreboardMatch;
 
 /** GET /api/config */
 export interface AppConfig {
@@ -90,7 +65,7 @@ export interface SessionMirror {
   /** The viewer's choice this mirror was drawn with (absent on older rows). */
   stat?: StatKey;
   activeStat: StatKey;
-  colors: { home: Rgb; away: Rgb };
+  colors: TeamColors;
   recent: MirroredCommand[];
   updatedAt: number;
 }
@@ -154,7 +129,35 @@ export type PairResponse =
       message?: string;
     };
 
+/** Every `error` code the API answers with. */
+export type ApiErrorCode =
+  // Request
+  | "unauthenticated"
+  | "forbidden"
+  | "bad_request"
+  | "unknown_league"
+  | "unknown_scenario"
+  // Hue link
+  | "not_linked"
+  | "no_light"
+  | "hue_unauthorized"
+  | "hue_unavailable"
+  | "not_available"
+  | "not_configured"
+  // Upstream and storage
+  | "feed_unavailable"
+  | "discovery_failed"
+  | "db_error"
+  | "tick_failed";
+
+/** Codes that mean the user has Hue setup to do (link, relink or pick a strip). */
+export const HUE_SETUP_ERRORS: ReadonlySet<string> = new Set<ApiErrorCode>([
+  "not_linked",
+  "no_light",
+  "hue_unauthorized",
+]);
+
 export interface ApiError {
-  error: string;
+  error: ApiErrorCode;
   message?: string;
 }

@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  // Check every <Link href> and router.push against the routes that exist.
+  typedRoutes: true,
   // Native / socket-level packages used only by local mode: load them from node_modules
   // at runtime instead of letting Turbopack try to bundle them.
   serverExternalPackages: [

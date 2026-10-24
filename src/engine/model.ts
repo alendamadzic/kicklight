@@ -80,6 +80,18 @@ export interface ClockReading {
   from: number;
 }
 
+export interface Score {
+  home: number;
+  away: number;
+}
+
+/** The side ahead on goals, or null when level. */
+export function leaderOf(score: Score): Side | null {
+  if (score.home > score.away) return "home";
+  if (score.away > score.home) return "away";
+  return null;
+}
+
 export interface MatchSnapshot {
   id: string;
   league: string;
@@ -91,8 +103,14 @@ export interface MatchSnapshot {
   kickoff?: number;
   home: TeamInfo;
   away: TeamInfo;
-  score: { home: number; away: number };
+  score: Score;
   stats: { home: SideStats; away: SideStats };
+}
+
+/** One read of a feed: the match as it stands, and every event so far. */
+export interface ParsedMatch {
+  snapshot: MatchSnapshot;
+  events: MatchEvent[];
 }
 
 export const EMPTY_SIDE_STATS: SideStats = {

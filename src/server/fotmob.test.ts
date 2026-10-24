@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import details from "@/engine/feed/__fixtures__/fotmob-avl-mci.json";
 import matches from "@/engine/feed/__fixtures__/fotmob-matches-20261024.json";
-import type { ParsedMatch } from "@/engine/feed/espn";
+import type { ParsedMatch } from "@/engine/model";
 import { EMPTY_SIDE_STATS, type MatchPhase } from "@/engine/model";
 import { withFotmob } from "./fotmob";
 

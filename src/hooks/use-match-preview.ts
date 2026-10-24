@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
+import useSWR from "swr";
 import { api } from "@/lib/api";
 import type { MatchResponse } from "@/lib/api-types";
-import { fixtureMatch, REPLAY_LEAGUE } from "@/lib/fixtures";
+import { REPLAY_LEAGUE, sampleMatch } from "@/lib/sample-data";
 
 export interface MatchPreviewState {
   data: MatchResponse | null;
@@ -15,49 +16,42 @@ export interface MatchPreviewState {
 
 const POLL_MS = 20_000;
 
-/** GET /api/matches/[league]/[id], polled, with a scripted-fixture fallback. */
+interface Preview {
+  match: MatchResponse;
+  source: "api" | "sample";
+}
+
+/** The feed's view of the match; scripted ones (or any the feed can't give) come from samples. */
+async function loadPreview(league: string, id: string): Promise<Preview> {
+  if (league !== REPLAY_LEAGUE) {
+    try {
+      return { match: await api.match(league, id), source: "api" };
+    } catch (e) {
+      const sample = sampleMatch(id);
+      if (!sample) throw e;
+      return { match: sample, source: "sample" };
+    }
+  }
+  const sample = sampleMatch(id);
+  if (!sample) throw new Error(`Unknown sample match ${id}`);
+  return { match: sample, source: "sample" };
+}
+
+/** GET /api/matches/[league]/[id], refreshed every 20 s until full time. */
 export function useMatchPreview(league: string, id: string): MatchPreviewState {
-  const [data, setData] = useState<MatchResponse | null>(null);
-  const [source, setSource] = useState<"api" | "sample" | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [nonce, setNonce] = useState(0);
-
-  useEffect(() => {
-    // `nonce` re-runs the effect for the retry button.
-    void nonce;
-    let cancelled = false;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const load = async () => {
-      try {
-        if (league === REPLAY_LEAGUE) throw new Error("scripted");
-        const res = await api.match(league, id);
-        if (cancelled) return;
-        setData(res);
-        setSource("api");
-      } catch {
-        if (cancelled) return;
-        const fx = fixtureMatch(id);
-        if (fx) {
-          setData(fx);
-          setSource("sample");
-        } else {
-          setData((d) => d);
-        }
-      }
-      setLoading(false);
-      timer = setTimeout(load, POLL_MS);
-    };
-    void load();
-    return () => {
-      cancelled = true;
-      if (timer) clearTimeout(timer);
-    };
-  }, [league, id, nonce]);
-
-  const retry = useCallback(() => {
-    setLoading(true);
-    setNonce((n) => n + 1);
-  }, []);
-
-  return { data, loading, source, retry };
+  const { data, isLoading, mutate } = useSWR(
+    ["match", league, id],
+    () => loadPreview(league, id),
+    {
+      refreshInterval: (latest) =>
+        latest?.match.snapshot.phase === "full_time" ? 0 : POLL_MS,
+    },
+  );
+  const retry = useCallback(() => void mutate(), [mutate]);
+  return {
+    data: data?.match ?? null,
+    loading: isLoading,
+    source: data?.source ?? null,
+    retry,
+  };
 }

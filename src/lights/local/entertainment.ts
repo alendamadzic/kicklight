@@ -15,9 +15,8 @@
 //   7 bytes each, colour space at byte 14.
 
 import type { Rgb } from "@/engine/colors";
-import type { LightTransport } from "../transport";
+import { resampleNearest } from "../gradient";
 import type { FetchLike } from "./agent";
-import { resampleNearest } from "./transport";
 
 // ---------------------------------------------------------------------------
 // HueStream v2 frame encoder
@@ -390,64 +389,6 @@ export const nodeDtlsClientFactory: DtlsSocketFactory = {
   },
 };
 
-/**
- * Fallback: drive `openssl s_client -dtls1_2 -psk ...` as a subprocess and pipe frames to
- * its stdin. Needs OpenSSL 1.1+/3 built with PSK (macOS system LibreSSL has no PSK).
- * UNVERIFIED on this machine for that reason; kept as the escape hatch if the pure JS
- * library misbehaves against a real bridge.
- */
-export function opensslDtlsFactory(opensslPath = "openssl"): DtlsSocketFactory {
-  return {
-    async connect(o) {
-      const { spawn } = await import("node:child_process");
-      const hex = Buffer.from(o.psk).toString("hex");
-      const child = spawn(
-        opensslPath,
-        [
-          "s_client",
-          "-dtls1_2",
-          "-quiet",
-          "-psk_identity",
-          o.identity,
-          "-psk",
-          hex,
-          "-cipher",
-          "PSK-AES128-GCM-SHA256",
-          "-connect",
-          `${o.host}:${o.port}`,
-        ],
-        { stdio: ["pipe", "ignore", "pipe"] },
-      );
-      const closers: ((err?: Error) => void)[] = [];
-      let stderr = "";
-      child.stderr?.on("data", (d: Buffer) => {
-        stderr += d.toString();
-      });
-      await new Promise<void>((resolve, reject) => {
-        const t = setTimeout(resolve, 400);
-        child.once("exit", (code) => {
-          clearTimeout(t);
-          reject(new Error(`openssl exited ${code}: ${stderr.slice(0, 200)}`));
-        });
-        child.once("error", (e) => {
-          clearTimeout(t);
-          reject(e);
-        });
-      });
-      child.once("exit", () => {
-        for (const c of closers) c();
-      });
-      return {
-        send: (d) => {
-          child.stdin?.write(d);
-        },
-        close: () => child.kill(),
-        onClose: (cb) => closers.push(cb),
-      };
-    },
-  };
-}
-
 // ---------------------------------------------------------------------------
 // Streaming session: 50 Hz pump
 // ---------------------------------------------------------------------------
@@ -561,59 +502,5 @@ export class EntertainmentSession {
       // already gone
     }
     this.socket = null;
-  }
-}
-
-/**
- * An Entertainment-capable transport: gradient writes go through the plain local
- * transport (so the strip still works when streaming is off), and `stream()` feeds the
- * 50 Hz session. Core picks which one to call per match.
- */
-export class EntertainmentTransport implements LightTransport {
-  readonly kind = "entertainment" as const;
-  readonly points: number;
-
-  constructor(
-    private readonly rest: LightTransport,
-    private readonly session: EntertainmentSession,
-  ) {
-    this.points = session.channelCount || rest.points;
-  }
-
-  setGradient(colors: Rgb[], transitionMs?: number): Promise<void> {
-    return this.rest.setGradient(colors, transitionMs);
-  }
-
-  signal(
-    s: Parameters<NonNullable<LightTransport["signal"]>>[0],
-  ): Promise<void> {
-    return this.rest.signal ? this.rest.signal(s) : Promise.resolve();
-  }
-
-  /** Stream frames until the iterable ends; the latest frame is re-sent at 50 Hz. */
-  async stream(frames: AsyncIterable<Rgb[]>): Promise<void> {
-    let latest: Rgb[] | null = null;
-    const it = frames[Symbol.asyncIterator]();
-    const first = await it.next();
-    if (first.done) return;
-    latest = first.value;
-    await this.session.start(() => latest ?? first.value);
-    try {
-      for (;;) {
-        const n = await it.next();
-        if (n.done) break;
-        latest = n.value;
-      }
-    } finally {
-      await this.session.stop();
-    }
-  }
-
-  snapshot(): Promise<unknown> {
-    return this.rest.snapshot();
-  }
-
-  restore(snapshot: unknown): Promise<void> {
-    return this.rest.restore(snapshot);
   }
 }

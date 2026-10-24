@@ -22,7 +22,11 @@ if (cleanupIdx >= 0) {
   process.exit(0);
 }
 
-const origin = args[args.indexOf("--origin") + 1] ?? "http://localhost:3000";
+const originIdx = args.indexOf("--origin");
+const origin =
+  originIdx >= 0 && args[originIdx + 1]
+    ? args[originIdx + 1]
+    : "http://localhost:3000";
 const email = `dev+${Date.now()}@kicklight.test`;
 const created = await admin.auth.admin.createUser({
   email,

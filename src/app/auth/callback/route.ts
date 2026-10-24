@@ -1,6 +1,6 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
-import { createRouteClient } from "@/lib/supabase/route-client";
+import { createClient } from "@/lib/supabase/server";
 
 /** Only same-site paths: never bounce a user to an arbitrary URL. */
 function safeNext(value: string | null): string {
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type") as EmailOtpType | null;
 
   try {
-    const supabase = await createRouteClient();
+    const supabase = await createClient();
     if (code) {
       const { error } = await supabase.auth.exchangeCodeForSession(code);
       if (!error) return NextResponse.redirect(`${origin}${next}`);

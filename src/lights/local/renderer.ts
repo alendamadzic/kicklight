@@ -7,16 +7,16 @@
 //                   order they started, each one's output becoming the next one's base
 //   restore         fades everything to black, then `finished(now)` turns true
 
-import type { Rgb } from "@/engine/colors";
+import type { Rgb, TeamColors } from "@/engine/colors";
 import { EFFECTS } from "@/engine/effects";
 import type { Side } from "@/engine/model";
 import type { Command } from "@/engine/runner";
-import { OFF, restingPoints, type StripColors } from "../render";
+import { OFF, restingPoints } from "../render";
 
 export interface RendererOptions {
   /** Colours to produce per frame (the entertainment configuration's channel count). */
   channels: number;
-  colors: StripColors;
+  colors: TeamColors;
   /** Ease between resting states. Default 1000 ms. */
   easeMs?: number;
   /** Fade-out for `restore`. Default 1500 ms. */

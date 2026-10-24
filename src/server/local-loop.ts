@@ -45,6 +45,13 @@ export function startDevRemoteLoop(): void {
   const KEY = Symbol.for("kicklight.loop.remote");
   const g = globalThis as Record<symbol, unknown>;
   if (g[KEY]) return;
+  const secret = process.env.CRON_SECRET;
+  if (!secret) {
+    console.warn(
+      "[kicklight] dev server: KICKLIGHT_DEV_LOOP=1 needs CRON_SECRET; session loop not started",
+    );
+    return;
+  }
   let running = false;
   g[KEY] = setInterval(async () => {
     if (running) return;
@@ -54,7 +61,7 @@ export function startDevRemoteLoop(): void {
         `http://localhost:${process.env.PORT ?? 3000}/api/cron/tick`,
         {
           method: "POST",
-          headers: { authorization: `Bearer ${process.env.CRON_SECRET}` },
+          headers: { authorization: `Bearer ${secret}` },
         },
       );
       if (!res.ok) console.error("remote loop", res.status, await res.text());

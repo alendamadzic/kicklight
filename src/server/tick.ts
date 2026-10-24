@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { ParsedMatch } from "@/engine/feed/espn";
+import type { ParsedMatch } from "@/engine/model";
+import { isBridgeUnauthorized } from "@/lights/errors";
 import type { LightTransport } from "@/lights/transport";
 import { processSession, type SessionRow } from "./session";
 
@@ -11,7 +12,7 @@ export interface TickOptions {
   mode: "remote" | "local";
   transportFor: (userId: string) => Promise<LightTransport | null>;
   fetchMatch: (league: string, id: string) => Promise<ParsedMatch>;
-  /** Called when a session's bridge credentials are rejected; default pauses the session. */
+  /** Whether an error means the bridge rejected our credentials; such sessions are paused. */
   isUnauthorized?: (e: unknown) => boolean;
   claimMs?: number;
 }
@@ -42,14 +43,6 @@ export async function runDueSessions(
 
   const results = await Promise.allSettled(
     (due ?? []).map(async (s) => {
-      const transport = await opts.transportFor(s.user_id as string);
-      if (!transport) {
-        await admin
-          .from("sessions")
-          .update({ status: "paused" })
-          .eq("id", s.id);
-        return;
-      }
       const row: SessionRow = {
         id: s.id as string,
         league: s.league as string,
@@ -62,6 +55,14 @@ export async function runDueSessions(
         created_at: Date.parse(s.created_at as string),
       };
       try {
+        const transport = await opts.transportFor(s.user_id as string);
+        if (!transport) {
+          await admin
+            .from("sessions")
+            .update({ status: "paused" })
+            .eq("id", s.id);
+          return;
+        }
         const r = await processSession(row, {
           transport,
           fetchMatch: opts.fetchMatch,
@@ -75,7 +76,7 @@ export async function runDueSessions(
             if (error) throw new Error(error.message);
           },
         });
-        await admin
+        const { error: saveError } = await admin
           .from("sessions")
           .update({
             runner_state: r.update.runner_state,
@@ -86,10 +87,11 @@ export async function runDueSessions(
             ...(r.update.ended ? { ended_at: new Date().toISOString() } : {}),
           })
           .eq("id", s.id);
+        if (saveError) throw new Error(`save failed: ${saveError.message}`);
         if (r.errors.length)
           console.error("session", s.id, r.errors.join("; "));
       } catch (e) {
-        if (opts.isUnauthorized?.(e)) {
+        if ((opts.isUnauthorized ?? isBridgeUnauthorized)(e)) {
           await admin
             .from("sessions")
             .update({ status: "paused" })

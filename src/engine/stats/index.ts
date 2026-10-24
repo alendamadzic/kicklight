@@ -186,9 +186,9 @@ export const STAT_ORDER: StatKey[] = [
   "discipline",
 ];
 
-export function homeShareFor(
-  key: Exclude<StatKey, "auto" | "clock">,
-  ctx: StatContext,
-): number {
-  return STAT_MODES[key].homeShare(ctx);
+/** Display name for any stat key, the auto-director and the clock included. */
+export function statLabel(key: StatKey): string {
+  if (key === "auto") return "Auto";
+  if (key === "clock") return "Clock";
+  return STAT_MODES[key].label;
 }

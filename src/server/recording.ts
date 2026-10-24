@@ -1,11 +1,8 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import {
-  fetchEspnRaw,
-  type ParsedMatch,
-  parseEspnSummary,
-} from "@/engine/feed/espn";
+import { fetchEspnRaw, parseEspnSummary } from "@/engine/feed/espn";
 import { trimEspnPayload } from "@/engine/feed/recorder";
+import type { ParsedMatch } from "@/engine/model";
 import { withFotmob } from "./fotmob";
 
 // The live feed: ESPN, with FotMob's quicker goals and cards added. Also the opt-in capture
@@ -23,6 +20,9 @@ export function liveFeed(admin: SupabaseClient) {
       const key = `${league}/${eventId}`;
       const now = Date.now();
       if (now - (lastSaved.get(key) ?? 0) >= EVERY_MS) {
+        for (const [k, at] of lastSaved) {
+          if (now - at >= EVERY_MS) lastSaved.delete(k);
+        }
         lastSaved.set(key, now);
         void admin
           .from("recordings")

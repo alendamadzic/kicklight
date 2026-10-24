@@ -1,6 +1,6 @@
 import type { Rgb } from "@/engine/colors";
 import type { SignalFallback } from "@/engine/effects";
-import { brightnessFor } from "./local/transport";
+import { brightnessFor, resampleNearest } from "./gradient";
 import type { LightTransport } from "./transport";
 import { rgbToXy, type Xy } from "./xy";
 
@@ -181,19 +181,6 @@ export interface RemoteSnapshot {
   gradient?: { mode: string; points: { color: { xy: Xy } }[] };
 }
 
-/** Nearest-neighbour resample so blocks of colour stay crisp. */
-export function resample<T>(items: T[], n: number): T[] {
-  if (items.length === 0) throw new Error("nothing to resample");
-  if (items.length === n) return items;
-  return Array.from(
-    { length: n },
-    (_, i) =>
-      items[
-        Math.min(items.length - 1, Math.floor(((i + 0.5) / n) * items.length))
-      ],
-  );
-}
-
 export class RemoteTransport implements LightTransport {
   readonly kind = "remote" as const;
   points: number;
@@ -239,15 +226,13 @@ export class RemoteTransport implements LightTransport {
   }
 
   async setGradient(colors: Rgb[], transitionMs = 800): Promise<void> {
-    const pts = resample(colors, this.points).map((c) => ({
+    const pts = resampleNearest(colors, this.points).map((c) => ({
       color: { xy: rgbToXy(c) },
     }));
     await this.req(this.lightPath, {
       method: "PUT",
       body: JSON.stringify({
         on: { on: true },
-        // The dimmer follows the brightest point, as on the local API, so a uniform dim
-        // (the nerves pulse) shows instead of collapsing to the same xy at full brightness.
         dimming: {
           brightness: brightnessFor(colors, this.cfg.brightness ?? 100),
         },

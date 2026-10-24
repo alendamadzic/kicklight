@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import type { Rgb } from "@/engine/colors";
 import type { SignalFallback } from "@/engine/effects";
-import type { ParsedMatch } from "@/engine/feed/espn";
+import type { ParsedMatch } from "@/engine/model";
 import {
   EMPTY_SIDE_STATS,
   type MatchEvent,

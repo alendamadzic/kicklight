@@ -43,7 +43,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **(you)** needs the own
 - [x] `src/engine/runner.ts` `tick()` (replayed a real match end to end)
 - [x] `src/engine/feed/` espn, replay, leagues, recorder. football-data.org fallback dropped: its free tier has no stats or events, so it can't back the modes (reconsider only for fixture lists). League slugs other than eng.1 are unverified
 - [x] Scripted scenarios (3); recorder: `KICKLIGHT_RECORD=1` captures payloads, `src/engine/feed/recorder.ts` + `scripts/export-recording.ts` turn them into replays (tested on the real fixture; the live capture path itself has not run yet)
-- [ ] Remove global TLS override, old stat code, debug logs, colour-name deps (do at UI merge, so the app keeps running until then)
+- [x] Remove global TLS override, old stat code, debug logs, colour-name deps (done at the UI merge)
 
 ## Phase 2: Platform contracts
 
@@ -83,3 +83,19 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **(you)** needs the own
 - All 17 ESPN league slugs in `leagues.ts` verified against the live API (13 Oct 2026).
 - Hue Remote API: tokens last ~7 days; refresh is the standard grant but has not been exercised live yet (first refresh will happen ~6 days after linking).
 - The strip has 7 Entertainment channels (3,3,5,5,5,3,3), not 27.
+
+## Phase 5: Code review cleanup (24 Oct 2026)
+
+- [x] Bugs: OAuth link errors now shown on onboarding; local pairing is one quick attempt per call
+  (the app polls); a restore no longer strands a queued gradient's caller; sessions whose bridge
+  rejects our key are paused (local mode too); light routes always answer JSON; preferences no
+  longer carry over between accounts on one device; relinking clears the other mode's fields;
+  DB writes are checked; per-process caches are pruned; dev loop needs `CRON_SECRET`
+- [x] Structure: shared `TeamColors`, `ParsedMatch`, `leaderOf`, `statLabel`, `lights/gradient.ts`;
+  server split into `http`, `config`, `hue-link`, `live-sessions`, `with-transport`, `validate`;
+  typed `ApiErrorCode`
+- [x] Client: SWR data hooks, onboarding and remote split into focused files, kebab-case file names
+- [x] Next.js: `error.tsx`, `not-found.tsx`, `global-error.tsx`, `typedRoutes`, `RouteContext`
+- [x] Removed unused code (event stream client, EntertainmentTransport, openssl factory, 7 shadcn
+  components); `bun run check` + GitHub Actions CI; `docs/architecture.md` replaces `docs/contracts.md`
+

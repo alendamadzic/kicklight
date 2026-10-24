@@ -5,6 +5,7 @@ import {
   type MatchEvent,
   type MatchPhase,
   type MatchSnapshot,
+  type ParsedMatch,
   type Side,
   type SideStats,
   type TeamInfo,
@@ -87,17 +88,19 @@ export function phaseFrom(
   return s ? "first_half" : "scheduled";
 }
 
+/** ESPN gives kit colours as bare hex ("c8102e"); anything else gets the fallback. */
+export const kitColor = (v: unknown, fallback = "#888888"): string =>
+  typeof v === "string" && /^[0-9a-f]{6}$/i.test(v)
+    ? `#${v.toLowerCase()}`
+    : fallback;
+
 function team(t: Json): TeamInfo {
-  const hex = (v: unknown, fallback: string) =>
-    typeof v === "string" && /^[0-9a-f]{6}$/i.test(v)
-      ? `#${v.toLowerCase()}`
-      : fallback;
   return {
     id: String(t?.id ?? ""),
     name: t?.displayName ?? t?.name ?? "",
     short: t?.abbreviation ?? t?.shortDisplayName ?? "",
-    color: hex(t?.color, "#888888"),
-    alternateColor: hex(t?.alternateColor, "#ffffff"),
+    color: kitColor(t?.color),
+    alternateColor: kitColor(t?.alternateColor, "#ffffff"),
     crest: t?.logo ?? t?.logos?.[0]?.href,
   };
 }
@@ -169,11 +172,6 @@ const dangerousFreeKick = (text: string) =>
   /wins a free kick (in the attacking half|on the (left|right) wing)/i.test(
     text,
   );
-
-export interface ParsedMatch {
-  snapshot: MatchSnapshot;
-  events: MatchEvent[];
-}
 
 const RUNNING: ReadonlySet<MatchPhase> = new Set([
   "first_half",

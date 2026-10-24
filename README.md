@@ -14,7 +14,7 @@ goals, cards and VAR, and can be delayed to land when the moment lands on *your*
 ## How it works
 
 ```
-ESPN (live stats + events) ─▶ pure engine (stats, effects, TV-delay scheduler)
+ESPN + FotMob (stats, events) ─▶ pure engine (stats, effects, TV-delay scheduler)
                                       │ commands
              ┌────────────────────────┼────────────────────────┐
      Hue Remote API            LAN CLIP v2             Entertainment (DTLS, 50 Hz)
@@ -22,13 +22,16 @@ ESPN (live stats + events) ─▶ pure engine (stats, effects, TV-delay schedule
 ```
 
 - `src/engine/`: the pure brain. Match model, stat modes, event effects, the scheduler that
-  delays everything by your TV lag, scripted replays and an ESPN parser. No framework imports.
+  delays everything by your TV lag, scripted replays and the ESPN/FotMob parsers. No framework imports.
 - `src/lights/`: turning commands into colours and talking to a bridge (remote, local,
-  Entertainment).
-- `src/server/`: one polling cycle (`processSession`) shared by the cloud cron and the local loop.
+  Entertainment), plus the virtual strip's frame composer.
+- `src/server/`: one polling cycle (`processSession`) shared by the cloud cron and the local loop,
+  and the helpers the routes are built on.
 - `src/app/api/`: HTTP routes; `src/app/(app)/`: the mobile-first UI.
 
-Data comes from ESPN's public site API (no key, undocumented, covered by recorded fixtures).
+Match data comes from ESPN's public site API, with FotMob's quicker goals and cards merged in
+while the ball is in play. Neither needs a key; both are undocumented and covered by recorded
+fixtures. [docs/architecture.md](docs/architecture.md) has the module map and conventions.
 
 ## Develop
 
@@ -36,8 +39,7 @@ Data comes from ESPN's public site API (no key, undocumented, covered by recorde
 bun install
 cp .env.example .env.local     # fill it in, see docs/deploy.md
 bun run dev                    # http://localhost:3000, try /demo first
-bun test                       # engine, lights and server tests
-bun run lint
+bun run check                  # lint, types and tests (what CI runs)
 ```
 
 Useful scripts:
@@ -72,4 +74,5 @@ Play Gradient. Single-colour lights are not offered.
 
 ## Contributing
 
-`docs/contracts.md` describes module ownership and the HTTP API. `TASKS.md` is the build log.
+[docs/architecture.md](docs/architecture.md) describes the layers, conventions and the HTTP API.
+`TASKS.md` is the build log.

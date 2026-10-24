@@ -64,9 +64,13 @@ export function liftForGlow(rgb: Rgb): Rgb {
   ) as Rgb;
 }
 
-export interface StripColors {
+/** The two team colours the strip is drawn in. */
+export interface TeamColors {
   home: Rgb;
   away: Rgb;
+}
+
+export interface StripColors extends TeamColors {
   /** True when the away side had to switch to its alternate colour. */
   awaySwitched: boolean;
 }

@@ -110,6 +110,20 @@ describe("pairWithRetry", () => {
     expect(calls).toBe(16);
   });
 
+  test("a zero timeout makes exactly one attempt (the pair route's mode)", async () => {
+    let calls = 0;
+    const err = await pairWithRetry(
+      "ip",
+      async () => {
+        calls++;
+        return notPressed();
+      },
+      { timeoutMs: 0, sleep: async () => {} },
+    ).catch((e) => e);
+    expect(calls).toBe(1);
+    expect((err as PairingError).code).toBe("link_button_not_pressed");
+  });
+
   test("a hard error stops immediately", async () => {
     let calls = 0;
     const err = await pairWithRetry("ip", async () => {

@@ -1,21 +1,25 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { encrypt } from "@/lib/crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getUser } from "@/lib/supabase/server";
 import { exchangeCode, linkBridge } from "@/lights/remote";
-import { siteUrl } from "@/server/auth";
+import { siteUrl } from "@/server/config";
+import { HUE_OAUTH_STATE_COOKIE, saveRemoteLink } from "@/server/hue-link";
 
-// Hue sends the browser back here with ?code=&state=. Trade the code for tokens,
-// link the bridge remotely, and keep everything encrypted at rest.
+// Hue sends the browser back here with ?code=&state=. Trade the code for tokens, link the
+// bridge remotely, and keep everything encrypted at rest. Failures land on onboarding with
+// an `?error=` it explains to the user.
 
 const done = (path: string) => NextResponse.redirect(`${siteUrl()}${path}`);
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
   const state = request.nextUrl.searchParams.get("state");
-  const expected = request.cookies.get("hue_oauth_state")?.value;
+  const expected = request.cookies.get(HUE_OAUTH_STATE_COOKIE)?.value;
   const clear = (res: NextResponse) => {
-    res.cookies.delete({ name: "hue_oauth_state", path: "/api/hue/oauth" });
+    res.cookies.delete({
+      name: HUE_OAUTH_STATE_COOKIE,
+      path: "/api/hue/oauth",
+    });
     return res;
   };
 
@@ -34,30 +38,11 @@ export async function GET(request: NextRequest) {
     const tokens = await exchangeCode(
       code,
       `${siteUrl()}/api/hue/oauth/callback`,
-      {
-        clientId,
-        clientSecret,
-      },
+      { clientId, clientSecret },
     );
     const { appKey } = await linkBridge(tokens.accessToken, "kicklight");
-    const admin = createAdminClient();
-    const { error: linkErr } = await admin.from("hue_links").upsert({
-      user_id: user.id,
-      transport: "remote",
-      token_expires_at: new Date(tokens.expiresAt).toISOString(),
-      // A fresh link invalidates any earlier light choice.
-      light_id: null,
-      light_name: null,
-    });
-    if (linkErr) throw linkErr;
-    const { error: secErr } = await admin.from("hue_secrets").upsert({
-      user_id: user.id,
-      app_key_enc: encrypt(appKey),
-      access_token_enc: encrypt(tokens.accessToken),
-      refresh_token_enc: encrypt(tokens.refreshToken),
-    });
-    if (secErr) throw secErr;
-    return clear(done("/onboarding?step=light"));
+    await saveRemoteLink(createAdminClient(), user.id, tokens, appKey);
+    return clear(done("/onboarding"));
   } catch (e) {
     console.error("hue oauth callback failed", (e as Error).message);
     return clear(done("/onboarding?error=link_failed"));

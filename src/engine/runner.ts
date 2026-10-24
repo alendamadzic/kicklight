@@ -1,5 +1,11 @@
 import { EFFECTS, type EffectKey } from "./effects";
-import type { MatchEvent, MatchPhase, MatchSnapshot, Side } from "./model";
+import {
+  leaderOf,
+  type MatchEvent,
+  type MatchPhase,
+  type MatchSnapshot,
+  type Side,
+} from "./model";
 import { type Scheduled, schedule, takeDue } from "./scheduler";
 import { STAT_MODES, type StatKey } from "./stats";
 import { type AutoState, type ConcreteStat, pickAuto } from "./stats/auto";
@@ -181,16 +187,10 @@ export function tick(prev: RunnerState, input: TickInput): TickResult {
         state.lastFill == null ||
         Math.abs(rounded - state.lastFill) >= 0.01
       ) {
-        const lead: Side | null =
-          snapshot.score.home > snapshot.score.away
-            ? "home"
-            : snapshot.score.away > snapshot.score.home
-              ? "away"
-              : null;
         pending = schedule(pending, at, {
           kind: "fill",
           fraction: rounded,
-          lead,
+          lead: leaderOf(snapshot.score),
         });
         state.lastFill = rounded;
       }

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { MatchRemote } from "@/components/remote/MatchRemote";
+import { MatchRemote } from "@/components/remote/match-remote";
 
 export const metadata: Metadata = {
   title: "Remote",

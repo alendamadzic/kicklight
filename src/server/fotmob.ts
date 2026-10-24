@@ -1,4 +1,3 @@
-import type { ParsedMatch } from "@/engine/feed/espn";
 import {
   FOTMOB_HEADERS,
   findFotmobMatch,
@@ -7,7 +6,7 @@ import {
   parseFotmobEvents,
   placeFotmobEvents,
 } from "@/engine/feed/fotmob";
-import type { MatchPhase } from "@/engine/model";
+import type { MatchPhase, ParsedMatch } from "@/engine/model";
 
 // Adds FotMob's goals and cards to an ESPN read, so they reach the strip as soon as either
 // feed has them (the runner drops whichever copy comes second). Best effort: any failure
@@ -24,8 +23,18 @@ const TIMEOUT_MS = 2_500;
 /** A match FotMob couldn't be matched to is looked up again after this long. */
 const RETRY_MS = 600_000;
 
-/** ESPN event → FotMob match id (or null, and when to try again). Per server instance. */
+/** A found id is kept this long: comfortably past any match, then let go. */
+const KEEP_MS = 12 * 3_600_000;
+
+/** ESPN event → FotMob match id (or null, and when to look again). Per server instance. */
 const ids = new Map<string, { id: string | null; until: number }>();
+
+/** Drop finished lookups so a long-running local server doesn't keep every match it saw. */
+function forgetStale(now: number) {
+  for (const [key, entry] of ids) {
+    if (now >= entry.until + (entry.id ? KEEP_MS : 0)) ids.delete(key);
+  }
+}
 
 async function getJson(url: string, fetchImpl: typeof fetch): Promise<unknown> {
   const res = await fetchImpl(url, {
@@ -45,6 +54,7 @@ async function matchIdFor(
 ): Promise<string | null> {
   const known = ids.get(key);
   if (known && (known.id || now < known.until)) return known.id;
+  forgetStale(now);
   const { kickoff, home, away } = parsed.snapshot;
   if (!kickoff) return null;
   const day = new Date(kickoff).toISOString().slice(0, 10).replace(/-/g, "");

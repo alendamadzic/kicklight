@@ -1,14 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import type { Rgb } from "@/engine/colors";
+import { brightnessFor } from "../gradient";
 import { CommandQueue } from "../queue";
 import { rgbToXy } from "../xy";
 import type { FetchLike } from "./agent";
-import {
-  brightnessFor,
-  LocalTransport,
-  listGradientLights,
-  resampleNearest,
-} from "./transport";
+import { LocalTransport, listGradientLights } from "./transport";
 
 const H: Rgb = [108, 171, 221];
 const A: Rgb = [200, 16, 46];
@@ -81,31 +77,6 @@ const make = (b: ReturnType<typeof fakeBridge>, extra = {}) => {
   return { t, sleeps };
 };
 
-describe("resampling", () => {
-  test("is the identity at the same size and nearest-neighbour otherwise", () => {
-    expect(resampleNearest([1, 2, 3, 4, 5], 5)).toEqual([1, 2, 3, 4, 5]);
-    expect(resampleNearest(["h", "h", "a", "a"], 8)).toEqual([
-      "h",
-      "h",
-      "h",
-      "h",
-      "a",
-      "a",
-      "a",
-      "a",
-    ]);
-    expect(resampleNearest([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 5)).toEqual([
-      2, 4, 6, 8, 10,
-    ]);
-  });
-
-  test("brightness follows the brightest channel", () => {
-    expect(brightnessFor([[255, 0, 0]])).toBe(100);
-    expect(brightnessFor([[0, 0, 0]])).toBe(1);
-    expect(brightnessFor([[128, 0, 0]], 50)).toBe(25);
-  });
-});
-
 describe("LocalTransport", () => {
   test("setGradient sends a segmented_palette with points_capable points", async () => {
     const b = fakeBridge();
@@ -149,6 +120,29 @@ describe("LocalTransport", () => {
     expect(last?.body.gradient.points[0].color.xy).toEqual(rgbToXy(H));
     expect(last?.body.gradient.points[4].color.xy).toEqual(rgbToXy(A));
     expect(b.calls.length).toBeLessThan(3);
+  });
+
+  test("a restore that replaces a queued gradient still settles its caller", async () => {
+    const b = fakeBridge();
+    const { t } = make(b, { queue: new CommandQueue({ minIntervalMs: 0 }) });
+    const sent = t.setGradient([H, H, H, H, H]);
+    const replaced = t.setGradient([A, A, A, A, A]);
+    // Restore while the second gradient is still waiting behind the first.
+    const restored = t.restore({
+      on: true,
+      brightness: 61,
+      gradient: null,
+      xy: null,
+      mirek: null,
+      effect: null,
+    });
+    const settled = await Promise.race([
+      Promise.all([sent, replaced, restored]).then(() => true),
+      new Promise((r) => setTimeout(() => r(false), 500)),
+    ]);
+    expect(settled).toBe(true);
+    // The replaced gradient was never sent: the restore went out instead.
+    expect(b.calls.at(-1)?.body.dimming).toEqual({ brightness: 61 });
   });
 
   test("signal uses signaling with xy colours and whole-second durations", async () => {

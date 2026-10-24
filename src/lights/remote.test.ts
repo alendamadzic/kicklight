@@ -5,7 +5,6 @@ import {
   HueRemoteError,
   linkBridge,
   RemoteTransport,
-  resample,
 } from "./remote";
 
 type Call = { url: string; init: RequestInit };
@@ -88,13 +87,6 @@ describe("RemoteTransport", () => {
     [255, 0, 0],
     [0, 0, 255],
   ] as [number, number, number][];
-
-  test("resample keeps blocks crisp", () => {
-    expect(resample(["a", "b"], 5)).toEqual(
-      ["a", "a", "b", "b", "b"].slice(0, 5).map((_, i) => (i < 2 ? "a" : "b")),
-    );
-    expect(resample([1, 2, 3, 4, 5], 5)).toEqual([1, 2, 3, 4, 5]);
-  });
 
   test("setGradient sends segmented_palette with 5 points, a transition and auth headers", async () => {
     const { f, calls } = fake(() => ({ body: { data: [], errors: [] } }));

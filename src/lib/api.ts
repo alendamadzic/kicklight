@@ -74,7 +74,7 @@ const post = (body: unknown): RequestInit => ({
   body: JSON.stringify(body),
 });
 
-/** Typed client for the HTTP API in docs/contracts.md. Every call rejects with ApiRequestError. */
+/** Typed client for the HTTP API in docs/architecture.md. Every call rejects with ApiRequestError. */
 export const api = {
   config: () => request<AppConfig>("/api/config"),
   matches: (league: string, date?: string) =>

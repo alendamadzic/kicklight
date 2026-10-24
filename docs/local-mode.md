@@ -6,30 +6,26 @@ unlocks two things the cloud path cannot do: low-latency writes (no round trip t
 
 Everything lives in `src/lights/local/`. The modules are plain TypeScript with injected
 dependencies (fetch, clock, timers, the DTLS socket factory). No Supabase, no Next imports, no
-work at import time. Import from `@/lights/local` (the barrel) or from a module directly.
+work at import time. Import from each module directly (`@/lights/local/transport` and so on).
+The server wires them up in `src/server/hue-link.ts` (pairing, transports) and
+`src/server/local-streaming.ts` (Entertainment).
 
 ## Modules and exports
 
 | Module | Exports | Job |
 |---|---|---|
 | `agent.ts` | `createBridgeFetch`, `captureBridgeCertificate`, `normalizeFingerprint`, `fingerprintOfDer`, `BridgeTlsError`, types `FetchLike`, `BridgeFetch`, `BridgeTrust`, `BridgeRequestInit`, `CapturedCertificate` | TLS for exactly one bridge: pin or CA, never a global switch |
-| `discovery.ts` | `discoverBridges`, `manualBridge`, `resolveBridgeId`, `mdnsSweep`, `parseMdnsPackets`, `normalizeBridgeId`, type `DiscoveredBridge` | mDNS, then `discovery.meethue.com`, then manual IP |
+| `discovery.ts` | `discoverBridges`, `resolveBridgeId`, `mdnsSweep`, `parseMdnsPackets`, `normalizeBridgeId`, type `DiscoveredBridge` | mDNS, then `discovery.meethue.com` (a typed IP goes straight to pairing) |
 | `pairing.ts` | `pairBridge`, `pairWithRetry`, `pairOnce`, `deviceType`, `PairingError`, types `PairingCredentials`, `PairedBridge` | link-button pairing, TOFU capture |
-| `transport.ts` | `LocalTransport`, `listGradientLights`, `resampleNearest`, `brightnessFor`, `BridgeHttpError`, types `LightState`, `GradientLight` | `LightTransport` over CLIP v2 |
-| `eventstream.ts` | `startEventStream`, `SseParser`, `updatesFromFrame`, types `ResourceUpdate`, `EventStream` | bridge SSE with reconnect |
-| `entertainment.ts` | `ensureConfiguration`, `startStreaming`, `stopStreaming`, `fetchApplicationId`, `encodeHueStreamV2`, `EntertainmentSession`, `EntertainmentTransport`, `nodeDtlsClientFactory`, `opensslDtlsFactory`, `stripPositions`, `hexToBytes`, types `DtlsSocketFactory`, `DtlsSocket`, `EntertainmentConfig` | configuration, streaming, HueStream v2, DTLS |
+| `transport.ts` | `LocalTransport`, `listGradientLights`, `BridgeHttpError`, types `LightState`, `GradientLight` | `LightTransport` over CLIP v2 (resampling and brightness come from `src/lights/gradient.ts`, shared with the cloud transport) |
+| `entertainment.ts` | `ensureConfiguration`, `startStreaming`, `stopStreaming`, `fetchApplicationId`, `encodeHueStreamV2`, `EntertainmentSession`, `nodeDtlsClientFactory`, `stripPositions`, `hexToBytes`, types `DtlsSocketFactory`, `DtlsSocket`, `EntertainmentConfig` | configuration, streaming, HueStream v2, DTLS |
 | `renderer.ts` | `createRenderer`, types `Renderer`, `RendererOptions` | pure 50 Hz frame source |
 | `dtls-psk-server.testutil.ts` | `startDtlsPskServer` | test only: independent DTLS 1.2 PSK server, never imported by app code |
 
-## How the core wires it
+## How the server wires it
 
 ```ts
-import {
-  captureBridgeCertificate, createBridgeFetch, pairBridge, discoverBridges,
-  LocalTransport, listGradientLights, startEventStream,
-  ensureConfiguration, fetchApplicationId, EntertainmentSession, EntertainmentTransport,
-  createRenderer,
-} from "@/lights/local";
+// (each from its own module under @/lights/local/)
 
 // Onboarding
 const bridges = await discoverBridges();                 // [{id, ip, source}]
@@ -44,11 +40,6 @@ const transport = await LocalTransport.connect({ fetch, ip, applicationKey: user
 // Resting states and native flashes (works with no Entertainment configuration)
 await transport.setGradient(colors, 800);
 await transport.signal(EFFECTS.goal.signal(ctx));
-
-// Notice somebody else changing the strip, or the bridge disappearing
-const es = startEventStream({ fetch, ip, applicationKey: username,
-  onUpdate: (u) => { if (u.id === lightId) /* external change */ },
-  onStatus: (s) => { /* "up" | "down" */ } });
 
 // Entertainment (optional upgrade)
 const api = { fetch, ip, applicationKey: username };
@@ -65,9 +56,9 @@ Persist per link: `ip`, `bridgeId`, `username` (application key), `clientkey`,
 `certFingerprint`, `lightId`. `identity` is derived each start (`fetchApplicationId`) and need
 not be stored. The `username` and `clientkey` are secrets: keep them server-side only.
 
-`EntertainmentTransport` wraps a `LocalTransport` and a session to satisfy the
-`LightTransport.stream()` contract if the core prefers the interface route over driving the
-session itself.
+In the app, `StreamingTransport` (`src/server/streaming-transport.ts`) wraps the REST
+transport and the session: it renders the runner's commands at 50 Hz while streaming and quietly
+stays on REST if the stream can't start.
 
 ## Bridge TLS and the pinning model
 
@@ -113,7 +104,6 @@ Verified read-only on 13 Oct 2026 against the Hue Flux strip ("TV Backlight"):
 - `GET .../entertainment_configuration`: empty list, so `ensureConfiguration` has to create one.
 - `GET /auth/v1` with the application key returns a `hue-application-id` header (36-char UUID)
   that differs from the application key. See the DTLS section.
-- `GET /eventstream/clip/v2` connects and stays open; `startEventStream` reports `up`.
 - mDNS (`_hue._tcp.local`) finds the bridge at 192.168.1.225 with its id.
 
 Not exercised against the real bridge (by design, no writes, no streaming): any PUT/POST,
@@ -182,9 +172,9 @@ application records carrying HueStream frames, and 50 Hz pumping through `Entert
 A wrong PSK fails the handshake.
 
 What that does not prove: interoperability with the bridge's own DTLS stack. If the library
-misbehaves there, swap `nodeDtlsClientFactory` for `opensslDtlsFactory()` (spawns
-`openssl s_client -dtls1_2 -psk <hex> -psk_identity <id> -cipher PSK-AES128-GCM-SHA256`, needs
-OpenSSL with PSK; unverified here for the same LibreSSL reason), or run the server under Node.
+misbehaves there, a `DtlsSocketFactory` that drives
+`openssl s_client -dtls1_2 -psk <hex> -psk_identity <id> -cipher PSK-AES128-GCM-SHA256` (OpenSSL
+with PSK) can replace `nodeDtlsClientFactory`, or run the server under Node.
 You can strengthen the local proof anywhere with OpenSSL 3:
 `openssl s_server -dtls1_2 -psk 00112233445566778899aabbccddeeff -psk_identity <id> -nocert -accept 2100 -cipher PSK-AES128-GCM-SHA256`.
 

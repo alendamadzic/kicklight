@@ -2,17 +2,20 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  type ActiveEffect,
-  composeFrame,
-  restingFor,
-  STRIP_POINTS,
-  winnerOf,
-} from "@/components/strip/compose";
-import { pickStripColors, type Rgb } from "@/engine/colors";
+  pickStripColors,
+  type Rgb,
+  type StripColors,
+  type TeamColors,
+} from "@/engine/colors";
 import type { EffectKey } from "@/engine/effects";
 import { type ReplayScript, replayAt } from "@/engine/feed/replay";
 import { SCENARIOS } from "@/engine/feed/scenarios";
-import type { MatchEvent, MatchSnapshot, Side } from "@/engine/model";
+import {
+  leaderOf,
+  type MatchEvent,
+  type MatchSnapshot,
+  type Side,
+} from "@/engine/model";
 import {
   type Command,
   initialState,
@@ -21,6 +24,12 @@ import {
 } from "@/engine/runner";
 import { STAT_MODES, type StatKey } from "@/engine/stats";
 import type { TickerItem } from "@/lib/ticker";
+import {
+  type ActiveEffect,
+  composeFrame,
+  restingFor,
+  STRIP_POINTS,
+} from "@/lights/compose";
 
 export type DemoSpeed = 30 | 60 | 180;
 
@@ -35,7 +44,7 @@ export interface DemoUi {
   activeStat: StatKey;
   snapshot: MatchSnapshot;
   events: MatchEvent[];
-  colors: { home: Rgb; away: Rgb; awaySwitched: boolean };
+  colors: StripColors;
   share: number | null;
   values: [string, string] | null;
   ticker: TickerItem[];
@@ -43,12 +52,12 @@ export interface DemoUi {
 
 /** What the engine tells the outside world (e.g. to mirror to the real strip). */
 export type DemoCommand =
-  | { kind: "resting"; cmd: Command; colors: { home: Rgb; away: Rgb } }
+  | { kind: "resting"; cmd: Command; colors: TeamColors }
   | {
       kind: "effect";
       effect: EffectKey;
       side: Side | null;
-      colors: { home: Rgb; away: Rgb };
+      colors: TeamColors;
     };
 
 interface Engine {
@@ -66,7 +75,7 @@ interface Engine {
   speed: DemoSpeed;
   dirty: boolean;
   seq: number;
-  colors: ReturnType<typeof pickStripColors>;
+  colors: StripColors;
   snapshot: MatchSnapshot;
   events: MatchEvent[];
 }
@@ -193,7 +202,7 @@ export function useDemoEngine(options?: {
           side,
           home: eng.colors.home,
           away: eng.colors.away,
-          winner: winnerOf(eng.snapshot.score),
+          winner: leaderOf(eng.snapshot.score),
         },
       ];
       eng.ticker = [

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DemoView } from "@/components/demo/DemoView";
+import { DemoView } from "@/components/demo/demo-view";
 
 export const metadata: Metadata = {
   title: "Demo",

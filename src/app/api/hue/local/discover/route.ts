@@ -1,9 +1,11 @@
 import type { DiscoverResponse } from "@/lib/api-types";
 import { discoverBridges } from "@/lights/local/discovery";
-import { apiError, appMode, json, requireUser } from "@/server/auth";
+import { appMode } from "@/server/config";
+import { apiError, json, requireUser } from "@/server/http";
 
 export const maxDuration = 20;
 
+/** Look for Hue bridges on the LAN (local mode only). */
 export async function POST() {
   const { user, response } = await requireUser();
   if (!user) return response;
@@ -11,10 +13,9 @@ export async function POST() {
     return apiError("not_available", 404, "Bridge discovery needs local mode");
   try {
     const found = await discoverBridges({ timeoutMs: 4000 });
-    const body: DiscoverResponse = {
+    return json({
       bridges: found.map((b) => ({ id: b.id, ip: b.ip })),
-    };
-    return json(body);
+    } satisfies DiscoverResponse);
   } catch (e) {
     return apiError("discovery_failed", 502, (e as Error).message);
   }

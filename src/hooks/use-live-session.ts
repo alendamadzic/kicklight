@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { StatKey } from "@/engine/stats";
 import type { SessionMirror } from "@/lib/api-types";
 import { getSupabase } from "@/lib/supabase/safe-client";
-import { useAuth } from "./use-user";
+import { useAuth } from "./use-auth";
 
 /** A row of `public.sessions` as the phone sees it. */
 export interface SessionRow {

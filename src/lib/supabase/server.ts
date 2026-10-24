@@ -1,12 +1,14 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { supabaseEnv } from "./env";
 
-/** Supabase client bound to the request's session cookies (RLS applies as the signed-in user). */
+/**
+ * Supabase client bound to the request's session cookies (RLS applies as the signed-in user).
+ * Works in route handlers, which can write cookies, and in Server Components, which can't.
+ */
 export async function createClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) throw new Error("Supabase env vars are not set");
+  const { url, key } = supabaseEnv();
   const store = await cookies();
   return createServerClient(url, key, {
     cookies: {

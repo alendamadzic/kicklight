@@ -1,3 +1,4 @@
+import { hexToRgb, luminance } from "@/engine/colors";
 import type { MatchPhase } from "@/engine/model";
 
 /** "63'" style minute label; "HT" / "FT" for the breaks. */
@@ -53,20 +54,9 @@ export function ago(ms: number): string {
 
 /** Black or white, whichever reads on this kit colour. */
 export function readableOn(hex: string): string {
-  const clean = hex.replace("#", "");
-  const full =
-    clean.length === 3
-      ? clean
-          .split("")
-          .map((c) => c + c)
-          .join("")
-      : clean;
-  const n = Number.parseInt(full.slice(0, 6), 16);
-  if (Number.isNaN(n)) return "#fff";
-  const lum =
-    0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
-  return lum > 150 ? "#0b0e14" : "#ffffff";
+  return luminance(hexToRgb(hex)) > 150 ? "#0b0e14" : "#ffffff";
 }
 
-export const rgbCss = (c: readonly number[], a = 1) =>
+/** CSS colour for an RGB triple, with optional alpha. */
+export const rgba = (c: readonly number[], a = 1) =>
   `rgba(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])},${a})`;

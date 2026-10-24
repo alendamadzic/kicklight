@@ -4,11 +4,11 @@ import {
   type MatchEvent,
   type MatchPhase,
   type MatchSnapshot,
+  type ParsedMatch,
   type Side,
   type SideStats,
   type TeamInfo,
 } from "../model";
-import type { ParsedMatch } from "./espn";
 
 // A scripted match. Replays run through exactly the same runner as a live match,
 // so the demo page exercises the real code path rather than a side door.

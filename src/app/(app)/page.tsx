@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { FixturesView } from "@/components/fixtures/FixturesView";
+import { FixturesView } from "@/components/fixtures/fixtures-view";
 
 export const metadata: Metadata = {
   title: "Matches",

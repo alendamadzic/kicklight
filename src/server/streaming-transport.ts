@@ -1,4 +1,4 @@
-import type { Rgb } from "@/engine/colors";
+import type { Rgb, TeamColors } from "@/engine/colors";
 import type { Command } from "@/engine/runner";
 import type { LightTransport } from "@/lights/transport";
 
@@ -20,10 +20,7 @@ export interface FrameRenderer {
 export interface StreamingDeps {
   rest: LightTransport;
   handle: StreamHandle;
-  makeRenderer: (
-    channels: number,
-    colors: { home: Rgb; away: Rgb },
-  ) => FrameRenderer;
+  makeRenderer: (channels: number, colors: TeamColors) => FrameRenderer;
   now?: () => number;
   onClosed?: () => void;
   onError?: (e: unknown) => void;
@@ -48,7 +45,7 @@ export class StreamingTransport implements LightTransport {
     return this.state === "streaming";
   }
 
-  private async start(colors: { home: Rgb; away: Rgb }): Promise<void> {
+  private async start(colors: TeamColors): Promise<void> {
     if (this.state !== "idle") return;
     if (!this.starting) {
       this.starting = (async () => {
@@ -66,10 +63,7 @@ export class StreamingTransport implements LightTransport {
     await this.starting;
   }
 
-  async applyCommand(
-    cmd: Command,
-    colors: { home: Rgb; away: Rgb },
-  ): Promise<boolean> {
+  async applyCommand(cmd: Command, colors: TeamColors): Promise<boolean> {
     await this.start(colors);
     if (this.state !== "streaming" || !this.renderer) return false;
     this.renderer.apply(cmd, this.now());

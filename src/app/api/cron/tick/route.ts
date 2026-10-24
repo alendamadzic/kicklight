@@ -1,8 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import type { NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { HueRemoteError } from "@/lights/remote";
-import { apiError, json } from "@/server/auth";
+import { apiError, json } from "@/server/http";
 import { remoteTransportFor } from "@/server/hue-link";
 import { liveFeed } from "@/server/recording";
 import { runDueSessions } from "@/server/tick";
@@ -12,7 +11,6 @@ import { runDueSessions } from "@/server/tick";
 // can finish an effect after that, so it gets well over its ~27 s worst case.
 
 export const maxDuration = 60;
-export const dynamic = "force-dynamic";
 
 function authorised(request: NextRequest): boolean {
   const secret = process.env.CRON_SECRET;
@@ -31,7 +29,6 @@ async function handle(request: NextRequest) {
       transportFor: async (userId) =>
         (await remoteTransportFor(admin, userId))?.transport ?? null,
       fetchMatch: liveFeed(admin),
-      isUnauthorized: (e) => e instanceof HueRemoteError && e.unauthorized,
     });
     return json(summary);
   } catch (e) {

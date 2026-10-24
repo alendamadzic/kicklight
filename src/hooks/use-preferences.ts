@@ -3,7 +3,7 @@
 import { useCallback, useSyncExternalStore } from "react";
 import type { StatKey } from "@/engine/stats";
 import { getSupabase } from "@/lib/supabase/safe-client";
-import { authStore } from "./use-user";
+import { authStore } from "./use-auth";
 
 export interface Preferences {
   /** ESPN team ids. */
@@ -22,11 +22,13 @@ export const DEFAULT_PREFERENCES: Preferences = {
   auto_start: false,
 };
 
-const KEY = "kl:prefs";
-const TEAMS_KEY = "kl:teams";
+/** Signed-out choices live under the bare key; each account gets its own copy. */
+const storageKey = (userId: string | null) =>
+  userId ? `kl:prefs:${userId}` : "kl:prefs";
 
 let state: Preferences = DEFAULT_PREFERENCES;
-let loadedFor: string | null = null;
+/** Whose preferences `state` holds: a user id, or null when signed out. */
+let owner: string | null = null;
 let started = false;
 const listeners = new Set<() => void>();
 let pushTimer: ReturnType<typeof setTimeout> | undefined;
@@ -36,9 +38,9 @@ function emit(next: Preferences) {
   for (const l of listeners) l();
 }
 
-function readLocal(): Preferences {
+function readLocal(userId: string | null): Preferences | null {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = localStorage.getItem(storageKey(userId));
     if (raw)
       return {
         ...DEFAULT_PREFERENCES,
@@ -47,12 +49,12 @@ function readLocal(): Preferences {
   } catch {
     // Storage can be blocked; defaults are fine.
   }
-  return DEFAULT_PREFERENCES;
+  return null;
 }
 
-function writeLocal(p: Preferences) {
+function writeLocal(userId: string | null, p: Preferences) {
   try {
-    localStorage.setItem(KEY, JSON.stringify(p));
+    localStorage.setItem(storageKey(userId), JSON.stringify(p));
   } catch {
     // ignore
   }
@@ -66,38 +68,51 @@ async function pull(userId: string) {
     .select("followed_teams, tv_delay_ms, brightness, default_stat, auto_start")
     .eq("user_id", userId)
     .maybeSingle();
-  if (error || !data) return;
+  // The account may have changed while this was in flight.
+  if (error || !data || owner !== userId) return;
   const next: Preferences = {
     ...DEFAULT_PREFERENCES,
     ...(data as Partial<Preferences>),
   };
-  writeLocal(next);
+  writeLocal(userId, next);
   emit(next);
 }
 
 function schedulePush() {
   if (pushTimer) clearTimeout(pushTimer);
+  const userId = owner;
+  const prefs = state;
+  if (!userId) return;
   pushTimer = setTimeout(async () => {
-    const { user } = authStore.get();
     const sb = getSupabase();
-    if (!user || !sb) return;
+    if (!sb || owner !== userId) return;
     await sb
       .from("preferences")
-      .upsert({ user_id: user.id, ...state }, { onConflict: "user_id" });
+      .upsert({ user_id: userId, ...prefs }, { onConflict: "user_id" });
   }, 400);
+}
+
+/**
+ * Switch to another account's preferences. Signing in from signed out keeps what was chosen
+ * on this device until the account's own row loads; one account never inherits another's.
+ */
+function switchOwner(userId: string | null) {
+  if (pushTimer) clearTimeout(pushTimer);
+  const carried = owner === null ? state : DEFAULT_PREFERENCES;
+  owner = userId;
+  emit(readLocal(userId) ?? (userId ? carried : DEFAULT_PREFERENCES));
+  if (userId) void pull(userId);
 }
 
 function start() {
   if (started) return;
   started = true;
-  emit(readLocal());
+  emit(readLocal(null) ?? DEFAULT_PREFERENCES);
   const sync = () => {
-    const { user } = authStore.get();
-    if (user && loadedFor !== user.id) {
-      loadedFor = user.id;
-      void pull(user.id);
-    }
-    if (!user) loadedFor = null;
+    const { user, ready } = authStore.get();
+    if (!ready) return;
+    const id = user?.id ?? null;
+    if (id !== owner) switchOwner(id);
   };
   authStore.subscribe(sync);
   sync();
@@ -116,7 +131,7 @@ const store = {
 
 export function updatePreferences(patch: Partial<Preferences>) {
   const next = { ...state, ...patch };
-  writeLocal(next);
+  writeLocal(owner, next);
   emit(next);
   schedulePush();
 }
@@ -132,36 +147,4 @@ export function usePreferences() {
     [],
   );
   return { prefs, update };
-}
-
-// A small id -> team cache, so settings can show names for followed team ids.
-export interface CachedTeam {
-  id: string;
-  name: string;
-  short: string;
-  color: string;
-}
-
-export function rememberTeams(teams: CachedTeam[]) {
-  try {
-    const cur = JSON.parse(localStorage.getItem(TEAMS_KEY) ?? "{}") as Record<
-      string,
-      CachedTeam
-    >;
-    for (const t of teams) cur[t.id] = t;
-    localStorage.setItem(TEAMS_KEY, JSON.stringify(cur));
-  } catch {
-    // ignore
-  }
-}
-
-export function knownTeams(): Record<string, CachedTeam> {
-  try {
-    return JSON.parse(localStorage.getItem(TEAMS_KEY) ?? "{}") as Record<
-      string,
-      CachedTeam
-    >;
-  } catch {
-    return {};
-  }
 }

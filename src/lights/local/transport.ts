@@ -7,6 +7,7 @@
 
 import type { Rgb } from "@/engine/colors";
 import type { SignalFallback } from "@/engine/effects";
+import { brightnessFor, resampleNearest } from "../gradient";
 import { CommandQueue } from "../queue";
 import type { LightTransport } from "../transport";
 import { GAMUT_C, type Gamut, rgbToXy } from "../xy";
@@ -87,25 +88,6 @@ interface RawLight {
 const sleepReal = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const clamp = (v: number, lo: number, hi: number) =>
   Math.min(hi, Math.max(lo, v));
-
-/** Nearest-neighbour resample so blocks of colour stay crisp (no blending between teams). */
-export function resampleNearest<T>(items: T[], n: number): T[] {
-  if (items.length === 0 || n <= 0) return [];
-  if (items.length === n) return items.slice();
-  return Array.from(
-    { length: n },
-    (_, j) =>
-      items[
-        Math.min(items.length - 1, Math.floor(((j + 0.5) * items.length) / n))
-      ],
-  );
-}
-
-/** Overall brightness for a set of colours. The bridge has one dimmer per light, not per point. */
-export function brightnessFor(colors: Rgb[], master = 100): number {
-  const peak = colors.reduce((m, c) => Math.max(m, c[0], c[1], c[2]), 0);
-  return clamp(Math.round((peak / 255) * master), 1, 100);
-}
 
 export class LocalTransport implements LightTransport {
   readonly kind = "local" as const;
@@ -212,8 +194,12 @@ export class LocalTransport implements LightTransport {
 
   async restore(snapshot: unknown): Promise<void> {
     const s = snapshot as LightState;
-    // A restore replaces any resting state still waiting in the queue.
+    // A restore replaces any resting state still waiting in the queue. That gradient will
+    // never be sent, so settle its callers now instead of leaving them waiting forever.
     this.wanted = null;
+    const superseded = this.waiters;
+    this.waiters = [];
+    for (const w of superseded) w.resolve();
     const body: Record<string, unknown> = {
       on: { on: s.on },
       dimming: { brightness: s.brightness },
