@@ -1,13 +1,21 @@
 "use client";
 
-import { PauseIcon, PlayIcon, RotateCcwIcon, SendIcon } from "lucide-react";
+import {
+  CaptionsIcon,
+  PauseIcon,
+  PlayIcon,
+  RotateCcwIcon,
+  SendIcon,
+  SkipForwardIcon,
+} from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { EventPad } from "@/components/demo/event-pad";
-import { LiveReadout } from "@/components/match/live-readout";
-import { ScoreBug } from "@/components/match/score-bug";
-import { StatChannels } from "@/components/match/stat-channels";
+import { MomentOverlay } from "@/components/match/moment-overlay";
+import { OnscreenBug } from "@/components/match/score-bug";
+import { SplitReadout } from "@/components/match/split-readout";
+import { StatPicker, type StatPreview } from "@/components/match/stat-picker";
 import { Ticker } from "@/components/match/ticker";
 import { VirtualStrip } from "@/components/strip/virtual-strip";
 import { Button } from "@/components/ui/button";
@@ -17,44 +25,78 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { rgbToHex } from "@/engine/colors";
 import { SCENARIOS } from "@/engine/feed/scenarios";
 import type { Side } from "@/engine/model";
+import { STAT_MODES, type StatKey, statLabel } from "@/engine/stats";
 import { type DemoSpeed, useDemoEngine } from "@/hooks/use-demo-engine";
+import { useDevicePrefs } from "@/hooks/use-device-prefs";
 import { useLightSender } from "@/hooks/use-light-sender";
+import { useMomentFx } from "@/hooks/use-moment-fx";
 import { useMomentToasts } from "@/hooks/use-moment-toasts";
-import { isLivePhase, minuteLabel, PHASE_LABEL } from "@/lib/format";
+import { usePreferences } from "@/hooks/use-preferences";
+import { EFFECT_CAPTION, SPLIT_CAPTION } from "@/lib/effect-copy";
+import { minuteLabel } from "@/lib/format";
+import { MARKED, nextMoment, nextMomentMinute } from "@/lib/moments";
+import { EFFECT_TINT, effectLabel } from "@/lib/ticker";
 import { cn } from "@/lib/utils";
 
 const SPEEDS: DemoSpeed[] = [30, 60, 180];
-
-const MARK_TYPES = new Set([
-  "goal",
-  "red_card",
-  "yellow_card",
-  "penalty_missed",
-]);
 
 /** The showpiece: the whole engine runs here in the browser, no bridge or network needed. */
 export function DemoView() {
   const [scenarioId, setScenarioId] = useState(SCENARIOS[0].id);
   const [side, setSide] = useState<Side>("home");
   const sender = useLightSender();
+  const { prefs } = usePreferences();
+  const { prefs: device, update: updateDevice } = useDevicePrefs();
 
   const { ui, frame, controls, current } = useDemoEngine({
     scenarioId,
     autoplay: true,
     speed: 60,
+    kitOverrides: prefs.kit_overrides,
     onCommand: sender.send,
   });
 
-  useMomentToasts(ui?.ticker[0], (side) => ui?.script[side].name);
+  const top = ui?.ticker[0];
+  const fx = useMomentFx(top, device.celebrations);
+  useMomentToasts(
+    top,
+    (s) => ui?.script[s].name,
+    !device.celebrations && !device.captions,
+  );
+
+  // The caption sticks with the last moment until the next one, so it can be read.
+  const [caption, setCaption] = useState(SPLIT_CAPTION);
+  useEffect(() => {
+    if (top) setCaption(EFFECT_CAPTION[top.effect] ?? SPLIT_CAPTION);
+    else setCaption(SPLIT_CAPTION);
+  }, [top]);
 
   if (!ui) return <DemoSkeleton />;
 
   const homeHex = rgbToHex(ui.colors.home);
   const awayHex = rgbToHex(ui.colors.away);
-  const home = { ...ui.script.home, color: homeHex };
-  const away = { ...ui.script.away, color: awayHex };
-  const live = isLivePhase(ui.snapshot.phase);
-  const marks = ui.script.events.filter((e) => MARK_TYPES.has(e.type));
+  const teams = {
+    home: {
+      name: ui.script.home.name,
+      short: ui.script.home.short,
+      color: homeHex,
+    },
+    away: {
+      name: ui.script.away.name,
+      short: ui.script.away.short,
+      color: awayHex,
+    },
+  };
+  const marks = ui.script.events.filter((e) => MARKED.has(e.type));
+  const next = nextMoment(ui.script.events, ui.minute);
+  const nextAt = nextMomentMinute(ui.script.events, ui.minute);
+
+  const preview = (key: StatKey): StatPreview | null => {
+    if (key === "auto" || key === "clock") return null;
+    const ctx = { snapshot: ui.snapshot, events: ui.events };
+    const m = STAT_MODES[key];
+    return { share: m.homeShare(ctx), values: m.values?.(ctx) ?? null };
+  };
 
   const toggleSend = (on: boolean) => {
     sender.setEnabled(on);
@@ -68,11 +110,18 @@ export function DemoView() {
     }
   };
 
+  const label =
+    ui.stat === "auto"
+      ? `Auto · ${statLabel(ui.activeStat)}`
+      : statLabel(ui.stat);
+
   return (
     <div className="flex flex-col gap-5">
       <header className="flex flex-col gap-1">
-        <p className="kl-eyebrow">Demo · runs in your browser</p>
-        <h1 className="kl-display text-4xl leading-none sm:text-5xl">
+        <p className="text-sm font-medium text-muted-foreground">
+          Demo · runs in your browser, no lights needed
+        </p>
+        <h1 className="kl-headline text-4xl sm:text-5xl">
           Watch the <span className="text-amber">lights</span> play a match
         </h1>
       </header>
@@ -89,7 +138,7 @@ export function DemoView() {
             <ToggleGroupItem
               key={s.id}
               value={s.id}
-              className="kl-display kl-press h-11 rounded-md bg-secondary px-4 text-base leading-none text-muted-foreground hover:bg-accent hover:text-foreground aria-pressed:bg-foreground aria-pressed:text-background"
+              className="kl-press h-10 rounded-full bg-secondary px-4 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground aria-pressed:bg-foreground aria-pressed:text-background"
             >
               {s.title}
             </ToggleGroupItem>
@@ -97,52 +146,156 @@ export function DemoView() {
         </ToggleGroup>
       </div>
 
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:items-start">
-        <div className="flex flex-col gap-4 max-lg:contents lg:sticky lg:top-[calc(4rem+env(safe-area-inset-top)+0.5rem)] lg:self-start">
-          <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-20 -mx-4 flex flex-col gap-3 bg-background px-4 pb-3 pt-1 lg:static lg:mx-0 lg:bg-transparent lg:px-0 ">
-            <ScoreBug
-              compact
-              home={home}
-              away={away}
-              score={ui.snapshot.score}
-              clock={minuteLabel(ui.snapshot.minute, ui.snapshot.phase) || "KO"}
-              live={live && ui.playing}
-              sub={PHASE_LABEL[ui.snapshot.phase]}
-            />
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:items-start lg:gap-8">
+        <div className="flex flex-col gap-4 lg:sticky lg:top-[calc(4.5rem+env(safe-area-inset-top))]">
+          <VirtualStrip
+            frame={frame}
+            label={`Virtual strip, ${ui.script.title}`}
+            className="aspect-[16/10]"
+            screen={
+              <>
+                <OnscreenBug
+                  home={teams.home}
+                  away={teams.away}
+                  score={ui.snapshot.score}
+                  clock={
+                    minuteLabel(ui.snapshot.minute, ui.snapshot.phase) || "KO"
+                  }
+                />
+                <MomentOverlay
+                  fx={fx}
+                  teams={teams}
+                  score={ui.snapshot.score}
+                />
+              </>
+            }
+          />
 
-            <VirtualStrip
-              frame={frame}
-              label={`Virtual strip, ${ui.script.title}`}
-              className="aspect-[5/2] lg:aspect-[16/10]"
-            />
-          </div>
+          {device.captions ? (
+            <p
+              aria-live="polite"
+              className="flex min-h-14 gap-3 rounded-xl border border-border bg-card px-3 py-2.5 text-sm"
+            >
+              <span
+                aria-hidden
+                className="w-1.5 shrink-0 rounded-full"
+                style={{
+                  background: top
+                    ? (EFFECT_TINT[top.effect] ?? "#8f9bb2")
+                    : "var(--amber)",
+                }}
+              />
+              <span>{caption}</span>
+            </p>
+          ) : null}
+
+          <SplitReadout
+            label={label}
+            share={ui.share}
+            values={ui.values}
+            home={teams.home}
+            away={teams.away}
+          />
 
           {/* Transport */}
           <div className="kl-panel flex flex-col gap-4 p-3">
-            <div className="flex items-center gap-2">
+            <div className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] gap-2">
               <Button
-                size="lg"
+                size="icon-lg"
                 onClick={controls.toggle}
                 aria-label={ui.playing ? "Pause" : ui.ended ? "Replay" : "Play"}
-                className="kl-display h-12 flex-1 rounded-lg text-lg"
+                className="size-12 rounded-xl"
               >
-                {ui.playing ? (
-                  <PauseIcon data-icon="inline-start" />
-                ) : (
-                  <PlayIcon data-icon="inline-start" />
-                )}
-                {ui.playing ? "Pause" : ui.ended ? "Replay" : "Play"}
+                {ui.playing ? <PauseIcon /> : <PlayIcon />}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => nextAt != null && controls.seek(nextAt)}
+                disabled={nextAt == null}
+                className="h-12 min-w-0 rounded-xl text-sm font-semibold"
+              >
+                <span className="truncate">
+                  {next ? (
+                    <>
+                      <span className="sm:hidden">Next · </span>
+                      <span className="hidden sm:inline">Next moment · </span>
+                      {Math.floor(next.minute)}'{" "}
+                      {effectLabel(next.type).toLowerCase()}
+                    </>
+                  ) : (
+                    "No more moments"
+                  )}
+                </span>
+                <SkipForwardIcon data-icon="inline-end" />
               </Button>
               <Button
                 variant="secondary"
                 size="icon-lg"
                 aria-label="Restart"
                 onClick={controls.restart}
-                className="size-12 rounded-lg"
+                className="size-12 rounded-xl"
               >
                 <RotateCcwIcon />
               </Button>
+              <Button
+                variant={device.captions ? "default" : "secondary"}
+                size="icon-lg"
+                aria-label="Captions"
+                aria-pressed={device.captions}
+                onClick={() => updateDevice({ captions: !device.captions })}
+                className="size-12 rounded-xl"
+              >
+                <CaptionsIcon />
+              </Button>
             </div>
+
+            <div className="flex flex-col gap-1.5 px-1">
+              <Slider
+                aria-label="Match minute"
+                min={0}
+                max={ui.script.endMinute}
+                step={0.5}
+                value={[ui.minute]}
+                onValueChange={(v) =>
+                  controls.seek(Array.isArray(v) ? v[0] : v)
+                }
+              />
+              <div className="relative h-8">
+                {marks.map((m) => {
+                  const ring = m.side ? teams[m.side].color : "transparent";
+                  return (
+                    <button
+                      key={`${m.minute}-${m.type}-${m.side}`}
+                      type="button"
+                      onClick={() =>
+                        controls.seek(Math.max(0, m.minute - 0.75))
+                      }
+                      aria-label={`Jump to ${Math.floor(m.minute)}' ${effectLabel(m.type)}`}
+                      className="absolute top-0 grid size-8 -translate-x-1/2 place-items-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      style={{
+                        left: `${(m.minute / ui.script.endMinute) * 100}%`,
+                      }}
+                    >
+                      <span
+                        className="block size-3 rounded-[3px]"
+                        style={{
+                          background: EFFECT_TINT[m.type] ?? "#8f9bb2",
+                          boxShadow: `0 0 0 2px ${ring}`,
+                        }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex justify-between font-mono text-xs tabular-nums text-muted-foreground">
+                <span>0'</span>
+                <span className="text-foreground">
+                  {Math.floor(ui.minute)}'
+                </span>
+                <span>{ui.script.endMinute}'</span>
+              </div>
+            </div>
+
             <ToggleGroup
               value={[String(ui.speed)]}
               onValueChange={(v) =>
@@ -156,51 +309,12 @@ export function DemoView() {
                 <ToggleGroupItem
                   key={s}
                   value={String(s)}
-                  className="kl-display h-11 flex-1 rounded-md bg-secondary px-2.5 text-base leading-none text-muted-foreground aria-pressed:bg-foreground aria-pressed:text-background"
+                  className="h-10 flex-1 rounded-lg bg-secondary px-2.5 text-sm font-medium tabular-nums text-muted-foreground aria-pressed:bg-foreground aria-pressed:text-background"
                 >
-                  {s}×
+                  {s}× speed
                 </ToggleGroupItem>
               ))}
             </ToggleGroup>
-
-            <div className="flex flex-col gap-1.5 px-1">
-              <Slider
-                aria-label="Match minute"
-                min={0}
-                max={ui.script.endMinute}
-                step={0.5}
-                value={[ui.minute]}
-                onValueChange={(v) =>
-                  controls.seek(Array.isArray(v) ? v[0] : v)
-                }
-              />
-              <div className="relative h-3" aria-hidden>
-                {marks.map((m) => (
-                  <span
-                    key={`${m.minute}-${m.type}-${m.side}`}
-                    className="absolute top-0 size-2 -translate-x-1/2 rounded-full"
-                    style={{
-                      left: `${(m.minute / ui.script.endMinute) * 100}%`,
-                      background:
-                        m.type === "goal"
-                          ? "#fff"
-                          : m.type === "red_card"
-                            ? "#eb1414"
-                            : m.type === "yellow_card"
-                              ? "#ffce00"
-                              : "#8f9bb2",
-                    }}
-                  />
-                ))}
-              </div>
-              <div className="flex justify-between font-mono text-xs tabular-nums text-muted-foreground">
-                <span>0'</span>
-                <span className="text-foreground">
-                  {Math.floor(ui.minute)}'
-                </span>
-                <span>{ui.script.endMinute}'</span>
-              </div>
-            </div>
           </div>
 
           {/* Send to my lights */}
@@ -219,7 +333,7 @@ export function DemoView() {
             <div className="min-w-0 flex-1">
               <label
                 htmlFor="send-lights"
-                className="kl-display block text-lg leading-none"
+                className="block text-sm font-semibold"
               >
                 Send to my lights
               </label>
@@ -247,46 +361,46 @@ export function DemoView() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 max-lg:contents">
+        <div className="flex min-w-0 flex-col gap-6">
           <section
-            aria-labelledby="demo-channels"
+            aria-labelledby="demo-follow"
             className="flex flex-col gap-2"
           >
-            <h2 id="demo-channels" className="kl-eyebrow">
+            <h2 id="demo-follow" className="text-sm font-semibold">
               Lights follow
             </h2>
-            <StatChannels value={ui.stat} onValueChange={controls.setStat} />
+            <StatPicker
+              value={ui.stat}
+              activeStat={ui.activeStat}
+              autoReason={ui.autoReason}
+              autoSide={ui.autoSide}
+              teams={teams}
+              preview={preview}
+              onChange={controls.setStat}
+            />
           </section>
-          <LiveReadout
-            stat={ui.stat}
-            autoPick={ui.activeStat}
-            share={ui.share}
-            values={ui.values}
-            home={{ short: ui.script.home.short, color: homeHex }}
-            away={{ short: ui.script.away.short, color: awayHex }}
-          />
           <section aria-labelledby="demo-pad" className="flex flex-col gap-2">
-            <h2 id="demo-pad" className="kl-eyebrow">
+            <h2 id="demo-pad" className="text-sm font-semibold">
               Event pad
+              <span className="ml-2 font-normal text-muted-foreground">
+                fire any moment on the strip
+              </span>
             </h2>
             <EventPad
               side={side}
               onSideChange={setSide}
               onFire={controls.fire}
-              home={{ short: ui.script.home.short, color: homeHex }}
-              away={{ short: ui.script.away.short, color: awayHex }}
+              home={teams.home}
+              away={teams.away}
             />
           </section>
           <section aria-labelledby="demo-feed" className="flex flex-col gap-2">
-            <h2 id="demo-feed" className="kl-eyebrow">
-              Hit the lights
+            <h2 id="demo-feed" className="text-sm font-semibold">
+              Moments
             </h2>
             <Ticker
               items={ui.ticker}
-              teams={{
-                home: { short: ui.script.home.short, color: homeHex },
-                away: { short: ui.script.away.short, color: awayHex },
-              }}
+              teams={teams}
               emptyHint="Press play or tap the pad."
             />
           </section>
@@ -299,7 +413,7 @@ export function DemoView() {
 function DemoSkeleton() {
   return (
     <div className="flex flex-col gap-4" aria-busy>
-      <div className="h-24 animate-pulse rounded-xl bg-muted" />
+      <div className="h-10 animate-pulse rounded-xl bg-muted" />
       <div className="aspect-[16/10] animate-pulse rounded-xl bg-muted" />
     </div>
   );
