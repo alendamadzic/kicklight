@@ -362,7 +362,7 @@ export const EFFECTS: Partial<Record<EffectKey, Effect>> = {
   },
   nerves: {
     key: "nerves",
-    label: "Squeaky bum time",
+    label: "Nerves",
     durationMs: 4000,
     // One slow breath; the runner re-issues it while the situation lasts.
     frame: (t, base) => {

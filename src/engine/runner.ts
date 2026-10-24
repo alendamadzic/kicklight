@@ -207,7 +207,7 @@ export function tick(prev: RunnerState, input: TickInput): TickResult {
     }
   }
 
-  // 5. Squeaky bum time: stoppage time of a one-goal game.
+  // 5. Nerves: stoppage time of a one-goal game.
   const oneGoal = Math.abs(snapshot.score.home - snapshot.score.away) === 1;
   if (
     oneGoal &&
