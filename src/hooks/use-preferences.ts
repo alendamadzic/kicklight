@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useSyncExternalStore } from "react";
+import type { KitOverrides } from "@/engine/colors";
 import type { StatKey } from "@/engine/stats";
 import { getSupabase } from "@/lib/supabase/safe-client";
 import { authStore } from "./use-auth";
@@ -12,6 +13,10 @@ export interface Preferences {
   brightness: number;
   default_stat: StatKey;
   auto_start: boolean;
+  /** The strip runs right to left behind the TV; set from the strip test. */
+  strip_reversed: boolean;
+  /** Strip colour choices keyed by team id. */
+  kit_overrides: KitOverrides;
 }
 
 export const DEFAULT_PREFERENCES: Preferences = {
@@ -20,6 +25,8 @@ export const DEFAULT_PREFERENCES: Preferences = {
   brightness: 100,
   default_stat: "auto",
   auto_start: false,
+  strip_reversed: false,
+  kit_overrides: {},
 };
 
 /** Signed-out choices live under the bare key; each account gets its own copy. */
@@ -65,7 +72,9 @@ async function pull(userId: string) {
   if (!sb) return;
   const { data, error } = await sb
     .from("preferences")
-    .select("followed_teams, tv_delay_ms, brightness, default_stat, auto_start")
+    .select(
+      "followed_teams, tv_delay_ms, brightness, default_stat, auto_start, strip_reversed, kit_overrides",
+    )
     .eq("user_id", userId)
     .maybeSingle();
   // The account may have changed while this was in flight.

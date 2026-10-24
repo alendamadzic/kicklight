@@ -1,5 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { KitOverrides } from "@/engine/colors";
 import type { HueLightInfo } from "@/lib/api-types";
 import { decrypt, encrypt } from "@/lib/crypto";
 import { createBridgeFetch } from "@/lights/local/agent";
@@ -13,6 +14,7 @@ import {
 } from "@/lights/remote";
 import type { LightTransport } from "@/lights/transport";
 import { hueClientCredentials } from "./config";
+import { parseKitOverrides } from "./validate";
 
 // A user's Hue link: which bridge and strip (`hue_links`, readable by the user) and the
 // credentials for it (`hue_secrets`, encrypted, service role only). Loads and saves both,
@@ -49,6 +51,10 @@ export interface HueContext {
   secrets: SecretsRow | null;
   /** Master brightness from preferences, 1-100. */
   brightness: number;
+  /** The strip runs right to left behind the TV (set during the strip test). */
+  stripReversed: boolean;
+  /** The viewer's strip colour choices, keyed by team id. */
+  kitOverrides: KitOverrides;
 }
 
 export interface LinkedTransport<T extends LightTransport = LightTransport>
@@ -88,7 +94,7 @@ export async function loadHueContext(
       .maybeSingle(),
     admin
       .from("preferences")
-      .select("brightness")
+      .select("brightness, strip_reversed, kit_overrides")
       .eq("user_id", userId)
       .maybeSingle(),
   ]);
@@ -99,6 +105,8 @@ export async function loadHueContext(
     link,
     secrets: (secrets.data as SecretsRow | null) ?? null,
     brightness: (prefs.data?.brightness as number | undefined) ?? 100,
+    stripReversed: prefs.data?.strip_reversed === true,
+    kitOverrides: parseKitOverrides(prefs.data?.kit_overrides),
   };
 }
 
@@ -164,6 +172,7 @@ async function remoteTransport(
     appKey: decrypt(ctx.secrets.app_key_enc),
     lightId: ctx.link.light_id ?? undefined,
     brightness: ctx.brightness,
+    reversed: ctx.stripReversed,
     fetchImpl: opts.fetchImpl,
   });
 }
@@ -187,6 +196,7 @@ async function localTransport(ctx: HueContext): Promise<LocalTransport | null> {
     ...bridge,
     lightId: ctx.link.light_id,
     brightness: ctx.brightness,
+    reversed: ctx.stripReversed,
   });
 }
 
@@ -223,6 +233,29 @@ export async function transportFor(
       ? await localTransport(ctx)
       : await remoteTransport(admin, ctx);
   return transport ? { ...ctx, transport } : null;
+}
+
+/**
+ * Blink one light on the linked bridge, so the viewer can tell which strip is which
+ * before choosing. Works before a strip is chosen. False when there's no usable link.
+ */
+export async function identifyLightFor(
+  admin: SupabaseClient,
+  userId: string,
+  lightId: string,
+): Promise<boolean> {
+  const ctx = await loadHueContext(admin, userId);
+  if (!ctx) return false;
+  if (ctx.link.transport === "remote") {
+    const t = await remoteTransport(admin, ctx);
+    if (!t) return false;
+    await t.identify(lightId);
+    return true;
+  }
+  const bridge = localBridge(ctx);
+  if (!bridge) return false;
+  await new LocalTransport({ ...bridge, lightId }).identify();
+  return true;
 }
 
 /** Gradient-capable lights on the linked bridge, for the strip picker. */

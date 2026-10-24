@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  applyKitOverride,
+  type KitOverrides,
   pickStripColors,
   type Rgb,
   type StripColors,
@@ -23,6 +25,7 @@ import {
   tick,
 } from "@/engine/runner";
 import { STAT_MODES, type StatKey } from "@/engine/stats";
+import type { AutoReason } from "@/engine/stats/auto";
 import type { TickerItem } from "@/lib/ticker";
 import {
   type ActiveEffect,
@@ -42,6 +45,9 @@ export interface DemoUi {
   stat: StatKey;
   /** The stat actually on the lights (resolves "auto"). */
   activeStat: StatKey;
+  /** Why Auto picked `activeStat`, when following Auto. */
+  autoReason?: AutoReason;
+  autoSide?: Side;
   snapshot: MatchSnapshot;
   events: MatchEvent[];
   colors: StripColors;
@@ -86,8 +92,12 @@ function createEngine(
   script: ReplayScript,
   stat: StatKey,
   speed: DemoSpeed,
+  kitOverrides?: KitOverrides,
 ): Engine {
-  const colors = pickStripColors(script.home, script.away);
+  const colors = pickStripColors(
+    applyKitOverride(script.home, kitOverrides),
+    applyKitOverride(script.away, kitOverrides),
+  );
   const startMs = Date.now();
   const { snapshot, events } = replayAt(script, 0, startMs);
   return {
@@ -147,6 +157,8 @@ export function useDemoEngine(options?: {
   stat?: StatKey;
   speed?: DemoSpeed;
   autoplay?: boolean;
+  /** The viewer's strip colour choices, applied when the engine is created. */
+  kitOverrides?: KitOverrides;
   onCommand?: (c: DemoCommand) => void;
 }) {
   const scenarioId = options?.scenarioId ?? DEFAULT_SCRIPT.id;
@@ -157,6 +169,7 @@ export function useDemoEngine(options?: {
 
   // Only the scenario resets the engine; the other options seed it.
   const initRef = useRef({
+    kitOverrides: options?.kitOverrides,
     stat: options?.stat,
     speed: options?.speed,
     autoplay: options?.autoplay,
@@ -182,6 +195,9 @@ export function useDemoEngine(options?: {
       speed: eng.speed,
       stat: eng.stat,
       activeStat: key,
+      ...(eng.stat === "auto" && eng.state.auto?.reason
+        ? { autoReason: eng.state.auto.reason, autoSide: eng.state.auto.side }
+        : {}),
       snapshot: eng.snapshot,
       events: eng.events,
       colors: eng.colors,
@@ -233,6 +249,7 @@ export function useDemoEngine(options?: {
       SCENARIOS.find((s) => s.id === scenarioId) ?? DEFAULT_SCRIPT,
       init.stat ?? "auto",
       init.speed ?? 60,
+      init.kitOverrides,
     );
     eng.playing = init.autoplay ?? false;
     engineRef.current = eng;

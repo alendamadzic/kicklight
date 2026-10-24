@@ -21,6 +21,8 @@ export interface StatContext {
 export interface StatMode {
   key: StatKey;
   label: string;
+  /** One plain sentence on what it follows, for the stat picker. */
+  description: string;
   /** Share of the strip the home team gets, 0..1. */
   homeShare: (ctx: StatContext) => number;
   /** Optional human values for the readout, e.g. ["58%", "42%"]. */
@@ -121,17 +123,29 @@ export const STAT_MODES: Record<
   possession: {
     key: "possession",
     label: "Possession",
+    description: "Who has the ball",
     homeShare: possession,
     values: (c) => {
       const p = possession(c);
       return [pct(p), pct(1 - p)];
     },
   },
-  momentum: { key: "momentum", label: "Momentum", homeShare: momentum },
-  dominance: { key: "dominance", label: "Dominance", homeShare: dominance },
+  momentum: {
+    key: "momentum",
+    label: "Momentum",
+    description: "Who's been attacking over the last 10 minutes",
+    homeShare: momentum,
+  },
+  dominance: {
+    key: "dominance",
+    label: "Dominance",
+    description: "Possession, shots and corners combined",
+    homeShare: dominance,
+  },
   scoreline: {
     key: "scoreline",
     label: "Scoreline",
+    description: "The team in front takes more of the strip",
     homeShare: scoreline,
     values: ({ snapshot }) => [
       String(snapshot.score.home),
@@ -141,6 +155,7 @@ export const STAT_MODES: Record<
   shots: {
     key: "shots",
     label: "Shots",
+    description: "Shots taken by each side",
     homeShare: ({ snapshot }) =>
       share(snapshot.stats.home.shots, snapshot.stats.away.shots),
     values: ({ snapshot }) => [
@@ -151,6 +166,7 @@ export const STAT_MODES: Record<
   onTarget: {
     key: "onTarget",
     label: "On target",
+    description: "Shots that hit the target",
     homeShare: ({ snapshot }) =>
       share(
         snapshot.stats.home.shotsOnTarget,
@@ -164,6 +180,7 @@ export const STAT_MODES: Record<
   corners: {
     key: "corners",
     label: "Corners",
+    description: "Corners won by each side",
     homeShare: ({ snapshot }) =>
       share(snapshot.stats.home.corners, snapshot.stats.away.corners),
     values: ({ snapshot }) => [
@@ -171,7 +188,12 @@ export const STAT_MODES: Record<
       String(snapshot.stats.away.corners),
     ],
   },
-  discipline: { key: "discipline", label: "Discipline", homeShare: discipline },
+  discipline: {
+    key: "discipline",
+    label: "Discipline",
+    description: "Fewer cards, more of the strip",
+    homeShare: discipline,
+  },
 };
 
 /** The curated list shown in the UI, in display order. */
@@ -185,6 +207,13 @@ export const STAT_ORDER: StatKey[] = [
   "corners",
   "discipline",
 ];
+
+/** Plain-language description for any stat key, for the stat picker. */
+export function statDescription(key: StatKey): string {
+  if (key === "auto") return "Picks for you as the match changes";
+  if (key === "clock") return "Fills up as the match runs";
+  return STAT_MODES[key].description;
+}
 
 /** Display name for any stat key, the auto-director and the clock included. */
 export function statLabel(key: StatKey): string {

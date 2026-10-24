@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { decrypt } from "@/lib/crypto";
+import { orient } from "@/lights/gradient";
 import { createBridgeFetch } from "@/lights/local/agent";
 import {
   EntertainmentSession,
@@ -8,6 +9,7 @@ import {
   fetchApplicationId,
 } from "@/lights/local/entertainment";
 import { createRenderer } from "@/lights/local/renderer";
+import type { LocalTransport } from "@/lights/local/transport";
 import type { LightTransport } from "@/lights/transport";
 import { localTransportFor } from "./hue-link";
 import { StreamingTransport } from "./streaming-transport";
@@ -23,6 +25,17 @@ const LIVE = Symbol.for("kicklight.live-streams");
 const g = globalThis as { [LIVE]?: Map<string, StreamingTransport> };
 g[LIVE] ??= new Map();
 const live = g[LIVE];
+
+// What the viewer can change mid-match: brightness and strip direction. The stream lives
+// for the whole match, so each pass hands it the latest preferences through here.
+interface Tuning {
+  rest: LocalTransport;
+  reversed: boolean;
+}
+const TUNING = Symbol.for("kicklight.live-tuning");
+const gt = globalThis as { [TUNING]?: Map<string, Tuning> };
+gt[TUNING] ??= new Map();
+const tuning = gt[TUNING];
 
 /** The user's running Entertainment stream, if a match is driving one right now. */
 export function activeStreamFor(userId: string): StreamingTransport | null {
@@ -44,7 +57,15 @@ export async function localTransportWithStreaming(
   if (process.env.KICKLIGHT_ENTERTAINMENT !== "1") return base.transport;
 
   const existing = live.get(userId);
-  if (existing) return existing;
+  if (existing) {
+    const t = tuning.get(userId);
+    if (t) {
+      t.rest.setBrightness(base.brightness);
+      t.rest.setReversed(base.stripReversed);
+      t.reversed = base.stripReversed;
+    }
+    return existing;
+  }
 
   try {
     const { link, secrets } = base;
@@ -82,6 +103,8 @@ export async function localTransportWithStreaming(
           err?.message ?? "",
         ),
     });
+    const t: Tuning = { rest: base.transport, reversed: base.stripReversed };
+    tuning.set(userId, t);
     const st = new StreamingTransport({
       rest: base.transport,
       handle: {
@@ -89,8 +112,15 @@ export async function localTransportWithStreaming(
         start: (source) => session.start(source),
         stop: () => session.stop(),
       },
-      makeRenderer: (channels, colors) => createRenderer({ channels, colors }),
-      onClosed: () => live.delete(userId),
+      makeRenderer: (channels, colors) => {
+        const r = createRenderer({ channels, colors });
+        // Channels run left to right; flip them for a strip mounted the other way.
+        return { ...r, frame: (now) => orient(r.frame(now), t.reversed) };
+      },
+      onClosed: () => {
+        live.delete(userId);
+        tuning.delete(userId);
+      },
       onError: (e) =>
         console.error(
           "[kicklight] entertainment unavailable, using REST:",

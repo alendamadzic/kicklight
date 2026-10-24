@@ -259,3 +259,29 @@ describe("listGradientLights", () => {
     ]);
   });
 });
+
+describe("LocalTransport strip direction and identify", () => {
+  test("a reversed strip gets the gradient flipped, home still on the left of the TV", async () => {
+    const b = fakeBridge();
+    const { t } = make(b, { reversed: true });
+    await t.setGradient([H, H, H, A, A]);
+    const pts = b.calls[0].body.gradient.points;
+    expect(pts[0].color.xy).toEqual(rgbToXy(A));
+    expect(pts[4].color.xy).toEqual(rgbToXy(H));
+  });
+  test("setReversed takes effect on the next gradient", async () => {
+    const b = fakeBridge();
+    const { t } = make(b);
+    t.setReversed(true);
+    await t.setGradient([H, A, A, A, A]);
+    expect(b.calls[0].body.gradient.points[4].color.xy).toEqual(rgbToXy(H));
+  });
+  test("identify blinks any light by id", async () => {
+    const b = fakeBridge();
+    const { t } = make(b);
+    await t.identify("other-light");
+    expect(b.calls[0].method).toBe("PUT");
+    expect(b.calls[0].path).toBe("/clip/v2/resource/light/other-light");
+    expect(b.calls[0].body).toEqual({ identify: { action: "identify" } });
+  });
+});

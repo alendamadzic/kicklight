@@ -64,6 +64,41 @@ export function liftForGlow(rgb: Rgb): Rgb {
   ) as Rgb;
 }
 
+/** True when a colour is too dark to glow and the strip will show a lifted version. */
+export function needsLift(rgb: Rgb): boolean {
+  return luminance(rgb) < MIN_LUMINANCE;
+}
+
+/**
+ * A viewer's choice of strip colour for one team: its primary kit colour, its
+ * alternate, or a colour of their own (`#rrggbb`).
+ */
+export type KitChoice = "primary" | "alternate" | `#${string}`;
+/** Kit choices keyed by team id, as stored in preferences. */
+export type KitOverrides = Readonly<Record<string, KitChoice>>;
+
+const HEX = /^#[0-9a-f]{6}$/i;
+
+export const isKitChoice = (v: unknown): v is KitChoice =>
+  v === "primary" ||
+  v === "alternate" ||
+  (typeof v === "string" && HEX.test(v));
+
+/**
+ * Apply the viewer's kit choice to a team before the strip colours are picked.
+ * The clash and glow rules in `pickStripColors` still win: a custom colour keeps
+ * the team's own primary as its fallback, so a clash can still switch it.
+ */
+export function applyKitOverride<
+  T extends { id: string; color: string; alternateColor: string },
+>(team: T, overrides?: KitOverrides | null): T {
+  const choice = overrides?.[team.id];
+  if (!choice || choice === "primary" || !isKitChoice(choice)) return team;
+  if (choice === "alternate")
+    return { ...team, color: team.alternateColor, alternateColor: team.color };
+  return { ...team, color: choice, alternateColor: team.color };
+}
+
 /** The two team colours the strip is drawn in. */
 export interface TeamColors {
   home: Rgb;

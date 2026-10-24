@@ -376,3 +376,42 @@ describe("replay of a real match", () => {
     expect(new Set(out).size).toBe(goals.length);
   });
 });
+
+describe("auto-director reasons", () => {
+  const ctx = (snapshot: MatchSnapshot, events: MatchEvent[] = []) => ({
+    snapshot,
+    events,
+  });
+  test("each pick says why", () => {
+    expect(pickAuto(ctx(snap({ minute: 30 })), null, 0).reason).toBe("steady");
+    expect(
+      pickAuto(ctx(snap({ minute: 85, score: { home: 1, away: 1 } })), null, 0)
+        .reason,
+    ).toBe("late_close");
+  });
+  test("pressure names the side doing the pressing", () => {
+    const ev = (i: number): MatchEvent => ({
+      id: `c${i}`,
+      type: "corner",
+      side: "away",
+      minute: 50 + i,
+      wallclock: 0,
+    });
+    const pick = pickAuto(
+      ctx(
+        snap({ minute: 58 }),
+        Array.from({ length: 8 }, (_, i) => ev(i)),
+      ),
+      null,
+      0,
+    );
+    expect(pick.key).toBe("momentum");
+    expect(pick.reason).toBe("pressure");
+    expect(pick.side).toBe("away");
+  });
+  test("keeping the same pick keeps when it started", () => {
+    const first = pickAuto(ctx(snap({ minute: 30 })), null, 0);
+    const again = pickAuto(ctx(snap({ minute: 31 })), first, 5_000);
+    expect(again.since).toBe(0);
+  });
+});

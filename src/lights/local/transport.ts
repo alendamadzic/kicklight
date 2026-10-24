@@ -7,7 +7,7 @@
 
 import type { Rgb } from "@/engine/colors";
 import type { SignalFallback } from "@/engine/effects";
-import { brightnessFor, resampleNearest } from "../gradient";
+import { brightnessFor, orient, resampleNearest } from "../gradient";
 import { CommandQueue } from "../queue";
 import type { LightTransport } from "../transport";
 import { GAMUT_C, type Gamut, rgbToXy } from "../xy";
@@ -25,6 +25,8 @@ export interface LocalTransportOptions {
   gamut?: Gamut;
   /** Master brightness 1-100 applied on top of the colours. Default 100. */
   brightness?: number;
+  /** The strip is mounted the other way round: flip so home stays on the left. */
+  reversed?: boolean;
   queue?: CommandQueue;
   sleep?: (ms: number) => Promise<void>;
   /** Retries on 429/503 before giving up. Default 4. */
@@ -101,6 +103,7 @@ export class LocalTransport implements LightTransport {
   private readonly gamut: Gamut;
   private readonly onError: (key: string, err: unknown) => void;
   private brightness: number;
+  private reversed: boolean;
   private wanted: { colors: Rgb[]; ms: number } | null = null;
   private waiters: { resolve: () => void; reject: (e: unknown) => void }[] = [];
 
@@ -115,6 +118,7 @@ export class LocalTransport implements LightTransport {
     this.maxRetries = o.maxRetries ?? 4;
     this.gamut = o.gamut ?? GAMUT_C;
     this.brightness = o.brightness ?? 100;
+    this.reversed = o.reversed ?? false;
     this.onError = o.onError ?? (() => {});
     this.queue =
       o.queue ??
@@ -140,6 +144,15 @@ export class LocalTransport implements LightTransport {
 
   setBrightness(percent: number): void {
     this.brightness = clamp(Math.round(percent), 1, 100);
+  }
+
+  setReversed(reversed: boolean): void {
+    this.reversed = reversed;
+  }
+
+  /** Blink a light so the viewer can see which one it is. Any light on the bridge. */
+  async identify(lightId = this.o.lightId): Promise<void> {
+    await this.put(`/light/${lightId}`, { identify: { action: "identify" } });
   }
 
   // -- LightTransport ------------------------------------------------------
@@ -238,7 +251,10 @@ export class LocalTransport implements LightTransport {
       for (const x of waiters) x.resolve();
       return;
     }
-    const pts = resampleNearest(w.colors, this.points).map((c) => ({
+    const pts = resampleNearest(
+      orient(w.colors, this.reversed),
+      this.points,
+    ).map((c) => ({
       color: { xy: rgbToXy(c, this.gamut) },
     }));
     try {

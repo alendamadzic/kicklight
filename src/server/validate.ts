@@ -1,4 +1,4 @@
-import type { Rgb } from "@/engine/colors";
+import { isKitChoice, type KitOverrides, type Rgb } from "@/engine/colors";
 import { EFFECTS, type EffectKey } from "@/engine/effects";
 import { LEAGUES } from "@/engine/feed/leagues";
 import { SCENARIOS } from "@/engine/feed/scenarios";
@@ -6,6 +6,7 @@ import type { Side } from "@/engine/model";
 import { STAT_ORDER, type StatKey } from "@/engine/stats";
 import type {
   FireEffectBody,
+  IdentifyLightBody,
   SelectLightBody,
   SetLightsBody,
   StartSessionBody,
@@ -89,11 +90,27 @@ export function parseSetLights(b: Body): Required<SetLightsBody> | null {
 }
 
 /** Hue CLIP v2 resource ids are UUIDs. */
+const isLightId = (v: unknown): v is string =>
+  typeof v === "string" && /^[0-9a-f-]{36}$/i.test(v);
+
 export function parseSelectLight(b: Body): SelectLightBody | null {
-  if (typeof b?.lightId !== "string" || !/^[0-9a-f-]{36}$/i.test(b.lightId))
-    return null;
+  if (!isLightId(b?.lightId)) return null;
   return {
     lightId: b.lightId,
     lightName: typeof b.lightName === "string" ? b.lightName.slice(0, 80) : "",
   };
+}
+
+export function parseIdentifyLight(b: Body): IdentifyLightBody | null {
+  return isLightId(b?.lightId) ? { lightId: b.lightId } : null;
+}
+
+/** Keeps only well-formed kit choices from stored preferences JSON. */
+export function parseKitOverrides(raw: unknown): KitOverrides {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  return Object.fromEntries(
+    Object.entries(raw as Record<string, unknown>).filter(([, v]) =>
+      isKitChoice(v),
+    ),
+  ) as KitOverrides;
 }

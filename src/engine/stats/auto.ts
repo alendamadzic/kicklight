@@ -1,11 +1,19 @@
+import type { Side } from "../model";
 import { STAT_MODES, type StatContext, type StatKey } from "./index";
 
 export type ConcreteStat = Exclude<StatKey, "auto" | "clock">;
+
+/** Why the director picked what it picked, so the remote can say it in words. */
+export type AutoReason = "late_close" | "pressure" | "steady";
 
 export interface AutoState {
   key: ConcreteStat;
   /** When this choice was made, ms since epoch. */
   since: number;
+  /** Absent on states saved before reasons existed. */
+  reason?: AutoReason;
+  /** For `pressure`: the side doing the pressing. */
+  side?: Side;
 }
 
 const MIN_DWELL_MS = 60_000;
@@ -26,13 +34,21 @@ export function pickAuto(
   const minute = snapshot.minute ?? 0;
   const diff = Math.abs(snapshot.score.home - snapshot.score.away);
 
-  let key: ConcreteStat;
-  if (minute >= 80 && diff <= 1) key = "scoreline";
-  else if (Math.abs(STAT_MODES.momentum.homeShare(ctx) - 0.5) >= PRESSURE_LEAN)
-    key = "momentum";
-  else key = "possession";
+  const lean = STAT_MODES.momentum.homeShare(ctx) - 0.5;
+  let next: Omit<AutoState, "since">;
+  if (minute >= 80 && diff <= 1)
+    next = { key: "scoreline", reason: "late_close" };
+  else if (Math.abs(lean) >= PRESSURE_LEAN)
+    next = {
+      key: "momentum",
+      reason: "pressure",
+      side: lean > 0 ? "home" : "away",
+    };
+  else next = { key: "possession", reason: "steady" };
 
-  if (prev && prev.key !== key && now - prev.since < MIN_DWELL_MS) return prev;
-  if (prev && prev.key === key) return prev;
-  return { key, since: now };
+  if (prev && prev.key !== next.key && now - prev.since < MIN_DWELL_MS)
+    return prev;
+  // Same pick: keep when it started, but refresh the reason (the pressing side can change).
+  if (prev && prev.key === next.key) return { ...next, since: prev.since };
+  return { ...next, since: now };
 }

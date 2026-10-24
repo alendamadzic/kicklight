@@ -5,6 +5,7 @@ import type {
   FireEffectBody,
   HueLightsResponse,
   HueStatus,
+  IdentifyLightBody,
   MatchesResponse,
   MatchResponse,
   PairBody,
@@ -97,6 +98,8 @@ export const api = {
       body: JSON.stringify(body),
     }),
   hueTest: () => request<{ ok?: boolean }>("/api/hue/test", { method: "POST" }),
+  identifyLight: (body: IdentifyLightBody) =>
+    request<{ ok?: boolean }>("/api/hue/identify", post(body)),
   hueUnlink: () =>
     request<{ ok?: boolean }>("/api/hue/unlink", { method: "POST" }),
   setLights: (body: SetLightsBody) =>

@@ -4,6 +4,8 @@ import {
   isRgb,
   isRgbList,
   parseFireEffect,
+  parseIdentifyLight,
+  parseKitOverrides,
   parseSelectLight,
   parseSetLights,
   parseStartSession,
@@ -105,5 +107,34 @@ describe("parseSelectLight", () => {
       parseSelectLight({ lightId: id, lightName: "x".repeat(100) }),
     ).toEqual({ lightId: id, lightName: "x".repeat(80) });
     expect(parseSelectLight({ lightId: "../etc" })).toBeNull();
+  });
+});
+
+describe("parseIdentifyLight", () => {
+  test("takes a light uuid", () => {
+    const id = "2b9e5a3c-1d4f-4e8a-9b7c-0123456789ab";
+    expect(parseIdentifyLight({ lightId: id })).toEqual({ lightId: id });
+  });
+  test("rejects anything else", () => {
+    expect(parseIdentifyLight({ lightId: "../config" })).toBeNull();
+    expect(parseIdentifyLight(null)).toBeNull();
+  });
+});
+
+describe("parseKitOverrides", () => {
+  test("keeps well-formed choices and drops the rest", () => {
+    expect(
+      parseKitOverrides({
+        a: "primary",
+        b: "alternate",
+        c: "#cfe86b",
+        d: "teal",
+        e: 3,
+      }),
+    ).toEqual({ a: "primary", b: "alternate", c: "#cfe86b" });
+  });
+  test("non-objects become empty", () => {
+    expect(parseKitOverrides(null)).toEqual({});
+    expect(parseKitOverrides(["primary"])).toEqual({});
   });
 });

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { StatKey } from "@/engine/stats";
-import type { SessionMirror } from "@/lib/api-types";
+import type { PauseReason, SessionMirror } from "@/lib/api-types";
 import { getSupabase } from "@/lib/supabase/safe-client";
 import { useAuth } from "./use-auth";
 
@@ -16,11 +16,13 @@ export interface SessionRow {
   mode: "remote" | "local";
   delay_ms: number;
   snapshot: SessionMirror | null;
+  /** Set by the server when it paused the session itself. */
+  pause_reason: PauseReason | null;
   updated_at: string;
 }
 
 const COLUMNS =
-  "id, league, event_id, stat, status, mode, delay_ms, snapshot, updated_at";
+  "id, league, event_id, stat, status, mode, delay_ms, snapshot, pause_reason, updated_at";
 
 export type SessionPatch = Partial<
   Pick<SessionRow, "stat" | "status" | "delay_ms">

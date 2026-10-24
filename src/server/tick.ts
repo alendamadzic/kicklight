@@ -1,9 +1,11 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ParsedMatch } from "@/engine/model";
-import { isBridgeUnauthorized } from "@/lights/errors";
+import type { PauseReason } from "@/lib/api-types";
+import { isBridgeUnauthorized, isUnreachable } from "@/lights/errors";
 import type { LightTransport } from "@/lights/transport";
 import { processSession, type SessionRow } from "./session";
+import { parseKitOverrides } from "./validate";
 
 // Runs every due session once. Shared by the cloud cron route and the local in-process loop.
 
@@ -54,17 +56,25 @@ export async function runDueSessions(
         light_snapshot: s.light_snapshot,
         created_at: Date.parse(s.created_at as string),
       };
+      const pause = (reason: PauseReason) =>
+        admin
+          .from("sessions")
+          .update({ status: "paused", pause_reason: reason })
+          .eq("id", s.id);
       try {
         const transport = await opts.transportFor(s.user_id as string);
         if (!transport) {
-          await admin
-            .from("sessions")
-            .update({ status: "paused" })
-            .eq("id", s.id);
+          await pause("no_link");
           return;
         }
+        const { data: pref } = await admin
+          .from("preferences")
+          .select("kit_overrides")
+          .eq("user_id", s.user_id)
+          .maybeSingle();
         const r = await processSession(row, {
           transport,
+          kitOverrides: parseKitOverrides(pref?.kit_overrides),
           fetchMatch: opts.fetchMatch,
           now: Date.now,
           sleep: (ms) => new Promise((res) => setTimeout(res, ms)),
@@ -83,6 +93,7 @@ export async function runDueSessions(
             snapshot: r.update.snapshot,
             light_snapshot: r.update.light_snapshot,
             status: r.update.status,
+            pause_reason: null,
             next_due_at: new Date(r.update.next_due_at).toISOString(),
             ...(r.update.ended ? { ended_at: new Date().toISOString() } : {}),
           })
@@ -91,12 +102,14 @@ export async function runDueSessions(
         if (r.errors.length)
           console.error("session", s.id, r.errors.join("; "));
       } catch (e) {
-        if ((opts.isUnauthorized ?? isBridgeUnauthorized)(e)) {
+        if ((opts.isUnauthorized ?? isBridgeUnauthorized)(e))
+          await pause("bridge_unauthorized");
+        else if (isUnreachable(e))
+          // Not paused: the next tick retries. The remote just says the bridge isn't answering.
           await admin
             .from("sessions")
-            .update({ status: "paused" })
+            .update({ pause_reason: "bridge_unreachable" })
             .eq("id", s.id);
-        }
         throw e;
       }
     }),

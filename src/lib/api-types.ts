@@ -6,8 +6,15 @@ import type { EffectKey } from "@/engine/effects";
 import type { ScoreboardMatch } from "@/engine/feed/espn-scoreboard";
 import type { MatchEvent, MatchSnapshot, Side } from "@/engine/model";
 import type { StatKey } from "@/engine/stats";
+import type { AutoReason } from "@/engine/stats/auto";
 
 export type AppMode = "cloud" | "local";
+
+/** Why the server paused a session, or (bridge_unreachable) why it is struggling. `sessions.pause_reason`. */
+export type PauseReason =
+  | "no_link"
+  | "bridge_unauthorized"
+  | "bridge_unreachable";
 
 /** One row of a fixture list (GET /api/matches). */
 export type MatchListItem = ScoreboardMatch;
@@ -65,6 +72,10 @@ export interface SessionMirror {
   /** The viewer's choice this mirror was drawn with (absent on older rows). */
   stat?: StatKey;
   activeStat: StatKey;
+  /** Why the auto-director is on `activeStat` (when following Auto). */
+  autoReason?: AutoReason;
+  /** For `pressure`: who is pressing. */
+  autoSide?: Side;
   colors: TeamColors;
   recent: MirroredCommand[];
   updatedAt: number;
@@ -97,6 +108,10 @@ export interface HueLightsResponse {
 export interface SelectLightBody {
   lightId: string;
   lightName: string;
+}
+
+export interface IdentifyLightBody {
+  lightId: string;
 }
 
 /** POST /api/lights/set: show a steady gradient on the user's strip. */

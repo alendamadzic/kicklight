@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { pickStripColors } from "@/engine/colors";
+import { applyKitOverride, pickStripColors } from "@/engine/colors";
 import type { MatchSnapshot } from "@/engine/model";
 import { STAT_MODES, type StatKey } from "@/engine/stats";
 import { useDemoEngine } from "@/hooks/use-demo-engine";
@@ -45,7 +45,11 @@ export function useRemoteViewModel(league: string, id: string) {
   const now = useNow(1000);
 
   const scenario = scenarioById(id);
-  const sim = useDemoEngine({ scenarioId: scenario?.id, speed: 60 });
+  const sim = useDemoEngine({
+    scenarioId: scenario?.id,
+    speed: 60,
+    kitOverrides: prefs.kit_overrides,
+  });
   const [simOn, setSimOn] = useState(false);
   const [starting, setStarting] = useState(false);
   const [localStat, setLocalStat] = useState<StatKey | null>(null);
@@ -83,9 +87,16 @@ export function useRemoteViewModel(league: string, id: string) {
   if (mode === "live" && mirror) snapshot = mirror.match;
   if (mode === "sim" && sim.ui) snapshot = sim.ui.snapshot;
 
+  const overrides = prefs.kit_overrides;
   const kit = useMemo(
-    () => (snapshot ? pickStripColors(snapshot.home, snapshot.away) : null),
-    [snapshot],
+    () =>
+      snapshot
+        ? pickStripColors(
+            applyKitOverride(snapshot.home, overrides),
+            applyKitOverride(snapshot.away, overrides),
+          )
+        : null,
+    [snapshot, overrides],
   );
   const colors = mode === "live" && mirror ? mirror.colors : kit;
 

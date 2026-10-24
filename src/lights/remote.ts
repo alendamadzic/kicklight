@@ -1,6 +1,6 @@
 import type { Rgb } from "@/engine/colors";
 import type { SignalFallback } from "@/engine/effects";
-import { brightnessFor, resampleNearest } from "./gradient";
+import { brightnessFor, orient, resampleNearest } from "./gradient";
 import type { LightTransport } from "./transport";
 import { rgbToXy, type Xy } from "./xy";
 
@@ -160,6 +160,8 @@ interface RemoteConfig {
   /** Gradient points the strip accepts; read from the light when unknown. */
   points?: number;
   brightness?: number;
+  /** The strip is mounted the other way round: flip so home stays on the left. */
+  reversed?: boolean;
   fetchImpl?: FetchLike;
 }
 
@@ -226,7 +228,10 @@ export class RemoteTransport implements LightTransport {
   }
 
   async setGradient(colors: Rgb[], transitionMs = 800): Promise<void> {
-    const pts = resampleNearest(colors, this.points).map((c) => ({
+    const pts = resampleNearest(
+      orient(colors, this.cfg.reversed),
+      this.points,
+    ).map((c) => ({
       color: { xy: rgbToXy(c) },
     }));
     await this.req(this.lightPath, {
@@ -239,6 +244,15 @@ export class RemoteTransport implements LightTransport {
         gradient: { mode: "segmented_palette", points: pts },
         dynamics: { duration: Math.max(0, Math.round(transitionMs)) },
       }),
+    });
+  }
+
+  /** Blink a light so the viewer can see which one it is. Any light on the bridge. */
+  async identify(lightId = this.cfg.lightId): Promise<void> {
+    if (!lightId) throw new Error("No light to identify");
+    await this.req(`light/${lightId}`, {
+      method: "PUT",
+      body: JSON.stringify({ identify: { action: "identify" } }),
     });
   }
 

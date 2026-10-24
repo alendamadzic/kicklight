@@ -16,6 +16,15 @@ export function resampleNearest<T>(items: readonly T[], n: number): T[] {
 }
 
 /**
+ * Left-to-right order for a strip mounted the other way round. Every array of
+ * colours is drawn home end first; a reversed strip needs it flipped so home
+ * still lands on the left of the TV.
+ */
+export function orient<T>(items: readonly T[], reversed = false): T[] {
+  return reversed ? [...items].reverse() : items.slice();
+}
+
+/**
  * Overall brightness for a set of colours. The bridge has one dimmer per light, not per
  * point, so it follows the brightest point: a uniform dim (the nerves pulse) then shows
  * instead of collapsing to the same xy at full brightness.

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { brightnessFor, resampleNearest } from "./gradient";
+import { brightnessFor, orient, resampleNearest } from "./gradient";
 
 describe("resampleNearest", () => {
   test("is the identity at the same size and nearest-neighbour otherwise", () => {
@@ -29,4 +29,12 @@ test("brightness follows the brightest channel", () => {
   expect(brightnessFor([[255, 0, 0]])).toBe(100);
   expect(brightnessFor([[0, 0, 0]])).toBe(1);
   expect(brightnessFor([[128, 0, 0]], 50)).toBe(25);
+});
+
+test("orient flips a reversed strip and copies either way", () => {
+  const xs = [1, 2, 3];
+  expect(orient(xs, true)).toEqual([3, 2, 1]);
+  expect(orient(xs)).toEqual([1, 2, 3]);
+  expect(orient(xs)).not.toBe(xs);
+  expect(xs).toEqual([1, 2, 3]);
 });

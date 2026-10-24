@@ -1,4 +1,10 @@
-import { pickStripColors, type Rgb, type TeamColors } from "@/engine/colors";
+import {
+  applyKitOverride,
+  type KitOverrides,
+  pickStripColors,
+  type Rgb,
+  type TeamColors,
+} from "@/engine/colors";
 import { EFFECTS } from "@/engine/effects";
 import { replayAt } from "@/engine/feed/replay";
 import { SCENARIOS } from "@/engine/feed/scenarios";
@@ -41,6 +47,8 @@ export interface SessionDeps {
   sleep: (ms: number) => Promise<void>;
   /** Show the viewer what's coming mid-pass, so the virtual strip keeps time with the real one. */
   publish?: (mirror: SessionMirror) => Promise<void>;
+  /** The viewer's strip colour choices, applied before clash detection. */
+  kitOverrides?: KitOverrides;
 }
 
 export interface SessionUpdate {
@@ -190,6 +198,9 @@ export async function processSession(
     match: (parsed as ParsedMatch).snapshot,
     stat: row.stat as StatKey,
     activeStat,
+    ...(row.stat === "auto" && state.auto?.reason
+      ? { autoReason: state.auto.reason, autoSide: state.auto.side }
+      : {}),
     colors: colors as TeamColors,
     recent: trimRecent(recent),
     updatedAt: now(),
@@ -212,8 +223,8 @@ export async function processSession(
       pollAt + POLL_MS >= t0 + PASS_MS || !IN_PLAY.has(parsed.snapshot.phase);
     const horizonMs = last ? HORIZON_MS : POLL_MS;
     const { home, away } = pickStripColors(
-      parsed.snapshot.home,
-      parsed.snapshot.away,
+      applyKitOverride(parsed.snapshot.home, deps.kitOverrides),
+      applyKitOverride(parsed.snapshot.away, deps.kitOverrides),
     );
     colors = { home, away };
     resting ??= restingFromRecent(recent, transport.points, colors);
