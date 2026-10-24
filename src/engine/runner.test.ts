@@ -195,7 +195,7 @@ describe("runner", () => {
     });
   });
 
-  test("split is only re-sent when it moves a point, and is delayed too", () => {
+  test("split lands now on the first tick, then is only re-sent when it moves a point, delayed", () => {
     const first = tick(initialState("possession"), {
       snapshot: snap(),
       events: [],
@@ -205,7 +205,7 @@ describe("runner", () => {
     });
     const split = first.commands.find((c) => c.item.kind === "split");
     expect(split?.item).toEqual({ kind: "split", homeShare: 0.6 });
-    expect(split?.at).toBe(NOW + 20_000);
+    expect(split?.at).toBe(NOW);
 
     const second = tick(first.state, {
       snapshot: snap(),
@@ -215,11 +215,31 @@ describe("runner", () => {
       horizonMs: 30_000,
     });
     expect(second.commands.some((c) => c.item.kind === "split")).toBe(false);
+
+    const moved = tick(second.state, {
+      snapshot: snap({
+        stats: {
+          home: { ...EMPTY_SIDE_STATS, possession: 70 },
+          away: { ...EMPTY_SIDE_STATS, possession: 30 },
+        },
+      }),
+      events: [],
+      now: NOW + 20_000,
+      delayMs: 20_000,
+      horizonMs: 30_000,
+    });
+    expect(moved.commands.find((c) => c.item.kind === "split")?.at).toBe(
+      NOW + 40_000,
+    );
   });
 
   test("switching stat lands now, drops the old stat's queued splits, and re-sends", () => {
     const input = { snapshot: snap(), events: [], delayMs: 20_000 };
-    const first = tick(initialState("possession"), { ...input, now: NOW });
+    // Mid-session, so the split queues behind the delay.
+    const first = tick(
+      { ...initialState("possession"), started: true },
+      { ...input, now: NOW },
+    );
     expect(first.state.pending.map((q) => q.item.kind)).toEqual(["split"]);
 
     const toClock = tick(

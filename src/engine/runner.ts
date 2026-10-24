@@ -171,8 +171,9 @@ export function tick(prev: RunnerState, input: TickInput): TickResult {
   }
 
   // 4. Stat drift → a split (or clock fill) at now + delay, only when it moved a point.
+  // The first paint and a channel switch land now: they show where the match stands, not news.
   if (live && snapshot.phase !== "full_time") {
-    const at = userSwitched ? now : now + delayMs;
+    const at = userSwitched || !prev.started ? now : now + delayMs;
     if (concrete === "clock") {
       const fraction = Math.min(1, Math.max(0, (snapshot.minute ?? 0) / 90));
       const rounded = Math.round(fraction * 100) / 100;
