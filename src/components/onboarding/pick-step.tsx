@@ -1,16 +1,53 @@
 "use client";
 
-import { ZapIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
+import { LedBar } from "@/components/chrome/led-bar";
 import { Spinner } from "@/components/ui/spinner";
 import { api } from "@/lib/api";
 import type { HueLightInfo } from "@/lib/api-types";
 import { SAMPLE_LIGHTS } from "@/lib/sample-data";
 import { cn } from "@/lib/utils";
 
-/** Step 2: choose which gradient strip on the bridge is behind the TV. */
+const BLINK_MS = 2500;
+
+/** A tiny drawing of the light: a TV-backlight strip, a Play bar, or a loose strip. */
+function StripGlyph({
+  archetype,
+  blinking,
+}: {
+  archetype: string;
+  blinking: boolean;
+}) {
+  const glow = blinking
+    ? "border-amber shadow-[0_0_14px_var(--amber)] animate-pulse"
+    : "border-muted-foreground/50";
+  if (archetype.includes("tv"))
+    return (
+      <span aria-hidden className="relative block h-7 w-11 shrink-0">
+        <span className="absolute inset-[3px] rounded-[3px] bg-muted" />
+        <span className={cn("absolute inset-0 rounded-md border-2", glow)} />
+      </span>
+    );
+  if (archetype.includes("bar") || archetype.includes("play"))
+    return (
+      <span
+        aria-hidden
+        className="flex h-7 w-11 shrink-0 items-end justify-center gap-1.5"
+      >
+        <span className={cn("h-6 w-2 rounded-sm border-2", glow)} />
+        <span className={cn("h-6 w-2 rounded-sm border-2", glow)} />
+      </span>
+    );
+  return (
+    <span aria-hidden className="flex h-7 w-11 shrink-0 items-center">
+      <span className={cn("h-2 w-full rounded-full border-2", glow)} />
+    </span>
+  );
+}
+
+/** Step 3: choose which gradient strip on the bridge is behind the TV. Identify blinks it. */
 export function PickStep({
   preview,
   selectedId,
@@ -23,6 +60,7 @@ export function PickStep({
   onBack: () => void;
 }) {
   const [choosing, setChoosing] = useState<string | null>(null);
+  const [blinking, setBlinking] = useState<string | null>(null);
   const { data, error } = useSWR(preview ? null : "hue-lights", () =>
     api.hueLights(),
   );
@@ -31,6 +69,18 @@ export function PickStep({
   const lights: HueLightInfo[] | null = sample
     ? SAMPLE_LIGHTS
     : (data?.lights ?? null);
+
+  const identify = async (light: HueLightInfo) => {
+    setBlinking(light.id);
+    setTimeout(() => setBlinking((b) => (b === light.id ? null : b)), BLINK_MS);
+    if (sample) return;
+    try {
+      await api.identifyLight({ lightId: light.id });
+    } catch {
+      toast.error("That light didn't answer. Is it switched on?");
+      setBlinking(null);
+    }
+  };
 
   const pick = async (light: HueLightInfo) => {
     setChoosing(light.id);
@@ -53,11 +103,12 @@ export function PickStep({
       aria-labelledby="pick-h"
     >
       <div>
-        <h2 id="pick-h" className="kl-display text-2xl leading-none">
+        <h2 id="pick-h" className="kl-headline text-2xl">
           Which strip is behind your TV?
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Only gradient-capable lights show up. Kicklight needs 5 colour points.
+          Not sure? Tap Identify and the strip blinks. Only gradient lights show
+          up here.
         </p>
       </div>
       {sample ? (
@@ -67,8 +118,8 @@ export function PickStep({
         </p>
       ) : null}
       {lights === null ? (
-        <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
-          <Spinner /> Looking for strips…
+        <div className="flex items-center gap-3 py-6 text-sm text-muted-foreground">
+          <LedBar variant="chase" /> Looking for strips…
         </div>
       ) : lights.length === 0 ? (
         <p className="text-sm text-muted-foreground">
@@ -77,35 +128,50 @@ export function PickStep({
         </p>
       ) : (
         <ul className="flex flex-col gap-2">
-          {lights.map((l) => (
-            <li key={l.id}>
-              <button
-                type="button"
-                onClick={() => pick(l)}
-                disabled={choosing !== null}
-                aria-pressed={selectedId === l.id}
+          {lights.map((l) => {
+            const selected = selectedId === l.id;
+            const isBlinking = blinking === l.id;
+            return (
+              <li
+                key={l.id}
                 className={cn(
-                  "kl-press flex min-h-16 w-full items-center gap-3 rounded-xl border bg-background px-4 text-left transition-colors hover:border-foreground/30 disabled:opacity-60",
-                  selectedId === l.id ? "border-amber" : "border-border",
+                  "grid min-h-16 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2 rounded-xl border bg-background px-3 py-2.5 transition-colors sm:grid-cols-[auto_minmax(0,1fr)_auto]",
+                  selected || isBlinking ? "border-amber" : "border-border",
                 )}
               >
-                <ZapIcon className="size-5 shrink-0 text-amber" />
-                <span className="min-w-0 flex-1">
-                  <span className="kl-display block truncate text-xl leading-none">
+                <StripGlyph archetype={l.archetype} blinking={isBlinking} />
+                <span className="min-w-0">
+                  <span className="block text-base leading-tight font-semibold">
                     {l.name}
                   </span>
                   <span className="text-xs text-muted-foreground">
                     {l.pointsCapable} colour points
+                    {selected ? " · in use" : ""}
                   </span>
                 </span>
-                {choosing === l.id ? (
-                  <Spinner />
-                ) : (
-                  <span className="kl-display text-sm text-amber">Use</span>
-                )}
-              </button>
-            </li>
-          ))}
+                {/* Own row on phones so long strip names stay readable. */}
+                <span className="col-span-2 grid grid-cols-2 gap-2 sm:col-span-1 sm:flex">
+                  <button
+                    type="button"
+                    onClick={() => identify(l)}
+                    disabled={isBlinking}
+                    className="kl-press h-10 rounded-lg bg-secondary px-3 text-sm font-medium disabled:opacity-70"
+                  >
+                    {isBlinking ? "Blinking…" : "Identify"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => pick(l)}
+                    disabled={choosing !== null}
+                    aria-label={`Use ${l.name}`}
+                    className="kl-press grid h-10 min-w-14 place-items-center rounded-lg bg-amber px-3 text-sm font-semibold text-[#1a1200] disabled:opacity-60"
+                  >
+                    {choosing === l.id ? <Spinner /> : "Use"}
+                  </button>
+                </span>
+              </li>
+            );
+          })}
         </ul>
       )}
       <button

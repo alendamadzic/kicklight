@@ -47,7 +47,7 @@ export function LinkStep({
       aria-labelledby="link-h"
     >
       <div>
-        <h2 id="link-h" className="kl-display text-2xl leading-none">
+        <h2 id="link-h" className="kl-headline text-2xl">
           {mode === "local" ? "Find your bridge" : "Link your Philips Hue"}
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -66,7 +66,7 @@ export function LinkStep({
             href="/login?next=/onboarding"
             className={buttonVariants({
               size: "lg",
-              className: "kl-display h-12 rounded-xl text-lg",
+              className: "h-12 rounded-xl text-base font-semibold",
             })}
           >
             Sign in
@@ -80,7 +80,7 @@ export function LinkStep({
           <Button
             size="lg"
             onClick={onNext}
-            className="kl-display h-12 rounded-xl text-lg"
+            className="h-12 rounded-xl text-base font-semibold"
           >
             Continue
           </Button>
@@ -92,7 +92,7 @@ export function LinkStep({
           size="lg"
           onClick={linkCloud}
           disabled={busy}
-          className="kl-display h-12 rounded-xl text-lg"
+          className="h-12 rounded-xl text-base font-semibold"
         >
           {busy ? (
             <Spinner data-icon="inline-start" />

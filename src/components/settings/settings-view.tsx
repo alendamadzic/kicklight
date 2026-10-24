@@ -99,7 +99,7 @@ export function SettingsView() {
           <Button
             variant="outline"
             onClick={() => setPicker(true)}
-            className="kl-display h-11 rounded-lg px-3 text-base"
+            className="h-11 rounded-lg px-3 text-sm font-semibold"
           >
             <PlusIcon data-icon="inline-start" />
             Add team
@@ -181,7 +181,7 @@ export function SettingsView() {
             href="/onboarding"
             className={buttonVariants({
               variant: status?.linked ? "secondary" : "default",
-              className: "kl-display h-11 rounded-lg px-4 text-base",
+              className: "h-11 rounded-lg px-4 text-sm font-semibold",
             })}
           >
             {status?.linked ? "Change strip" : "Set up Hue"}
@@ -191,7 +191,7 @@ export function SettingsView() {
               variant="destructive"
               onClick={unlink}
               disabled={unlinking}
-              className="kl-display h-11 rounded-lg px-4 text-base"
+              className="h-11 rounded-lg px-4 text-sm font-semibold"
             >
               <UnlinkIcon data-icon="inline-start" />
               Unlink
@@ -212,7 +212,7 @@ export function SettingsView() {
                 await signOut();
                 toast("Signed out");
               }}
-              className="kl-display h-11 rounded-lg px-4 text-base"
+              className="h-11 rounded-lg px-4 text-sm font-semibold"
             >
               <LogOutIcon data-icon="inline-start" />
               Sign out
@@ -229,7 +229,7 @@ export function SettingsView() {
               <Link
                 href="/login?next=/setup"
                 className={buttonVariants({
-                  className: "kl-display h-11 rounded-lg px-4 text-base",
+                  className: "h-11 rounded-lg px-4 text-sm font-semibold",
                 })}
               >
                 Sign in
@@ -291,7 +291,7 @@ function Block({
   return (
     <section className={cn("kl-panel flex flex-col gap-4 p-4")}>
       <div>
-        <h2 className="kl-display text-2xl leading-none">{title}</h2>
+        <h2 className="kl-headline text-2xl">{title}</h2>
         {hint ? (
           <p className="mt-1.5 text-xs text-muted-foreground">{hint}</p>
         ) : null}

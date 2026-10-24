@@ -16,7 +16,7 @@ export default async function LoginPage(props: PageProps<"/login">) {
     <div className="mx-auto flex w-full max-w-md flex-col gap-6 pt-4 sm:pt-12">
       <header className="flex flex-col gap-1">
         <p className="kl-eyebrow">Welcome</p>
-        <h1 className="kl-display text-4xl leading-none sm:text-5xl">
+        <h1 className="kl-headline text-4xl sm:text-5xl">
           Sign in to <span className="text-amber">Kicklight</span>
         </h1>
       </header>

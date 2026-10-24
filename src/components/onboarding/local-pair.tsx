@@ -81,7 +81,7 @@ export function LocalPair({ onLinked }: { onLinked: () => void }) {
                 setExpired(false);
                 setRun((r) => r + 1);
               }}
-              className="kl-display h-12 rounded-xl text-lg"
+              className="h-12 rounded-xl text-base font-semibold"
             >
               Try again
             </Button>
@@ -89,7 +89,7 @@ export function LocalPair({ onLinked }: { onLinked: () => void }) {
         ) : (
           <>
             <CountdownRing seconds={30} runId={run} onDone={onExpire} />
-            <p className="kl-display text-xl leading-tight">
+            <p className="text-base font-semibold leading-tight">
               Press the round button on your bridge
             </p>
             <p className="text-sm text-muted-foreground">
@@ -114,14 +114,14 @@ export function LocalPair({ onLinked }: { onLinked: () => void }) {
               >
                 <RadioIcon className="size-5 text-amber" />
                 <span className="flex-1">
-                  <span className="kl-display block text-lg leading-none">
+                  <span className="block text-base font-semibold leading-tight">
                     Hue bridge
                   </span>
                   <span className="font-mono text-xs text-muted-foreground">
                     {b.ip}
                   </span>
                 </span>
-                <span className="kl-display text-sm text-amber">Pair</span>
+                <span className="text-sm font-semibold text-amber">Pair</span>
               </button>
             </li>
           ))}
@@ -132,7 +132,7 @@ export function LocalPair({ onLinked }: { onLinked: () => void }) {
         variant={bridges?.length ? "secondary" : "default"}
         onClick={discover}
         disabled={finding}
-        className="kl-display h-12 rounded-xl text-lg"
+        className="h-12 rounded-xl text-base font-semibold"
       >
         {finding ? (
           <Spinner data-icon="inline-start" />
