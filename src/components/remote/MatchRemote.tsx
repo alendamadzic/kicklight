@@ -161,9 +161,11 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
   const ticker: TickerItem[] = useMemo(() => {
     if (mode === "sim" && sim.ui) return sim.ui.ticker;
     if (mode === "live" && mirror) {
+      // Newest by match minute: commentary events land late and in batches,
+      // so the order the lights fired them isn't the order they happened.
       return mirror.recent
         .filter((c) => c.kind === "effect" && c.effect && c.at <= now)
-        .sort((a, b) => b.at - a.at)
+        .sort((a, b) => (b.minute ?? -1) - (a.minute ?? -1) || b.at - a.at)
         .map((c) => ({
           id: `${c.at}-${c.effect}`,
           effect: c.effect as TickerItem["effect"],

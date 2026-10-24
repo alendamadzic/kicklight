@@ -32,6 +32,10 @@ export const EFFECT_TINT: Record<string, string> = {
   nerves: "#ff5d5d",
 };
 
+/** Too frequent to be worth a row, unless fired by hand from the pad. */
+export const inTicker = (item: TickerItem): boolean =>
+  item.pad || item.effect !== "corner";
+
 export const effectLabel = (key: EffectKey): string =>
   EFFECTS[key]?.label ?? key;
 

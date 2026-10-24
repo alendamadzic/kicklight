@@ -9,7 +9,12 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { ago } from "@/lib/format";
-import { EFFECT_TINT, effectLabel, type TickerItem } from "@/lib/ticker";
+import {
+  EFFECT_TINT,
+  effectLabel,
+  inTicker,
+  type TickerItem,
+} from "@/lib/ticker";
 import { cn } from "@/lib/utils";
 
 /**
@@ -43,7 +48,9 @@ export function Ticker({
     return () => clearInterval(t);
   }, []);
 
-  if (!items.length) {
+  const rows = items.filter(inTicker).slice(0, limit);
+
+  if (!rows.length) {
     return (
       <Empty className={cn("kl-panel border-dashed p-6", className)}>
         <EmptyHeader>
@@ -64,7 +71,7 @@ export function Ticker({
       )}
       aria-live="polite"
     >
-      {items.slice(0, limit).map((item, i) => {
+      {rows.map((item, i) => {
         const team = item.side ? teams[item.side] : null;
         const when = item.pad
           ? "PAD"
