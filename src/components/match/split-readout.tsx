@@ -1,5 +1,9 @@
 import { cn } from "@/lib/utils";
 
+/** Kit colour nudged towards the text colour, so navy or black kits stay readable in either theme. */
+const legible = (color: string) =>
+  `color-mix(in oklab, ${color} 72%, var(--foreground))`;
+
 /**
  * One line under the TV: each side's value either side of what the lights follow,
  * with a slim bar in the kit colours. Replaces the old donut, which repeated what
@@ -43,7 +47,7 @@ export function SplitReadout({
       >
         <span
           className="kl-display text-[1.75rem] leading-none"
-          style={{ color: home.color }}
+          style={{ color: legible(home.color) }}
         >
           {hv}
         </span>
@@ -52,7 +56,7 @@ export function SplitReadout({
         </span>
         <span
           className="kl-display text-[1.75rem] leading-none"
-          style={{ color: away.color }}
+          style={{ color: legible(away.color) }}
         >
           {av}
         </span>

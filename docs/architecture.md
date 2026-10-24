@@ -31,7 +31,7 @@ from `/api/cron/tick` (Supabase Cron, every ~10 s); local mode runs it in-proces
 | `src/app/` | Pages (`(app)/`) and route handlers (`api/`). Route files stay thin: parse, call `server/`, answer. | everything |
 | `src/lib/` | Shared by browser and server: the typed API client and its types, formatting, sample data, Supabase clients. | `engine` |
 | `src/hooks/` | Client state and data: auth, preferences, SWR data hooks, the demo engine. | `engine`, `lights`, `lib` |
-| `src/components/` | UI by feature (`remote/`, `onboarding/`, `match/`, …); `ui/` is shadcn and edited only through the shadcn CLI. | everything client-safe |
+| `src/components/` | UI by feature (`remote/`, `onboarding/`, `match/`, `setup/`, `landing/`, …); `chrome/` holds the shared pieces (LED bar, status pill, responsive overlay, hold button); `ui/` is shadcn and edited only through the shadcn CLI. | everything client-safe |
 
 Server-only modules start with `import "server-only"`. Pure modules that tests import
 (`session.ts`, `validate.ts`, `streaming-transport.ts`, …) leave it out so `bun test` can load them.
@@ -53,12 +53,44 @@ Server-only modules start with `import "server-only"`. Pure modules that tests i
   `src/engine/feed/__fixtures__/`.
 - `bun run check` runs lint (Biome), types and tests; CI runs it and a production build.
 
+## Pages
+
+| Route | What it is |
+|---|---|
+| `/` | Landing page with a looping demo strip when signed out; signed-in visitors go to `/matches` |
+| `/matches` | Fixtures: live first, day toggle, league chips (a sidebar on desktop), ★ Mine |
+| `/remote` | The running lights, or your teams' next match when nothing is on |
+| `/match/[league]/[id]` | The remote for one match (preview with the lights off until started) |
+| `/setup` | Your strip, teams and strip colours, lights defaults, device, appearance, account (`/settings` redirects here) |
+| `/onboarding` | Setup flow: email (code or link), link Hue, pick the strip, test it |
+| `/demo` | A scripted match run entirely in the browser, with captions and the event pad |
+
+## UI language
+
+- **Type roles.** `kl-display` (condensed caps) is the scoreboard: scores, clocks, team codes,
+  big stats. `kl-headline` (condensed, sentence case) is for page and section titles. Everything
+  else (buttons, chips, rows, labels) is the body face.
+- **The LED bar** (`components/chrome/led-bar.tsx`) is the one recurring device: logo, loader
+  (`chase`), setup progress, lights live (`live`).
+- **Kit colours** mark anything that belongs to a team; amber is the app's own actions.
+- **Overlays** use `ResponsiveOverlay`: a bottom sheet on phones, a popover on desktop.
+- **Copy.** Say it the way a fan would: "Moments", "Lights follow", "Set up your lights",
+  "Lights off", "Stop and restore lights", "Lights restored". Buttons say exactly what happens.
+- Settings that belong to the device rather than the account (goal celebrations, vibration,
+  demo captions, true black) live in `hooks/use-device-prefs.ts` (localStorage).
+
 ## Data the UI reads (Supabase, RLS enforced)
 
-- `preferences` (own row): `followed_teams text[]`, `tv_delay_ms`, `brightness`, `default_stat`, `auto_start`.
+- `preferences` (own row): `followed_teams text[]`, `tv_delay_ms`, `brightness`, `default_stat`, `auto_start`,
+  `strip_reversed` (strip runs right to left; flips every gradient at the transport), `kit_overrides jsonb`
+  (`{ [teamId]: "primary" | "alternate" | "#rrggbb" }`, applied before clash detection). Brightness, direction
+  and kit choices are read fresh on every tick, so changes reach a running session.
 - `hue_links` (own row, read only): `transport`, `light_id`, `light_name`, `bridge_id`, `token_expires_at`.
-- `sessions` (own rows): subscribe to the live row over Realtime. `snapshot` is a `SessionMirror`
-  (see `src/lib/api-types.ts`). Clients may only update `stat`, `status` and `delay_ms`.
+- `sessions` (own rows): subscribe to the live row over Realtime (`hooks/use-live-session.ts` keeps one
+  shared subscription). `snapshot` is a `SessionMirror` (see `src/lib/api-types.ts`), including Auto's
+  `autoReason`. `pause_reason` says why the server paused it (`no_link`, `bridge_unauthorized`) or that the
+  bridge isn't answering (`bridge_unreachable`, session still active); the server writes it. Clients may only
+  update `stat`, `status` and `delay_ms`.
 - `hue_secrets` and `recordings` are service-role only.
 
 ## HTTP API
@@ -77,7 +109,8 @@ in `src/lib/api-types.ts`.
 | `GET /api/hue/oauth/start` | 302 to the Hue login (cloud mode); the callback lands on `/onboarding` |
 | `GET /api/hue/lights` | gradient-capable lights on the linked bridge |
 | `PUT /api/hue/light` | choose the strip |
-| `POST /api/hue/test` | paint a segment-by-segment test pattern on the strip |
+| `POST /api/hue/test` | paint red, amber, green, blue, purple left to right on the strip (`lib/strip-test.ts`) |
+| `POST /api/hue/identify` | blink one light `{ lightId }` on the linked bridge, before a strip is chosen |
 | `POST /api/hue/unlink` | end live sessions, then forget the link |
 | `POST /api/lights/set` | steady gradient `{ colors, transitionMs }` (demo "send to my lights") |
 | `POST /api/lights/effect` | fire one effect (event pad, ticker replays) |
@@ -89,8 +122,12 @@ in `src/lib/api-types.ts`.
 
 - Hosted app: Vercel + Supabase, Hue Remote API. Self-hosted on the home network = local mode.
 - The phone is a remote. The match loop runs on the server, never in the browser tab.
-- In: broadcast-scorebug UI, three-tap onboarding with a live strip test, "my teams first"
-  fixtures, a virtual strip everywhere, replays + event pad + scenarios, wallclock TV delay,
-  eight curated stats + auto-director.
+- In: broadcast-scorebug UI (refined in the Oct 2026 redesign: score on the virtual TV, sentence-case
+  type, LED motif), a four-step setup with an email code, Identify and a strip test that fixes
+  direction, tabs Matches · Remote · Setup, a signed-out landing page, a virtual strip everywhere,
+  replays + event pad + captioned scenarios, wallclock TV delay (a header chip on the remote),
+  eight curated stats + an auto-director that explains itself, hold-to-stop, kit colour overrides.
 - Out: ambient remote UI, pitch UI, my-team goal bias, per-event intensity, a calm mode,
-  tap-to-calibrate, a "feed is slower than your TV" warning.
+  tap-to-calibrate, a "feed is slower than your TV" warning. Also ruled out in the redesign review:
+  a now-playing bar, a live-now rail, a week scroller, a my-teams crest row, team picking in setup,
+  a full-time recap, an installable app with kick-off alerts, sharing the remote, multiple strips.

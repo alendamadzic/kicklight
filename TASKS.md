@@ -99,3 +99,21 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **(you)** needs the own
 - [x] Removed unused code (event stream client, EntertainmentTransport, openssl factory, 7 shadcn
   components); `bun run check` + GitHub Actions CI; `docs/architecture.md` replaces `docs/contracts.md`
 
+## Phase 6: UI/UX redesign (25 Oct 2026)
+
+Decided on the Kicklight Redesign Board (https://claude.ai/artifact/GF9aT4dWuLA26HECsDB65F):
+"Broadcast, refined", 33 ideas approved, 13 denied.
+
+- [x] Foundations: type roles, LED bar, status pill, responsive overlay, motion, true black, copy
+- [x] Data: `strip_reversed`, `kit_overrides`, `sessions.pause_reason` (migration applied), auto
+  reasons, identify, red→purple strip test
+- [x] Navigation: tabs Matches · Remote · Setup, landing page, `/remote`, shared live session
+- [x] Matches: live first, league chips / sidebar, ★ Mine, kit-edge cards with a ⋯ menu
+- [x] Remote: TV-first hero, goal moments, stat picker with previews, timeline, TV-sync chip,
+  brightness, hold-to-stop with undo, problem banners, switch confirmation
+- [x] Setup flow: email code, Identify, test that fixes direction
+- [x] Demo: captions, next moment, glowing pad with number keys
+- [x] Setup page: strip card, kit colours, undo, inline confirmations
+- [ ] **(you)** Add `{{ .Token }}` to the Supabase magic-link email template so the code shows
+- [ ] **(you)** Signed-in checks on the real strip: Remote tab dot, brightness mid-match, strip
+  direction flip, Identify, hold-to-stop restore, ⋯ follow menu
