@@ -33,7 +33,7 @@ export function DelaySlider({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between">
-        <span className="kl-display text-lg leading-none">TV delay</span>
+        <span className="text-sm font-semibold">TV delay</span>
         <span className="kl-display text-2xl leading-none tabular-nums text-amber">
           {seconds}
           <span className="ml-0.5 text-sm text-muted-foreground">s</span>

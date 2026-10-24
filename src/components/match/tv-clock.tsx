@@ -97,13 +97,6 @@ export function TvClock({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-baseline justify-between">
-        <span className="kl-display text-lg leading-none">Match your TV</span>
-        <span className="font-mono text-xs tabular-nums text-muted-foreground">
-          delay {delayS}s
-        </span>
-      </div>
-
       <output
         aria-label="Match clock as your TV shows it"
         className={cn(
@@ -124,13 +117,17 @@ export function TvClock({
               aria-label={`Clock ${d > 0 ? "forward" : "back"} ${Math.abs(d)} second${Math.abs(d) === 1 ? "" : "s"}`}
               disabled={blocked}
               onClick={() => nudge(d)}
-              className="kl-display h-11 min-w-0 px-0 text-base tabular-nums"
+              className="h-11 min-w-0 px-0 text-sm font-semibold tabular-nums"
             >
               {d > 0 ? `+${d}` : `−${-d}`}
             </Button>
           );
         })}
       </div>
+
+      <p className="text-center text-sm font-medium tabular-nums">
+        Your lights wait {delayS} s
+      </p>
 
       <p className="text-xs text-muted-foreground">
         {ticking

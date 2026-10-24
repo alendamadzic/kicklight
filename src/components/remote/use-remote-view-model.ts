@@ -1,14 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import type { StatPreview } from "@/components/match/stat-picker";
 import { applyKitOverride, pickStripColors } from "@/engine/colors";
 import type { MatchSnapshot } from "@/engine/model";
 import { STAT_MODES, type StatKey } from "@/engine/stats";
 import { useDemoEngine } from "@/hooks/use-demo-engine";
+import { buzz, useDevicePrefs } from "@/hooks/use-device-prefs";
 import { useLiveSession } from "@/hooks/use-live-session";
 import { useMatchPreview } from "@/hooks/use-match-preview";
+import { useMomentFx } from "@/hooks/use-moment-fx";
 import { useMomentToasts } from "@/hooks/use-moment-toasts";
 import { useNow } from "@/hooks/use-now";
 import { usePreferences } from "@/hooks/use-preferences";
@@ -43,6 +46,7 @@ export function useRemoteViewModel(league: string, id: string) {
   } = useLiveSession();
   const preview = useMatchPreview(league, id);
   const now = useNow(1000);
+  const { prefs: device } = useDevicePrefs();
 
   const scenario = scenarioById(id);
   const sim = useDemoEngine({
@@ -196,10 +200,11 @@ export function useRemoteViewModel(league: string, id: string) {
         ? { frame: mirrorFrame }
         : { colors: previewColors };
 
+  // With celebrations on, the moment plays on the TV instead of as a toast.
   useMomentToasts(
     ticker[0],
     (side) => snapshot?.[side].name,
-    mode !== "preview",
+    mode !== "preview" && !device.celebrations,
   );
 
   // ---------- actions ----------
@@ -264,6 +269,9 @@ export function useRemoteViewModel(league: string, id: string) {
       setSimOn(false);
       sim.controls.restart();
       sim.controls.pause();
+      toast("Simulation stopped", {
+        action: { label: "Start again", onClick: startSim },
+      });
       return;
     }
     try {
@@ -272,7 +280,11 @@ export function useRemoteViewModel(league: string, id: string) {
       await steer({ status: "ended" });
     }
     clear();
-    toast("Lights handed back");
+    toast("Lights restored", {
+      description: "Your strip is back to how it was before the match.",
+      action: { label: "Start again", onClick: () => void start() },
+      duration: 6000,
+    });
   };
 
   const changeStat = (next: StatKey) => {
@@ -305,6 +317,38 @@ export function useRemoteViewModel(league: string, id: string) {
     else setDelayOverride(ms);
   };
 
+  /** The split each stat would give right now, for the stat picker's previews. */
+  const previewFor = (key: StatKey): StatPreview | null => {
+    if (!snapshot || key === "auto" || key === "clock") return null;
+    const ctx = {
+      snapshot,
+      events: (mode === "sim" ? sim.ui?.events : preview.data?.events) ?? [],
+    };
+    const m = STAT_MODES[key];
+    return { share: m.homeShare(ctx), values: m.values?.(ctx) ?? null };
+  };
+
+  const autoReason =
+    mode === "live"
+      ? mirror?.autoReason
+      : mode === "sim"
+        ? sim.ui?.autoReason
+        : undefined;
+  const autoSide =
+    mode === "live"
+      ? mirror?.autoSide
+      : mode === "sim"
+        ? sim.ui?.autoSide
+        : undefined;
+
+  const fx = useMomentFx(ticker[0], mode !== "preview" && device.celebrations);
+  useEffect(() => {
+    if (fx?.kind === "goal") buzz([60, 40, 120]);
+    else if (fx?.kind === "red") buzz(80);
+  }, [fx]);
+
+  const setBrightness = (v: number) => update({ brightness: v });
+
   const running = mode !== "preview";
   const paused =
     (mode === "live" && session?.status === "paused") ||
@@ -314,6 +358,12 @@ export function useRemoteViewModel(league: string, id: string) {
 
   return {
     mode,
+    previewFor,
+    autoReason,
+    autoSide,
+    fx,
+    brightness: prefs.brightness,
+    setBrightness,
     running,
     paused,
     otherLive,

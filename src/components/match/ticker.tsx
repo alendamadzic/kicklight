@@ -18,7 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 
 /**
- * "Hit the lights": a rolling list of the events that just lit the strip.
+ * Moments: a rolling list of the events that just lit the strip.
  * Rows show the match minute when the source knows it, otherwise how long ago.
  * The list has a fixed max height and scrolls, newest on top.
  * With `onReplay`, each row is a button that runs its effect on the lights again.
@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 export function Ticker({
   items,
   teams,
-  emptyHint = "Nothing yet. Events show up here as they hit your lights.",
+  emptyHint = "No big moments yet. Goals and cards show up here as they hit your lights.",
   limit = 40,
   onReplay,
   className,
@@ -54,7 +54,9 @@ export function Ticker({
     return (
       <Empty className={cn("kl-panel border-dashed p-6", className)}>
         <EmptyHeader>
-          <EmptyTitle className="kl-display text-lg">Quiet so far</EmptyTitle>
+          <EmptyTitle className="text-base font-semibold">
+            No big moments yet
+          </EmptyTitle>
           <EmptyDescription>{emptyHint}</EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -92,7 +94,7 @@ export function Ticker({
                 className="h-4 w-2.5 shrink-0 rounded-[3px]"
                 style={{ background: EFFECT_TINT[item.effect] ?? "#8f9bb2" }}
               />
-              <span className="kl-display min-w-0 flex-1 truncate text-base leading-none">
+              <span className="min-w-0 flex-1 truncate text-sm font-semibold leading-none">
                 {effectLabel(item.effect)}
               </span>
               {team ? (
