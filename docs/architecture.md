@@ -61,7 +61,7 @@ Server-only modules start with `import "server-only"`. Pure modules that tests i
 | `/matches` | Fixtures: live first, day toggle, league chips (a sidebar on desktop), ★ Mine |
 | `/remote` | The running lights, or your teams' next match when nothing is on |
 | `/match/[league]/[id]` | The remote for one match (preview with the lights off until started) |
-| `/setup` | Your strip, teams and strip colours, lights defaults, device, appearance, account (`/settings` redirects here) |
+| `/setup` | Your strip, teams and strip colours, lights defaults, device, account (`/settings` redirects here) |
 | `/onboarding` | Setup flow: email (code or link), link Hue, pick the strip, test it |
 | `/demo` | A scripted match run entirely in the browser, with captions and the event pad |
 
@@ -72,12 +72,14 @@ Server-only modules start with `import "server-only"`. Pure modules that tests i
   else (buttons, chips, rows, labels) is the body face.
 - **The LED bar** (`components/chrome/led-bar.tsx`) is the one recurring device: logo, loader
   (`chase`), setup progress, lights live (`live`).
+- **One theme: true black.** No light mode and no appearance setting; tokens live on `:root`
+  in `globals.css` and `<html>` carries `dark` so shared components' `dark:` variants apply.
 - **Kit colours** mark anything that belongs to a team; amber is the app's own actions.
 - **Overlays** use `ResponsiveOverlay`: a bottom sheet on phones, a popover on desktop.
 - **Copy.** Say it the way a fan would: "Moments", "Lights follow", "Set up your lights",
   "Lights off", "Stop and restore lights", "Lights restored". Buttons say exactly what happens.
 - Settings that belong to the device rather than the account (goal celebrations, vibration,
-  demo captions, true black) live in `hooks/use-device-prefs.ts` (localStorage).
+  demo captions) live in `hooks/use-device-prefs.ts` (localStorage).
 
 ## Data the UI reads (Supabase, RLS enforced)
 

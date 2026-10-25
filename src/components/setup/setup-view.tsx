@@ -2,7 +2,6 @@
 
 import { LogOutIcon, PlusIcon, UnlinkIcon, XIcon, ZapIcon } from "lucide-react";
 import Link from "next/link";
-import { useTheme } from "next-themes";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { LedBar } from "@/components/chrome/led-bar";
@@ -46,7 +45,7 @@ const SEG =
 
 /**
  * Setup, built around your strip: the hardware and its health first, then your teams
- * and their strip colours, the lights' defaults, this device, appearance and account.
+ * and their strip colours, the lights' defaults, this device and account.
  * Unlinking sits at the very bottom and says what it will do before it does it.
  */
 export function SetupView() {
@@ -55,17 +54,14 @@ export function SetupView() {
   const { user, ready } = useAuth();
   const { result, refresh } = useHueStatus();
   const { session } = useLiveSession();
-  const { theme, setTheme, resolvedTheme } = useTheme();
   const [teams, setTeams] = useState<Record<string, CachedTeam>>({});
   const [picker, setPicker] = useState(false);
   const [kitFor, setKitFor] = useState<string | null>(null);
   const [testing, setTesting] = useState(false);
   const [confirm, setConfirm] = useState<"unlink" | "signout" | null>(null);
   const [busy, setBusy] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     setTeams(knownTeams());
   }, []);
   useEffect(() => {
@@ -410,35 +406,6 @@ export function SetupView() {
               checked={device.captions}
               onChange={(v) => updateDevice({ captions: v })}
             />
-          </Block>
-
-          <Block id="s-look" title="Appearance">
-            <ToggleGroup
-              value={[mounted ? (theme ?? "dark") : "dark"]}
-              onValueChange={(v) => v[0] && setTheme(v[0])}
-              spacing={1}
-              aria-label="Theme"
-              className="w-full"
-            >
-              <ToggleGroupItem value="dark" className={SEG}>
-                Dark
-              </ToggleGroupItem>
-              <ToggleGroupItem value="light" className={SEG}>
-                Light
-              </ToggleGroupItem>
-              <ToggleGroupItem value="system" className={SEG}>
-                System
-              </ToggleGroupItem>
-            </ToggleGroup>
-            {mounted && resolvedTheme === "dark" ? (
-              <SwitchRow
-                id="true-black"
-                label="True black"
-                hint="Saves battery on OLED phones."
-                checked={device.trueBlack}
-                onChange={(v) => updateDevice({ trueBlack: v })}
-              />
-            ) : null}
           </Block>
 
           <Block id="s-account" title="Account">

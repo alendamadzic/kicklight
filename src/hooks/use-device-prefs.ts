@@ -11,14 +11,12 @@ export interface DevicePrefs {
   celebrations: boolean;
   vibrate: boolean;
   captions: boolean;
-  trueBlack: boolean;
 }
 
 export const DEFAULT_DEVICE_PREFS: DevicePrefs = {
   celebrations: true,
   vibrate: false,
   captions: true,
-  trueBlack: false,
 };
 
 const KEY = "kl:device";

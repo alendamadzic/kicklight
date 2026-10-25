@@ -30,10 +30,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#090b10" },
-    { media: "(prefers-color-scheme: light)", color: "#f3f4f7" },
-  ],
+  themeColor: "#000000",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
@@ -44,9 +42,8 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      suppressHydrationWarning
       className={cn(
-        "h-full antialiased",
+        "dark h-full antialiased",
         inter.variable,
         geistMono.variable,
         barlowCondensed.variable,

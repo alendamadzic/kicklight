@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* One theme: true black. `dark:` variants in shared components always apply. */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -62,83 +63,46 @@
 }
 
 :root {
+  color-scheme: dark;
   --team-home: #6cabdd;
   --team-away: #c8102e;
   --amber: #ffb547;
   --live: #ff4d4d;
   --success: #34c27a;
   --stage: #07090d;
-  --background: #f3f4f7;
-  --foreground: #0d1118;
-  --card: #ffffff;
-  --card-foreground: #0d1118;
-  --popover: #ffffff;
-  --popover-foreground: #0d1118;
+  --background: #000000;
+  --foreground: #eef1f7;
+  --card: #0a0c10;
+  --card-foreground: #eef1f7;
+  --popover: #0e1117;
+  --popover-foreground: #eef1f7;
   --primary: #ffb547;
   --primary-foreground: #1a1200;
-  --secondary: #e8ebf1;
-  --secondary-foreground: #0d1118;
-  --muted: #e8ebf1;
-  --muted-foreground: #556078;
-  --accent: #e8ebf1;
-  --accent-foreground: #0d1118;
-  --destructive: #d12c2c;
-  --border: #d9dde6;
-  --input: #cfd4df;
-  --ring: #e59a22;
+  --secondary: #12161f;
+  --secondary-foreground: #eef1f7;
+  --muted: #12161f;
+  --muted-foreground: #8f9bb2;
+  --accent: #171c27;
+  --accent-foreground: #eef1f7;
+  --destructive: #ff6b6b;
+  --border: rgb(255 255 255 / 9%);
+  --input: rgb(255 255 255 / 14%);
+  --ring: #ffb547;
   --chart-1: #ffb547;
   --chart-2: #6fb7ff;
   --chart-3: #4fd18b;
   --chart-4: #ff5d5d;
   --chart-5: #b58cff;
   --radius: 0.625rem;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #0d1118;
+  --sidebar: #0a0c10;
+  --sidebar-foreground: #eef1f7;
   --sidebar-primary: #ffb547;
   --sidebar-primary-foreground: #1a1200;
-  --sidebar-accent: #e8ebf1;
-  --sidebar-accent-foreground: #0d1118;
-  --sidebar-border: #d9dde6;
-  --sidebar-ring: #e59a22;
-  --tabbar-h: 4rem;
-}
-
-.dark {
-  --background: #090b10;
-  --foreground: #eef1f7;
-  --card: #11151d;
-  --card-foreground: #eef1f7;
-  --popover: #151a24;
-  --popover-foreground: #eef1f7;
-  --primary: #ffb547;
-  --primary-foreground: #1a1200;
-  --secondary: #1a202b;
-  --secondary-foreground: #eef1f7;
-  --muted: #1a202b;
-  --muted-foreground: #8f9bb2;
-  --accent: #1f2633;
-  --accent-foreground: #eef1f7;
-  --destructive: #ff6b6b;
-  --border: rgb(255 255 255 / 9%);
-  --input: rgb(255 255 255 / 14%);
-  --ring: #ffb547;
-  --sidebar: #11151d;
-  --sidebar-foreground: #eef1f7;
-  --sidebar-accent: #1a202b;
+  --sidebar-accent: #12161f;
   --sidebar-accent-foreground: #eef1f7;
   --sidebar-border: rgb(255 255 255 / 9%);
   --sidebar-ring: #ffb547;
-}
-
-/* True black for OLED phones: only the surfaces change. */
-.dark.oled {
-  --background: #000000;
-  --card: #0a0c10;
-  --popover: #0e1117;
-  --secondary: #12161f;
-  --muted: #12161f;
-  --accent: #171c27;
-  --sidebar: #0a0c10;
+  --tabbar-h: 4rem;
 }
 
 @layer base {
