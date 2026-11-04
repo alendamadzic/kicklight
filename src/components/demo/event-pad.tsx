@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useEffectEvent, useState } from "react";
+import { SideToggle } from "@/components/match/side-toggle";
 import { EFFECTS, type EffectKey, PAD_ORDER } from "@/engine/effects";
 import type { Side } from "@/engine/model";
-import { readableOn } from "@/lib/format";
 import { EFFECT_TINT } from "@/lib/ticker";
-import { cn } from "@/lib/utils";
 
 /** Match-level effects belong to nobody, so the home/away switch doesn't apply. */
 const NEUTRAL: ReadonlySet<EffectKey> = new Set<EffectKey>([
@@ -61,41 +60,12 @@ export function EventPad({
 
   return (
     <div className="flex flex-col gap-3">
-      <div
-        role="radiogroup"
-        aria-label="Which team"
-        className="grid grid-cols-2 gap-1.5 rounded-xl bg-muted p-1"
-      >
-        {(
-          [
-            ["home", home],
-            ["away", away],
-          ] as const
-        ).map(([key, t]) => {
-          const on = side === key;
-          return (
-            // biome-ignore lint/a11y/useSemanticElements: styled radio buttons
-            <button
-              key={key}
-              type="button"
-              role="radio"
-              aria-checked={on}
-              onClick={() => onSideChange(key)}
-              className={cn(
-                "kl-display kl-press h-11 rounded-lg text-lg leading-none outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                !on && "text-muted-foreground hover:text-foreground",
-              )}
-              style={
-                on
-                  ? { background: t.color, color: readableOn(t.color) }
-                  : { boxShadow: `inset 0 -3px 0 ${t.color}` }
-              }
-            >
-              {t.short}
-            </button>
-          );
-        })}
-      </div>
+      <SideToggle
+        side={side}
+        onSideChange={onSideChange}
+        home={home}
+        away={away}
+      />
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
         {PAD_ORDER.map((key, i) => {
           const fx = EFFECTS[key];

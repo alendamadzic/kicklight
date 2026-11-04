@@ -385,6 +385,12 @@ export function DemoView() {
               <span className="ml-2 font-normal text-muted-foreground">
                 fire any moment on the strip
               </span>
+              <Link
+                href="/lights"
+                className="ml-2 font-normal text-muted-foreground underline underline-offset-2 hover:text-foreground"
+              >
+                What each one means
+              </Link>
             </h2>
             <EventPad
               side={side}

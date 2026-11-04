@@ -288,6 +288,19 @@
   animation: kl-flash 2.2s ease-out both;
 }
 
+/* How far through its effect a lights-guide row is. Duration set inline. */
+@keyframes kl-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.kl-guide-progress {
+  animation: kl-progress linear both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .kl-live-dot,
   .kl-rise,

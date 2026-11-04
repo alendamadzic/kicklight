@@ -31,7 +31,7 @@ from `/api/cron/tick` (Supabase Cron, every ~10 s); local mode runs it in-proces
 | `src/app/` | Pages (`(app)/`) and route handlers (`api/`). Route files stay thin: parse, call `server/`, answer. | everything |
 | `src/lib/` | Shared by browser and server: the typed API client and its types, formatting, sample data, Supabase clients. | `engine` |
 | `src/hooks/` | Client state and data: auth, preferences, SWR data hooks, the demo engine. | `engine`, `lights`, `lib` |
-| `src/components/` | UI by feature (`remote/`, `onboarding/`, `match/`, `setup/`, `landing/`, …); `chrome/` holds the shared pieces (LED bar, status pill, responsive overlay, hold button); `ui/` is shadcn and edited only through the shadcn CLI. | everything client-safe |
+| `src/components/` | UI by feature (`remote/`, `onboarding/`, `match/`, `setup/`, `landing/`, `guide/`, …); `chrome/` holds the shared pieces (LED bar, status pill, responsive overlay, hold button); `ui/` is shadcn and edited only through the shadcn CLI. | everything client-safe |
 
 Server-only modules start with `import "server-only"`. Pure modules that tests import
 (`session.ts`, `validate.ts`, `streaming-transport.ts`, …) leave it out so `bun test` can load them.
@@ -64,6 +64,7 @@ Server-only modules start with `import "server-only"`. Pure modules that tests i
 | `/setup` | Your strip, teams and strip colours, lights defaults, device, account (`/settings` redirects here) |
 | `/onboarding` | Setup flow: email (code or link), link Hue, pick the strip, test it |
 | `/demo` | A scripted match run entirely in the browser, with captions and the event pad |
+| `/lights` | What the lights do: every event, what sets it off and what the strip does, each playable on a preview strip (the ⓘ in the top bar) |
 
 ## UI language
 

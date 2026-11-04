@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  InfoIcon,
   SlidersHorizontalIcon,
   TvMinimalIcon,
   TvMinimalPlayIcon,
@@ -103,6 +104,21 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
             })}
           </nav>
           <div className="ml-auto flex items-center gap-1">
+            <Link
+              href="/lights"
+              aria-label="What the lights do"
+              aria-current={pathname === "/lights" ? "page" : undefined}
+              title="What the lights do"
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "icon" }),
+                "size-10 rounded-lg",
+                pathname === "/lights"
+                  ? "text-amber"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <InfoIcon className="size-5" />
+            </Link>
             <AuthLink />
           </div>
         </div>
