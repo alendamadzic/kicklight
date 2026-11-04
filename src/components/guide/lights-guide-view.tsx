@@ -140,7 +140,7 @@ export function LightsGuideView() {
       </header>
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start lg:gap-8">
-        <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-20 -mx-4 flex flex-col gap-3 border-b border-border bg-background/90 px-4 pb-3 pt-2 backdrop-blur-md lg:top-[calc(4.5rem+env(safe-area-inset-top))] lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+        <div className="flex flex-col gap-3 lg:sticky lg:top-[calc(4.5rem+env(safe-area-inset-top))] lg:z-20">
           <VirtualStrip
             frame={frame}
             label={
@@ -187,7 +187,7 @@ export function LightsGuideView() {
           ) : null}
         </div>
 
-        <div className="flex min-w-0 flex-col gap-7 [&_button]:scroll-mt-[calc(62.5vw+9rem)] lg:[&_button]:scroll-mt-24">
+        <div className="flex min-w-0 flex-col gap-7 lg:[&_button]:scroll-mt-24">
           {EFFECT_GUIDE.map((section) => (
             <section
               key={section.id}
