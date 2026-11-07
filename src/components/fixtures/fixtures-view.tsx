@@ -1,22 +1,14 @@
 "use client";
 
 import { SearchIcon, StarIcon, XIcon } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { LedBar } from "@/components/chrome/led-bar";
 import { MatchCard } from "@/components/match/match-card";
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { LEAGUES, leagueName } from "@/engine/feed/leagues";
+import { LEAGUES } from "@/engine/feed/leagues";
 import { useAuth } from "@/hooks/use-auth";
 import { useAllMatches, useFixtures } from "@/hooks/use-fixtures";
 import { useLiveSession } from "@/hooks/use-live-session";
@@ -26,6 +18,10 @@ import type { MatchListItem } from "@/lib/api-types";
 import { isLivePhase } from "@/lib/format";
 import { REPLAY_LEAGUE } from "@/lib/sample-data";
 import { cn } from "@/lib/utils";
+
+const FixturesSearch = dynamic(() =>
+  import("./fixtures-search").then((m) => m.FixturesSearch),
+);
 
 const DAYS = [
   { value: "-1", label: "Yesterday" },
@@ -53,10 +49,12 @@ export function FixturesView() {
   const { user, ready } = useAuth();
   const { session } = useLiveSession();
   const [searchOpen, setSearchOpen] = useState(false);
+  // Load the search (and cmdk) the first time it opens, then keep it mounted.
+  const [searchUsed, setSearchUsed] = useState(false);
+  if (searchOpen && !searchUsed) setSearchUsed(true);
   useResetOnHide(() => setSearchOpen(false));
   const [filter, setFilter] = useState<Filter>("all");
   const [dismissed, setDismissed] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     try {
@@ -324,57 +322,19 @@ export function FixturesView() {
         </div>
       </div>
 
-      <CommandDialog
-        open={searchOpen}
-        onOpenChange={setSearchOpen}
-        title="Search"
-        description="Search matches, teams and leagues"
-      >
-        <CommandInput placeholder="Team, match or league" />
-        <CommandList>
-          <CommandEmpty>Nothing matches that.</CommandEmpty>
-          {all.length ? (
-            <CommandGroup heading="Matches">
-              {all.map((m) => (
-                <CommandItem
-                  key={`${m.league}:${m.id}`}
-                  value={`${m.home.name} ${m.away.name} ${m.home.short} ${m.away.short} ${leagueName(m.league)}`}
-                  onSelect={() => {
-                    setSearchOpen(false);
-                    router.push(
-                      `/match/${encodeURIComponent(m.league)}/${encodeURIComponent(m.id)}`,
-                    );
-                  }}
-                >
-                  <span className="truncate">
-                    {m.home.name} v {m.away.name}
-                  </span>
-                  <span className="ml-auto text-xs text-muted-foreground">
-                    {leagueName(m.league)}
-                  </span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          ) : null}
-          <CommandGroup heading="Leagues">
-            {sections.map((s) => (
-              <CommandItem
-                key={s.slug}
-                value={`league ${s.name} ${s.group}`}
-                onSelect={() => {
-                  setSearchOpen(false);
-                  setFilter(s.slug);
-                }}
-              >
-                {s.name}
-                <span className="ml-auto text-xs text-muted-foreground">
-                  {s.group}
-                </span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
+      {searchUsed ? (
+        // Its own boundary: while the chunk loads, only this suspends, not the page (which
+        // would hide it, and closing-on-hide would shut the search before it opened).
+        <Suspense fallback={null}>
+          <FixturesSearch
+            open={searchOpen}
+            onOpenChange={setSearchOpen}
+            matches={all}
+            leagues={sections}
+            onPickLeague={setFilter}
+          />
+        </Suspense>
+      ) : null}
     </div>
   );
 }
