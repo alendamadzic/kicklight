@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import useSWR from "swr";
 import { api } from "@/lib/api";
 import type { MatchResponse } from "@/lib/api-types";
 import { REPLAY_LEAGUE, sampleMatch } from "@/lib/sample-data";
+import { matchKey } from "@/lib/swr-keys";
 import { rememberTeams } from "@/lib/team-cache";
 
 export interface MatchPreviewState {
@@ -26,10 +27,7 @@ interface Preview {
 async function loadPreview(league: string, id: string): Promise<Preview> {
   if (league !== REPLAY_LEAGUE) {
     try {
-      const match = await api.match(league, id);
-      // Summaries carry both kit colours; Setup's strip colour picker offers the alternate.
-      rememberTeams([match.snapshot.home, match.snapshot.away]);
-      return { match, source: "api" };
+      return { match: await api.match(league, id), source: "api" };
     } catch (e) {
       const sample = sampleMatch(id);
       if (!sample) throw e;
@@ -41,16 +39,25 @@ async function loadPreview(league: string, id: string): Promise<Preview> {
   return { match: sample, source: "sample" };
 }
 
-/** GET /api/matches/[league]/[id], refreshed every 20 s until full time. */
+/**
+ * GET /api/matches/[league]/[id], refreshed every 20 s until full time. The server usually
+ * renders the first answer into the page, so a seeded match isn't fetched again on mount.
+ */
 export function useMatchPreview(league: string, id: string): MatchPreviewState {
   const { data, isLoading, mutate } = useSWR(
-    ["match", league, id],
+    matchKey(league, id),
     () => loadPreview(league, id),
     {
       refreshInterval: (latest) =>
         latest?.match.snapshot.phase === "full_time" ? 0 : POLL_MS,
+      revalidateIfStale: false,
     },
   );
+  // Summaries carry both kit colours; Setup's strip colour picker offers the alternate.
+  const snapshot = data?.source === "api" ? data.match.snapshot : null;
+  useEffect(() => {
+    if (snapshot) rememberTeams([snapshot.home, snapshot.away]);
+  }, [snapshot]);
   const retry = useCallback(() => void mutate(), [mutate]);
   return {
     data: data?.match ?? null,

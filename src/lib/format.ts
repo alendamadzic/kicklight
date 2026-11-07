@@ -27,13 +27,30 @@ export const isLivePhase = (p: MatchPhase) =>
   p === "shootout" ||
   p === "half_time";
 
-export function kickoffLabel(iso: string, now = Date.now()): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  const sameDay = new Date(now).toDateString() === d.toDateString();
-  if (sameDay) return time;
-  return `${d.toLocaleDateString([], { weekday: "short" })} ${time}`;
+/**
+ * "19:30" for a kickoff on `today` (YYYYMMDD), "Sat 19:30" otherwise. In `timeZone` when
+ * given (rendering on the server for a visitor), else the browser's own zone. Always en-GB,
+ * so the server's text matches the browser's.
+ */
+export function kickoffLabel(
+  iso: string,
+  today: string | null,
+  timeZone?: string,
+): string {
+  const t = Date.parse(iso);
+  if (Number.isNaN(t)) return "";
+  const time = new Date(t).toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone,
+  });
+  const day = timeZone ? dateKeyIn(timeZone, 0, t) : dateKey(0, t);
+  if (day === today) return time;
+  const weekday = new Date(t).toLocaleDateString("en-GB", {
+    weekday: "short",
+    timeZone,
+  });
+  return `${weekday} ${time}`;
 }
 
 /** YYYYMMDD for ESPN, local time. */

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { dateKeyIn, shiftDateKey } from "./format";
+import { dateKeyIn, kickoffLabel, shiftDateKey } from "./format";
 
 describe("shiftDateKey", () => {
   test("moves across month and year ends", () => {
@@ -26,5 +26,23 @@ describe("dateKeyIn", () => {
   });
   test("falls back to UTC for an unknown zone", () => {
     expect(dateKeyIn("Not/AZone", 0, now)).toBe("20261107");
+  });
+});
+
+describe("kickoffLabel", () => {
+  const ko = "2026-11-07T19:30:00Z";
+  test("shows only the time on the day itself", () => {
+    expect(kickoffLabel(ko, "20261107", "Europe/London")).toBe("19:30");
+  });
+  test("adds the weekday on another day", () => {
+    expect(kickoffLabel(ko, "20261106", "Europe/London")).toBe("Sat 19:30");
+  });
+  test("uses the zone's own clock and day", () => {
+    expect(
+      kickoffLabel("2026-11-07T23:30:00Z", "20261108", "Europe/Berlin"),
+    ).toBe("00:30");
+  });
+  test("is empty for a bad date", () => {
+    expect(kickoffLabel("nope", "20261107", "Europe/London")).toBe("");
   });
 });

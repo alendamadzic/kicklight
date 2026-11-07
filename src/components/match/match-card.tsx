@@ -18,6 +18,7 @@ import {
   rgbToHex,
 } from "@/engine/colors";
 import { useResetOnHide } from "@/hooks/use-reset-on-hide";
+import { useDateKey, useTimeZone } from "@/hooks/use-visitor-day";
 import type { MatchListItem } from "@/lib/api-types";
 import { isLivePhase, kickoffLabel, minuteLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -45,6 +46,8 @@ export function MatchCard({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   useResetOnHide(() => setMenuOpen(false));
+  const today = useDateKey(0);
+  const timeZone = useTimeZone();
   const live = isLivePhase(match.phase);
   const finished = match.phase === "full_time";
   const started = match.phase !== "scheduled";
@@ -52,7 +55,7 @@ export function MatchCard({
     ? minuteLabel(match.minute, match.phase)
     : finished
       ? "FT"
-      : kickoffLabel(match.kickoff);
+      : kickoffLabel(match.kickoff, today, timeZone);
   // The pair the strip would really show: your kit choices, then the clash rule.
   const strip = pickStripColors(
     applyKitOverride(match.home, kitOverrides, match.id),

@@ -43,7 +43,10 @@ Server-only modules start with `import "server-only"`. Pure modules that tests i
 - **One component per file** for anything over a screenful. A view's state and actions live in
   a `use-…-view-model.ts` hook next to it (see `components/remote/`).
 - **Client data** goes through SWR hooks in `src/hooks/` that call the typed client in
-  `src/lib/api.ts`. Pages keep working with no backend by falling back to `lib/sample-data.ts`.
+  `src/lib/api.ts`. Pages that show feed data (Matches, Remote, a match) also fetch it on the
+  server from the cached getters in `server/match-data.ts` and hand it over with `DataSeed`
+  (`components/data/`), keyed by `lib/swr-keys.ts`, so the first paint is full and SWR polls
+  from there. Pages keep working with no backend by falling back to `lib/sample-data.ts`.
 - **Cache Components is on** (`cacheComponents` in `next.config.ts`). Pages prerender to a
   static shell; anything that reads the URL, cookies or uncached data sits inside `<Suspense>`.
   Client code must not read the clock while rendering: use `useNow()` (0 until the browser takes
@@ -117,8 +120,9 @@ in `src/lib/api-types.ts`.
 | Route | Purpose |
 |---|---|
 | `GET /api/config` | `{ mode: "cloud" \| "local", siteUrl }` |
-| `GET /api/matches?league=&date=` | fixtures for a league and day (CDN-cached for 15 s) |
-| `GET /api/matches/[league]/[id]` | live snapshot and events, no session needed |
+| `GET /api/fixtures?date=` | every league's fixtures for a day in one answer (server cache + CDN, 15 s) |
+| `GET /api/matches?league=&date=` | fixtures for one league and day (CDN-cached for 15 s) |
+| `GET /api/matches/[league]/[id]` | live snapshot and events, no session needed (server cache + CDN, 10 s; the strip never reads it) |
 | `POST /api/sessions/start` | start following a match (or `league: "replay"` scenario) |
 | `POST /api/sessions/stop` | end the live session and restore the strip |
 | `GET /api/hue/status` | link state |

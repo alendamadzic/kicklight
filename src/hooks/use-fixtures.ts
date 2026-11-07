@@ -1,16 +1,16 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import useSWR from "swr";
-import { LEAGUES } from "@/engine/feed/leagues";
-import { ApiRequestError, api } from "@/lib/api";
+import { api } from "@/lib/api";
 import type { MatchListItem } from "@/lib/api-types";
 import { REPLAY_LEAGUE, sampleMatches } from "@/lib/sample-data";
+import { fixturesKey } from "@/lib/swr-keys";
 import { rememberTeams } from "@/lib/team-cache";
-import { useDateKey } from "./use-date-key";
+import { useDateKey } from "./use-visitor-day";
 
 export type FixturesSource = "api" | "sample";
-export type SampleReason = "signed_out" | "unavailable" | null;
+export type SampleReason = "unavailable" | null;
 
 export interface FixturesState {
   /** Matches by league slug, in LEAGUES order. */
@@ -21,7 +21,6 @@ export interface FixturesState {
 }
 
 const POLL_MS = 30_000;
-const ALL_SLUGS = LEAGUES.map((l) => l.slug);
 
 interface Fixtures {
   byLeague: Record<string, MatchListItem[]>;
@@ -29,63 +28,51 @@ interface Fixtures {
   reason: SampleReason;
 }
 
-/** One day across the given leagues. With no answer at all, the scripted sample matches. */
-async function loadDay(date: string, slugs: string[]): Promise<Fixtures> {
-  const results = await Promise.allSettled(
-    slugs.map((s) => api.matches(s, date)),
-  );
-  const byLeague: Record<string, MatchListItem[]> = {};
-  let answered = false;
-  results.forEach((r, i) => {
-    if (r.status !== "fulfilled") return;
-    answered = true;
-    if (r.value.matches.length) byLeague[slugs[i]] = r.value.matches;
-  });
-  if (!answered) {
-    const unauth = results.some(
-      (r) =>
-        r.status === "rejected" &&
-        r.reason instanceof ApiRequestError &&
-        r.reason.unauthenticated,
-    );
-    return {
-      byLeague: { [REPLAY_LEAGUE]: sampleMatches() },
-      source: "sample",
-      reason: unauth ? "signed_out" : "unavailable",
-    };
-  }
-  return { byLeague, source: "api", reason: null };
-}
-
 /**
- * Fixtures for a day across every league, refreshed every 30 s. Refreshes only ask the
- * leagues that had matches. When the API is missing it falls back to sample matches built
- * from the scripted scenarios, so the page is never empty.
+ * Fixtures for a day across every league, one request, refreshed every 30 s. The server
+ * usually renders the first answer into the page. With no answer at all it falls back to
+ * sample matches built from the scripted scenarios, so the page is never empty; a refresh
+ * that fails keeps showing the last good list.
  */
 export function useFixtures(dayOffset: number): FixturesState {
   const date = useDateKey(dayOffset);
-  // Leagues with matches that day, once known: refreshes skip the empty ones.
-  const active = useRef<{ date: string; slugs: string[] } | null>(null);
+  // Days that have had a real answer: a failed refresh of one keeps its list.
+  const loaded = useRef(new Set<string>());
 
   const { data, isLoading } = useSWR(
-    date ? ["fixtures", date] : null,
-    async ([, date]: [string, string]) => {
-      const known = active.current?.date === date ? active.current.slugs : null;
-      const day = await loadDay(date, known?.length ? known : ALL_SLUGS);
-      // A refresh that got no answer keeps showing the last good list.
-      if (known && day.source === "sample") throw new Error("feed unavailable");
-      if (day.source === "api") {
-        active.current = { date, slugs: Object.keys(day.byLeague) };
-        rememberTeams(
-          Object.values(day.byLeague).flatMap((list) =>
-            list.flatMap((m) => [m.home, m.away]),
-          ),
-        );
+    date ? fixturesKey(date) : null,
+    async ([, day]: readonly [string, string]): Promise<Fixtures> => {
+      try {
+        const { byLeague } = await api.fixtures(day);
+        loaded.current.add(day);
+        return { byLeague, source: "api", reason: null };
+      } catch (e) {
+        if (loaded.current.has(day)) throw e;
+        return {
+          byLeague: { [REPLAY_LEAGUE]: sampleMatches() },
+          source: "sample",
+          reason: "unavailable",
+        };
       }
-      return day;
     },
-    { refreshInterval: POLL_MS, keepPreviousData: false },
+    {
+      refreshInterval: POLL_MS,
+      keepPreviousData: false,
+      // A day the server already rendered isn't fetched again on mount; polling takes over.
+      revalidateIfStale: false,
+    },
   );
+
+  useEffect(() => {
+    if (date && data?.source === "api") {
+      loaded.current.add(date);
+      rememberTeams(
+        Object.values(data.byLeague).flatMap((list) =>
+          list.flatMap((m) => [m.home, m.away]),
+        ),
+      );
+    }
+  }, [date, data]);
 
   return {
     byLeague: data?.byLeague ?? {},
