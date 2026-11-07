@@ -3,6 +3,7 @@ import type {
   AppConfig,
   DiscoverResponse,
   FireEffectBody,
+  FixturesResponse,
   HueLightsResponse,
   HueStatus,
   IdentifyLightBody,
@@ -78,6 +79,8 @@ const post = (body: unknown): RequestInit => ({
 /** Typed client for the HTTP API in docs/architecture.md. Every call rejects with ApiRequestError. */
 export const api = {
   config: () => request<AppConfig>("/api/config"),
+  fixtures: (date: string) =>
+    request<FixturesResponse>(`/api/fixtures?date=${encodeURIComponent(date)}`),
   matches: (league: string, date?: string) =>
     request<MatchesResponse>(
       `/api/matches?league=${encodeURIComponent(league)}${date ? `&date=${date}` : ""}`,

@@ -1,10 +1,15 @@
 import type { NextRequest } from "next/server";
-import { fetchEspnMatch } from "@/engine/feed/espn";
 import { replayAt } from "@/engine/feed/replay";
 import { SCENARIOS } from "@/engine/feed/scenarios";
 import type { MatchResponse } from "@/lib/api-types";
 import { apiError, json } from "@/server/http";
+import { getMatch } from "@/server/match-data";
 import { isKnownLeague } from "@/server/validate";
+
+/** Shared by every phone watching the match; the strip never reads this. */
+const CACHE = {
+  "cache-control": "public, s-maxage=10, stale-while-revalidate=20",
+};
 
 /** One match as it stands: snapshot and events. No session needed. */
 export async function GET(
@@ -22,7 +27,11 @@ export async function GET(
   if (!/^\d{1,12}$/.test(id))
     return apiError("bad_request", 400, "Bad match id");
   try {
-    return json((await fetchEspnMatch(league, id)) satisfies MatchResponse);
+    return json(
+      (await getMatch(league, id)) satisfies MatchResponse,
+      200,
+      CACHE,
+    );
   } catch (e) {
     return apiError("feed_unavailable", 502, (e as Error).message);
   }

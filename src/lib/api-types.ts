@@ -30,6 +30,11 @@ export interface MatchesResponse {
   matches: MatchListItem[];
 }
 
+/** GET /api/fixtures: every league's matches for a day, by league slug (empty leagues left out). */
+export interface FixturesResponse {
+  byLeague: Record<string, MatchListItem[]>;
+}
+
 /** GET /api/matches/[league]/[id] */
 export interface MatchResponse {
   snapshot: MatchSnapshot;
