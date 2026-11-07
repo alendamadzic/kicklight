@@ -2,7 +2,6 @@ import { type ReplayScript, replayAt } from "@/engine/feed/replay";
 import { SCENARIOS } from "@/engine/feed/scenarios";
 import type { MatchSnapshot, TeamInfo } from "@/engine/model";
 import type {
-  AppConfig,
   HueLightInfo,
   HueStatus,
   MatchListItem,
@@ -13,8 +12,6 @@ import type {
 // so a fixture match is the same match the demo page plays.
 
 export const REPLAY_LEAGUE = "replay";
-
-export const DEFAULT_CONFIG: AppConfig = { mode: "cloud", siteUrl: "" };
 
 export const SAMPLE_HUE_STATUS: HueStatus = {
   linked: false,

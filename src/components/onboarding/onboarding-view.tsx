@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { LoginForm } from "@/components/auth/login-form";
 import { LedBar } from "@/components/chrome/led-bar";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useAppConfig } from "@/hooks/use-app-config";
 import { useAuth } from "@/hooks/use-auth";
 import { useHueStatus } from "@/hooks/use-hue-status";
+import type { AppMode } from "@/lib/api-types";
 import { LinkStep } from "./link-step";
 import { PickStep } from "./pick-step";
 import { TestStep } from "./test-step";
@@ -24,8 +24,14 @@ const LINK_ERRORS: Record<string, string> = {
  * Set up your lights, honestly numbered: sign in, link Hue, pick the strip, test it.
  * Signed-in visitors start at Link Hue; a returning OAuth redirect lands where it left off.
  */
-export function OnboardingView({ linkError }: { linkError?: string }) {
-  const config = useAppConfig();
+export function OnboardingView({
+  linkError,
+  mode,
+}: {
+  linkError?: string;
+  /** Cloud or local; decides how the bridge gets linked. */
+  mode: AppMode;
+}) {
   const { user, ready } = useAuth();
   const { result, refresh } = useHueStatus();
   const [step, setStep] = useState(0);
@@ -90,7 +96,7 @@ export function OnboardingView({ linkError }: { linkError?: string }) {
       ) : null}
       {step === 1 ? (
         <LinkStep
-          mode={config.mode}
+          mode={mode}
           signedOut={signedOut}
           apiMissing={result.phase === "unavailable"}
           linked={result.phase === "ok" && result.status.linked}
