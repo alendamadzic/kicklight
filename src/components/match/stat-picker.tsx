@@ -12,6 +12,7 @@ import {
   statLabel,
 } from "@/engine/stats";
 import type { AutoReason } from "@/engine/stats/auto";
+import { useResetOnHide } from "@/hooks/use-reset-on-hide";
 import { cn } from "@/lib/utils";
 
 /** The chips always on show; everything else lives behind More. */
@@ -65,6 +66,7 @@ export function StatPicker({
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
+  useResetOnHide(() => setOpen(false));
   const chips = QUICK.includes(value) ? QUICK : [...QUICK, value];
   const pressing = autoSide ? teams[autoSide].name : undefined;
 

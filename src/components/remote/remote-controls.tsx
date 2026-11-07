@@ -5,6 +5,7 @@ import { useState } from "react";
 import { HoldButton } from "@/components/chrome/hold-button";
 import { ResponsiveOverlay } from "@/components/chrome/responsive-overlay";
 import { Button } from "@/components/ui/button";
+import { useResetOnHide } from "@/hooks/use-reset-on-hide";
 import { cn } from "@/lib/utils";
 import { BrightnessControl } from "./brightness-control";
 
@@ -41,6 +42,7 @@ export function RemoteControls({
   onStop: () => void;
 }) {
   const [confirm, setConfirm] = useState(false);
+  useResetOnHide(() => setConfirm(false));
 
   const startButton = (
     <Button

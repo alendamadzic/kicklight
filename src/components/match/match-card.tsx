@@ -17,6 +17,7 @@ import {
   pickStripColors,
   rgbToHex,
 } from "@/engine/colors";
+import { useResetOnHide } from "@/hooks/use-reset-on-hide";
 import type { MatchListItem } from "@/lib/api-types";
 import { isLivePhase, kickoffLabel, minuteLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -43,6 +44,7 @@ export function MatchCard({
   className?: string;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  useResetOnHide(() => setMenuOpen(false));
   const live = isLivePhase(match.phase);
   const finished = match.phase === "full_time";
   const started = match.phase !== "scheduled";

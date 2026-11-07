@@ -4,6 +4,7 @@ import { TimerIcon } from "lucide-react";
 import { useState } from "react";
 import { ResponsiveOverlay } from "@/components/chrome/responsive-overlay";
 import type { ClockReading, MatchPhase } from "@/engine/model";
+import { useResetOnHide } from "@/hooks/use-reset-on-hide";
 import { cn } from "@/lib/utils";
 import { DelaySlider } from "./delay-slider";
 import { TvClock } from "./tv-clock";
@@ -27,6 +28,7 @@ export function TvSync({
   onCommit: (ms: number) => void;
 }) {
   const [open, setOpen] = useState(false);
+  useResetOnHide(() => setOpen(false));
   const s = Math.round(delayMs / 1000);
   return (
     <ResponsiveOverlay

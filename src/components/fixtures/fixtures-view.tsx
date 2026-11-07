@@ -21,6 +21,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useAllMatches, useFixtures } from "@/hooks/use-fixtures";
 import { useLiveSession } from "@/hooks/use-live-session";
 import { usePreferences } from "@/hooks/use-preferences";
+import { useResetOnHide } from "@/hooks/use-reset-on-hide";
 import type { MatchListItem } from "@/lib/api-types";
 import { isLivePhase } from "@/lib/format";
 import { REPLAY_LEAGUE } from "@/lib/sample-data";
@@ -52,6 +53,7 @@ export function FixturesView() {
   const { user, ready } = useAuth();
   const { session } = useLiveSession();
   const [searchOpen, setSearchOpen] = useState(false);
+  useResetOnHide(() => setSearchOpen(false));
   const [filter, setFilter] = useState<Filter>("all");
   const [dismissed, setDismissed] = useState(true);
   const router = useRouter();
