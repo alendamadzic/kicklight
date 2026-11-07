@@ -16,6 +16,8 @@ export interface ScoreboardTeam {
   short: string;
   /** Primary kit colour, #rrggbb. */
   color: string;
+  /** Second kit colour, #rrggbb: what the strip switches to on a clash. */
+  alternateColor: string;
   crest?: string;
 }
 
@@ -41,6 +43,7 @@ function side(c: Json): ScoreboardTeam {
     name: c.team?.displayName ?? "",
     short: c.team?.abbreviation ?? "",
     color: kitColor(c.team?.color),
+    alternateColor: kitColor(c.team?.alternateColor, "#ffffff"),
     crest: c.team?.logo,
   };
 }

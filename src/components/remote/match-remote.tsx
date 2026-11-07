@@ -2,7 +2,8 @@
 
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { ResponsiveOverlay } from "@/components/chrome/responsive-overlay";
 import { type LightsState, StatusPill } from "@/components/chrome/status-pill";
 import { MomentOverlay } from "@/components/match/moment-overlay";
 import { MomentsTimeline } from "@/components/match/moments-timeline";
@@ -11,6 +12,7 @@ import { SplitReadout } from "@/components/match/split-readout";
 import { StatPicker } from "@/components/match/stat-picker";
 import { Ticker } from "@/components/match/ticker";
 import { TvSync } from "@/components/match/tv-sync";
+import { KitPicker } from "@/components/setup/kit-picker";
 import { VirtualStrip } from "@/components/strip/virtual-strip";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -22,6 +24,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { rgbToHex } from "@/engine/colors";
 import { leagueName } from "@/engine/feed/leagues";
+import type { Side } from "@/engine/model";
 import { statLabel } from "@/engine/stats";
 import { useHueStatus } from "@/hooks/use-hue-status";
 import { isLivePhase, minuteLabel, PHASE_LABEL } from "@/lib/format";
@@ -62,6 +65,7 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
     starting,
   } = vm;
   const { result: hue } = useHueStatus();
+  const [kitSide, setKitSide] = useState<Side | null>(null);
 
   const markers = useMemo(
     () => timelineMarkers(ticker, timelineEnd(snapshot?.minute)),
@@ -199,13 +203,32 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
             className="aspect-[16/10]"
             screen={
               <>
+                <div className="pointer-events-none absolute inset-0">
+                  <MomentOverlay fx={vm.fx} teams={teams} score={score} />
+                </div>
                 <OnscreenBug
                   home={teams.home}
                   away={teams.away}
                   score={score}
                   clock={minuteLabel(snapshot.minute, snapshot.phase) || "KO"}
+                  wrapTeam={(side, slab) => (
+                    <ResponsiveOverlay
+                      open={kitSide === side}
+                      onOpenChange={(o) => setKitSide(o ? side : null)}
+                      align="start"
+                      title={`${snapshot[side].name} on your strip`}
+                      description="Wearing a different kit today? Pick the colour they glow in for this match."
+                      trigger={slab}
+                    >
+                      <KitPicker
+                        team={snapshot[side]}
+                        value={vm.kitChoice(side)}
+                        auto={vm.autoKit(side)}
+                        onChange={(c) => vm.setKitChoice(side, c)}
+                      />
+                    </ResponsiveOverlay>
+                  )}
                 />
-                <MomentOverlay fx={vm.fx} teams={teams} score={score} />
               </>
             }
           />
@@ -221,7 +244,10 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
             {isLivePhase(snapshot.phase) ? (
               <span className="kl-live-dot size-1.5 rounded-full bg-live" />
             ) : null}
-            {leagueLabel} · {PHASE_LABEL[snapshot.phase]}
+            <span className="min-w-0 truncate">
+              {leagueLabel} · {PHASE_LABEL[snapshot.phase]}
+            </span>
+            <span className="ml-auto shrink-0">Tap a team to recolour</span>
           </p>
         </div>
 

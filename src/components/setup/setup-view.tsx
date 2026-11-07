@@ -284,7 +284,7 @@ export function SetupView() {
                         <KitPicker
                           team={t}
                           value={prefs.kit_overrides[id]}
-                          onChange={(c) => setKit(id, c)}
+                          onChange={(c) => setKit(id, c ?? "primary")}
                         />
                       </ResponsiveOverlay>
                     ) : (

@@ -49,6 +49,7 @@ const teamItem = (t: TeamInfo) => ({
   name: t.name,
   short: t.short,
   color: t.color,
+  alternateColor: t.alternateColor,
   crest: t.crest,
 });
 

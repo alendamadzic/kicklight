@@ -6,6 +6,7 @@ import {
   type KitOverrides,
   pickStripColors,
   type Rgb,
+  rgbToHex,
   type StripColors,
   type TeamColors,
 } from "@/engine/colors";
@@ -88,16 +89,25 @@ interface Engine {
 
 const DEFAULT_SCRIPT = SCENARIOS[0];
 
+function stripColorsFor(
+  script: ReplayScript,
+  kitOverrides?: KitOverrides,
+  matchId?: string,
+) {
+  return pickStripColors(
+    applyKitOverride(script.home, kitOverrides, matchId),
+    applyKitOverride(script.away, kitOverrides, matchId),
+  );
+}
+
 function createEngine(
   script: ReplayScript,
   stat: StatKey,
   speed: DemoSpeed,
   kitOverrides?: KitOverrides,
+  matchId?: string,
 ): Engine {
-  const colors = pickStripColors(
-    applyKitOverride(script.home, kitOverrides),
-    applyKitOverride(script.away, kitOverrides),
-  );
+  const colors = stripColorsFor(script, kitOverrides, matchId);
   const startMs = Date.now();
   const { snapshot, events } = replayAt(script, 0, startMs);
   return {
@@ -159,6 +169,8 @@ export function useDemoEngine(options?: {
   autoplay?: boolean;
   /** The viewer's strip colour choices, applied when the engine is created. */
   kitOverrides?: KitOverrides;
+  /** The match a "this match only" kit choice is keyed to. */
+  matchId?: string;
   onCommand?: (c: DemoCommand) => void;
 }) {
   const scenarioId = options?.scenarioId ?? DEFAULT_SCRIPT.id;
@@ -170,6 +182,7 @@ export function useDemoEngine(options?: {
   // Only the scenario resets the engine; the other options seed it.
   const initRef = useRef({
     kitOverrides: options?.kitOverrides,
+    matchId: options?.matchId,
     stat: options?.stat,
     speed: options?.speed,
     autoplay: options?.autoplay,
@@ -250,6 +263,7 @@ export function useDemoEngine(options?: {
       init.stat ?? "auto",
       init.speed ?? 60,
       init.kitOverrides,
+      init.matchId,
     );
     eng.playing = init.autoplay ?? false;
     engineRef.current = eng;
@@ -388,6 +402,23 @@ export function useDemoEngine(options?: {
       [mutate, applyEffect],
     ),
   };
+
+  // A kit colour changed while it runs: repaint in the new colours without a restart.
+  const kitOverrides = options?.kitOverrides;
+  const matchId = options?.matchId;
+  useEffect(() => {
+    const eng = engineRef.current;
+    if (!eng) return;
+    const next = stripColorsFor(eng.script, kitOverrides, matchId);
+    if (
+      rgbToHex(next.home) === rgbToHex(eng.colors.home) &&
+      rgbToHex(next.away) === rgbToHex(eng.colors.away)
+    )
+      return;
+    eng.colors = next;
+    eng.resting = restingFor(eng.cmd, STRIP_POINTS, next);
+    setUi(buildUi(eng));
+  }, [kitOverrides, matchId, buildUi]);
 
   /** The resting command on the strip right now, for late subscribers (e.g. "send to lights"). */
   const current = useCallback(() => {

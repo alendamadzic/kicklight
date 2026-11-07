@@ -33,7 +33,11 @@ export interface SessionRow {
   stat: string;
   status: "active" | "paused" | "ended";
   delay_ms: number;
-  runner_state: Partial<RunnerState> & { recent?: MirroredCommand[] };
+  runner_state: Partial<RunnerState> & {
+    recent?: MirroredCommand[];
+    /** The colours the strip was last painted in, to notice a kit change. */
+    colors?: TeamColors;
+  };
   light_snapshot: unknown;
   /** ms since epoch. */
   created_at: number;
@@ -138,6 +142,30 @@ function nextDue(
   }
 }
 
+const sameColors = (a: TeamColors, b: TeamColors) =>
+  a.home.every((v, i) => Math.round(v) === Math.round(b.home[i])) &&
+  a.away.every((v, i) => Math.round(v) === Math.round(b.away[i]));
+
+/** Paint the last resting state again in new kit colours. */
+async function repaint(
+  transport: LightTransport,
+  recent: readonly MirroredCommand[],
+  colors: TeamColors,
+) {
+  const last = recent.findLast((m) => m.kind === "split" || m.kind === "fill");
+  if (!last) return;
+  const cmd: Command =
+    last.kind === "fill"
+      ? { kind: "fill", fraction: last.fraction ?? 0, lead: last.lead ?? null }
+      : { kind: "split", homeShare: last.homeShare ?? 0.5 };
+  if (transport.applyCommand && (await transport.applyCommand(cmd, colors)))
+    return;
+  await transport.setGradient(
+    restingFromRecent(recent, transport.points, colors),
+    800,
+  );
+}
+
 function mirrorOf(cmd: Command, at: number): MirroredCommand {
   switch (cmd.kind) {
     case "split":
@@ -179,12 +207,15 @@ export async function processSession(
     }
   }
 
+  const { recent: stored, colors: paintedBefore, ...runner } = row.runner_state;
   let state: RunnerState = {
     ...initialState(row.stat as StatKey),
-    ...(row.runner_state as Partial<RunnerState>),
+    ...(runner as Partial<RunnerState>),
     stat: row.stat as StatKey,
   };
-  const recent = [...(row.runner_state.recent ?? [])];
+  const recent = [...(stored ?? [])];
+  // What the strip shows now; a kit change repaints it without waiting for a new command.
+  let painted: TeamColors | null = paintedBefore ?? null;
   const executed: Scheduled<Command>[] = [];
   let status: SessionRow["status"] = row.status;
   let ended = false;
@@ -223,11 +254,21 @@ export async function processSession(
       pollAt + POLL_MS >= t0 + PASS_MS || !IN_PLAY.has(parsed.snapshot.phase);
     const horizonMs = last ? HORIZON_MS : POLL_MS;
     const { home, away } = pickStripColors(
-      applyKitOverride(parsed.snapshot.home, deps.kitOverrides),
-      applyKitOverride(parsed.snapshot.away, deps.kitOverrides),
+      applyKitOverride(parsed.snapshot.home, deps.kitOverrides, row.event_id),
+      applyKitOverride(parsed.snapshot.away, deps.kitOverrides, row.event_id),
     );
     colors = { home, away };
     resting ??= restingFromRecent(recent, transport.points, colors);
+    if (painted && !sameColors(painted, colors)) {
+      await repaint(transport, recent, colors).catch((e) => {
+        errors.push(`repaint: ${(e as Error).message}`);
+      });
+      resting = restingFromRecent(recent, transport.points, colors);
+      await deps.publish?.(mirrorNow()).catch((e) => {
+        errors.push(`publish: ${(e as Error).message}`);
+      });
+    }
+    painted = colors;
     const winner = leaderOf(parsed.snapshot.score);
 
     const result = tick(state, {
@@ -330,7 +371,11 @@ export async function processSession(
   const snapshot = (parsed as ParsedMatch).snapshot;
   return {
     update: {
-      runner_state: { ...state, recent: mirror.recent },
+      runner_state: {
+        ...state,
+        recent: mirror.recent,
+        ...(painted ? { colors: painted } : {}),
+      },
       snapshot: mirror,
       light_snapshot: lightSnapshot ?? null,
       status,

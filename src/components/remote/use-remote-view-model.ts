@@ -4,8 +4,15 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import type { StatPreview } from "@/components/match/stat-picker";
-import { applyKitOverride, pickStripColors } from "@/engine/colors";
-import type { MatchSnapshot } from "@/engine/model";
+import {
+  applyKitOverride,
+  type KitChoice,
+  type KitOverrides,
+  matchKitKey,
+  pickStripColors,
+  rgbToHex,
+} from "@/engine/colors";
+import type { MatchSnapshot, Side } from "@/engine/model";
 import { STAT_MODES, type StatKey } from "@/engine/stats";
 import { useDemoEngine } from "@/hooks/use-demo-engine";
 import { buzz, useDevicePrefs } from "@/hooks/use-device-prefs";
@@ -53,6 +60,7 @@ export function useRemoteViewModel(league: string, id: string) {
     scenarioId: scenario?.id,
     speed: 60,
     kitOverrides: prefs.kit_overrides,
+    matchId: id,
   });
   const [simOn, setSimOn] = useState(false);
   const [starting, setStarting] = useState(false);
@@ -96,13 +104,15 @@ export function useRemoteViewModel(league: string, id: string) {
     () =>
       snapshot
         ? pickStripColors(
-            applyKitOverride(snapshot.home, overrides),
-            applyKitOverride(snapshot.away, overrides),
+            applyKitOverride(snapshot.home, overrides, id),
+            applyKitOverride(snapshot.away, overrides, id),
           )
         : null,
-    [snapshot, overrides],
+    [snapshot, overrides, id],
   );
-  const colors = mode === "live" && mirror ? mirror.colors : kit;
+  // The same rule the server runs on the same match, so a kit change shows at once
+  // rather than when the next pass mirrors it.
+  const colors = kit ?? (mode === "live" && mirror ? mirror.colors : null);
 
   const mirrorView = useMemo(
     () => (mirror ? resolveMirror(mirror, now) : null),
@@ -174,13 +184,17 @@ export function useRemoteViewModel(league: string, id: string) {
     (t: number, reduced: boolean) =>
       mirror
         ? frameFromMirror(
-            { ...mirror, recent: [...mirror.recent, ...replays] },
+            {
+              ...mirror,
+              ...(kit ? { colors: { home: kit.home, away: kit.away } } : {}),
+              recent: [...mirror.recent, ...replays],
+            },
             t,
             STRIP_POINTS,
             reduced,
           )
         : [],
-    [mirror, replays],
+    [mirror, replays, kit],
   );
   const previewColors = useMemo(
     () =>
@@ -349,6 +363,30 @@ export function useRemoteViewModel(league: string, id: string) {
 
   const setBrightness = (v: number) => update({ brightness: v });
 
+  // ---------- kit colours, this match only ----------
+  /** The viewer's choice for one side in this match; undefined is Auto. */
+  const kitChoice = (side: Side): KitChoice | undefined =>
+    snapshot ? overrides[matchKitKey(id, snapshot[side].id)] : undefined;
+  /** What Auto would glow for one side: every-match choices and the clash rule. */
+  const autoKit = (side: Side): string | undefined => {
+    if (!snapshot) return undefined;
+    const rest: Record<string, KitChoice> = { ...overrides };
+    delete rest[matchKitKey(id, snapshot[side].id)];
+    const c = pickStripColors(
+      applyKitOverride(snapshot.home, rest, id),
+      applyKitOverride(snapshot.away, rest, id),
+    );
+    return rgbToHex(c[side]);
+  };
+  const setKitChoice = (side: Side, choice: KitChoice | null) => {
+    if (!snapshot) return;
+    const key = matchKitKey(id, snapshot[side].id);
+    const next: Record<string, KitChoice> = { ...overrides };
+    if (choice) next[key] = choice;
+    else delete next[key];
+    update({ kit_overrides: next as KitOverrides });
+  };
+
   const running = mode !== "preview";
   const paused =
     (mode === "live" && session?.status === "paused") ||
@@ -364,6 +402,9 @@ export function useRemoteViewModel(league: string, id: string) {
     fx,
     brightness: prefs.brightness,
     setBrightness,
+    kitChoice,
+    autoKit,
+    setKitChoice,
     running,
     paused,
     otherLive,

@@ -15,6 +15,7 @@ export interface StreamHandle {
 export interface FrameRenderer {
   apply(cmd: Command, now: number): void;
   frame(now: number): Rgb[];
+  setColors?(colors: TeamColors): void;
 }
 
 export interface StreamingDeps {
@@ -66,6 +67,7 @@ export class StreamingTransport implements LightTransport {
   async applyCommand(cmd: Command, colors: TeamColors): Promise<boolean> {
     await this.start(colors);
     if (this.state !== "streaming" || !this.renderer) return false;
+    this.renderer.setColors?.(colors);
     this.renderer.apply(cmd, this.now());
     return true;
   }

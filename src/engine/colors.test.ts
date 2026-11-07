@@ -1,9 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import {
   applyKitOverride,
+  clashes,
   hexToRgb,
   liftForGlow,
   luminance,
+  matchKitKey,
   needsLift,
   pickStripColors,
   rgbToHex,
@@ -80,5 +82,76 @@ describe("kit overrides", () => {
   test("needsLift spots colours too dark to glow", () => {
     expect(needsLift(hexToRgb("#132257"))).toBe(true);
     expect(needsLift(hexToRgb("#6cabdd"))).toBe(false);
+  });
+});
+
+// Real ESPN kit colours from sessions that glowed red on red.
+const MUN = { id: "360", color: "#da020e", alternateColor: "#4169e1" };
+const LIV = { id: "364", color: "#d11317", alternateColor: "#ffffff" };
+const ATM = { id: "1068", color: "#ca3624", alternateColor: "#000000" };
+const ROMA = { id: "104", color: "#990a2c", alternateColor: "#f5f3e5" };
+
+describe("clashes on the strip", () => {
+  test("reds of any shade clash, since the strip shows one brightness", () => {
+    expect(clashes(hexToRgb(MUN.color), hexToRgb(LIV.color))).toBe(true);
+    expect(clashes(hexToRgb(ATM.color), hexToRgb(MUN.color))).toBe(true);
+    expect(clashes(hexToRgb(MUN.color), hexToRgb(ROMA.color))).toBe(true);
+  });
+  test("red and orange, or claret and red, still tell apart", () => {
+    expect(clashes(hexToRgb("#d11317"), hexToRgb("#f28800"))).toBe(false);
+    expect(clashes(hexToRgb("#7a263a"), hexToRgb("#da020e"))).toBe(false);
+  });
+  test("Atlético v Man Utd: away goes royal blue", () => {
+    const out = pickStripColors(ATM, MUN);
+    expect(out.awaySwitched).toBe(true);
+    expect(rgbToHex(out.away)).toBe("#4169e1");
+  });
+  test("Man Utd v Roma: away goes to its light kit", () => {
+    expect(pickStripColors(MUN, ROMA).awaySwitched).toBe(true);
+  });
+  test("home switches when away can't", () => {
+    const away = { ...LIV, alternateColor: "#c8102e" };
+    const out = pickStripColors(MUN, away);
+    expect(out.awaySwitched).toBe(false);
+    expect(out.homeSwitched).toBe(true);
+    expect(rgbToHex(out.home)).toBe("#4169e1");
+  });
+});
+
+describe("kit choices for one match", () => {
+  const overrides = { [matchKitKey("401878755", LIV.id)]: "#ffd23f" } as const;
+  test("apply only to that match", () => {
+    expect(applyKitOverride(LIV, overrides, "401878755").color).toBe("#ffd23f");
+    expect(applyKitOverride(LIV, overrides, "999")).toBe(LIV);
+    expect(applyKitOverride(LIV, overrides)).toBe(LIV);
+  });
+  test("win over the every-match choice", () => {
+    const both = { ...overrides, [LIV.id]: "alternate" } as const;
+    expect(applyKitOverride(LIV, both, "401878755").color).toBe("#ffd23f");
+    expect(applyKitOverride(LIV, both, "999").color).toBe("#ffffff");
+  });
+  test("are pinned: the clash rule leaves them, even red on red", () => {
+    const pinned = applyKitOverride(
+      LIV,
+      { [matchKitKey("m", LIV.id)]: "primary" },
+      "m",
+    );
+    const pinnedHome = applyKitOverride(
+      MUN,
+      { [matchKitKey("m", MUN.id)]: "primary" },
+      "m",
+    );
+    const out = pickStripColors(pinnedHome, pinned);
+    expect(out.awaySwitched || out.homeSwitched).toBe(false);
+  });
+  test("pinning away makes home give way instead", () => {
+    const away = applyKitOverride(
+      LIV,
+      { [matchKitKey("m", LIV.id)]: "primary" },
+      "m",
+    );
+    const out = pickStripColors(MUN, away);
+    expect(out.homeSwitched).toBe(true);
+    expect(rgbToHex(out.away)).toBe("#d11317");
   });
 });

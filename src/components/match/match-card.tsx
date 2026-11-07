@@ -11,16 +11,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { hexToRgb, liftForGlow, rgbToHex } from "@/engine/colors";
+import {
+  applyKitOverride,
+  type KitOverrides,
+  pickStripColors,
+  rgbToHex,
+} from "@/engine/colors";
 import type { MatchListItem } from "@/lib/api-types";
 import { isLivePhase, kickoffLabel, minuteLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
-/** The colour a team would glow on the strip: a custom pick, else its lifted kit colour. */
-export function glowHex(color: string, override?: string): string {
-  if (override?.startsWith("#")) return override;
-  return rgbToHex(liftForGlow(hexToRgb(color)));
-}
 
 /**
  * One fixture. The whole card opens the remote. A thin kit-colour edge previews
@@ -40,7 +39,7 @@ export function MatchCard({
   onToggleFollow?: (teamId: string) => void;
   /** The lights are following this match right now. */
   onYourLights?: boolean;
-  kitOverrides?: Readonly<Record<string, string>>;
+  kitOverrides?: KitOverrides;
   className?: string;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -52,8 +51,13 @@ export function MatchCard({
     : finished
       ? "FT"
       : kickoffLabel(match.kickoff);
-  const home = glowHex(match.home.color, kitOverrides?.[match.home.id]);
-  const away = glowHex(match.away.color, kitOverrides?.[match.away.id]);
+  // The pair the strip would really show: your kit choices, then the clash rule.
+  const strip = pickStripColors(
+    applyKitOverride(match.home, kitOverrides, match.id),
+    applyKitOverride(match.away, kitOverrides, match.id),
+  );
+  const home = rgbToHex(strip.home);
+  const away = rgbToHex(strip.away);
   const name = `${match.home.name} v ${match.away.name}`;
 
   return (

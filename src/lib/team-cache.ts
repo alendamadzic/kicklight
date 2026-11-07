@@ -6,7 +6,7 @@ export interface CachedTeam {
   name: string;
   short: string;
   color: string;
-  /** Second kit colour, once a match summary has shown it (fixture lists don't carry it). */
+  /** Second kit colour, from the fixture list or a match summary. */
   alternateColor?: string;
 }
 

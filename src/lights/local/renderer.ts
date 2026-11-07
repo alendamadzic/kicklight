@@ -33,6 +33,8 @@ export interface Renderer {
   /** Effects still playing at `now`, for diagnostics and the virtual strip. */
   activeEffects(now: number): string[];
   setWinner(winner: Side | null): void;
+  /** Kit colours changed mid-match: later frames and resting states use these. */
+  setColors(colors: TeamColors): void;
   readonly channels: number;
 }
 
@@ -55,6 +57,7 @@ export function createRenderer(opts: RendererOptions): Renderer {
   const easeMs = opts.easeMs ?? 1000;
   const fadeMs = opts.fadeOutMs ?? 1500;
   let winner: Side | null = opts.winner ?? null;
+  let colors = opts.colors;
 
   let from: Rgb[] = Array.from({ length: n }, () => OFF);
   let target: Rgb[] = from;
@@ -105,7 +108,7 @@ export function createRenderer(opts: RendererOptions): Renderer {
         playing.push({ key: cmd.effect, startedAt: now, side: cmd.side });
         return;
       }
-      const pts = restingPoints(cmd, n, opts.colors);
+      const pts = restingPoints(cmd, n, colors);
       if (!pts) return;
       restoredAt = null;
       retarget(pts, now, easeMs);
@@ -118,8 +121,8 @@ export function createRenderer(opts: RendererOptions): Renderer {
         const e = EFFECTS[p.key as keyof typeof EFFECTS];
         if (!e) continue;
         out = e.frame((now - p.startedAt) / 1000, out, {
-          home: opts.colors.home,
-          away: opts.colors.away,
+          home: colors.home,
+          away: colors.away,
           side: p.side,
           winner,
         });
@@ -146,6 +149,10 @@ export function createRenderer(opts: RendererOptions): Renderer {
       return playing
         .filter((p) => now >= p.startedAt && now < endOf(p))
         .map((p) => p.key);
+    },
+
+    setColors(next) {
+      colors = next;
     },
 
     setWinner(w) {

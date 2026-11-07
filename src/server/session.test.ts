@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { Rgb } from "@/engine/colors";
+import { pickStripColors, type Rgb } from "@/engine/colors";
 import type { SignalFallback } from "@/engine/effects";
 import type { ParsedMatch } from "@/engine/model";
 import {
@@ -285,6 +285,56 @@ describe("processSession (replay)", () => {
     expect(card).toBeDefined();
     expect(seenAt).not.toBeNull();
     expect((card?.at ?? 0) - (seenAt ?? 0)).toBeLessThanOrEqual(POLL_MS);
+  });
+
+  test("a kit colour picked mid-match repaints the strip and the viewer's mirror", async () => {
+    const h = harness();
+    const mirrors: [number, number, number][] = [];
+    h.deps.publish = async (m) => {
+      mirrors.push(m.colors.away as [number, number, number]);
+    };
+    h.deps.fetchMatch = async () => liveMatch("half_time");
+    h.deps.kitOverrides = { "m1:AWA": "#ffd23f" };
+    const row = liveRow(h, {
+      runner_state: {
+        started: true,
+        lastShare: 0.55,
+        recent: [{ at: h.now() - 5_000, kind: "split", homeShare: 0.55 }],
+        colors: { home: [204, 0, 0], away: [0, 0, 204] },
+      },
+    });
+    const r = await processSession(row, h.deps);
+    const yellow = [255, 210, 63];
+    expect(h.grads.some((g) => g.some((c) => `${c}` === `${yellow}`))).toBe(
+      true,
+    );
+    expect(mirrors[0]).toEqual(yellow as [number, number, number]);
+    expect(r.update.runner_state.colors?.away).toEqual(
+      yellow as [number, number, number],
+    );
+  });
+
+  test("the strip isn't repainted when the colours haven't changed", async () => {
+    const h = harness();
+    h.deps.fetchMatch = async () => liveMatch("half_time");
+    const row = liveRow(h, {
+      runner_state: {
+        started: true,
+        lastShare: 0.55,
+        recent: [{ at: h.now() - 5_000, kind: "split", homeShare: 0.55 }],
+        colors: (({ home, away }) => ({ home, away }))(
+          pickStripColors(
+            liveMatch("half_time").snapshot.home,
+            liveMatch("half_time").snapshot.away,
+          ),
+        ),
+      },
+    });
+    const r = await processSession(row, h.deps);
+    const painted = r.executed.filter(
+      (c) => c.item.kind === "split" || c.item.kind === "fill",
+    ).length;
+    expect(h.grads.length).toBe(painted);
   });
 
   test("upcoming commands are published before they play, so the viewer's strip keeps time", async () => {

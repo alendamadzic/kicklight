@@ -75,7 +75,9 @@ Server-only modules start with `import "server-only"`. Pure modules that tests i
   (`chase`), setup progress, lights live (`live`).
 - **One theme: true black.** No light mode and no appearance setting; tokens live on `:root`
   in `globals.css` and `<html>` carries `dark` so shared components' `dark:` variants apply.
-- **Kit colours** mark anything that belongs to a team; amber is the app's own actions.
+- **Kit colours** mark anything that belongs to a team; amber is the app's own actions. The UI always shows
+  the colours the strip shows (`pickStripColors` after overrides), never raw feed colours. Clashes are judged
+  in CIE xy, as the strip renders them: a dark red and a bright red glow the same.
 - **Overlays** use `ResponsiveOverlay`: a bottom sheet on phones, a popover on desktop.
 - **Copy.** Say it the way a fan would: "Moments", "Lights follow", "Set up your lights",
   "Lights off", "Stop and restore lights", "Lights restored". Buttons say exactly what happens.
@@ -86,8 +88,10 @@ Server-only modules start with `import "server-only"`. Pure modules that tests i
 
 - `preferences` (own row): `followed_teams text[]`, `tv_delay_ms`, `brightness`, `default_stat`, `auto_start`,
   `strip_reversed` (strip runs right to left; flips every gradient at the transport), `kit_overrides jsonb`
-  (`{ [teamId]: "primary" | "alternate" | "#rrggbb" }`, applied before clash detection). Brightness, direction
-  and kit choices are read fresh on every tick, so changes reach a running session.
+  (`{ [key]: "primary" | "alternate" | "#rrggbb" }`). A bare team id is the every-match choice from Setup and
+  still gives way to clash detection; `"<eventId>:<teamId>"` is a this-match-only choice from tapping a team on
+  the remote's score bug, wins over it and is pinned (the clash rule never switches it). Brightness, direction
+  and kit choices are read fresh on every pass; a kit change repaints the strip straight away.
 - `hue_links` (own row, read only): `transport`, `light_id`, `light_name`, `bridge_id`, `token_expires_at`.
 - `sessions` (own rows): subscribe to the live row over Realtime (`hooks/use-live-session.ts` keeps one
   shared subscription). `snapshot` is a `SessionMirror` (see `src/lib/api-types.ts`), including Auto's

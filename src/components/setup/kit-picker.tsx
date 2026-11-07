@@ -30,27 +30,41 @@ const SWATCHES = [
  * The colour one team gets on the strip: its primary kit, its alternate (when a match
  * has shown it), or a colour of your own. The preview shows what the strip will
  * actually glow, after the dark-colour lift.
+ *
+ * With `auto` (on a match), there's an Auto option too: the colour the strip would
+ * pick by itself, clash rule included. `value` undefined then means Auto, and
+ * choosing it calls `onChange(null)`.
  */
 export function KitPicker({
   team,
   value,
   onChange,
+  auto,
 }: {
-  team: CachedTeam;
+  team: Pick<CachedTeam, "color" | "alternateColor">;
   value: KitChoice | undefined;
-  onChange: (choice: KitChoice) => void;
+  onChange: (choice: KitChoice | null) => void;
+  /** The colour Auto would glow, #rrggbb. Shows the Auto option. */
+  auto?: string;
 }) {
-  const choice = value ?? "primary";
+  const choice: KitChoice | "auto" = value ?? (auto ? "auto" : "primary");
   const hex =
-    choice === "primary"
-      ? team.color
-      : choice === "alternate"
-        ? (team.alternateColor ?? team.color)
-        : choice;
+    choice === "auto"
+      ? (auto as string)
+      : choice === "primary"
+        ? team.color
+        : choice === "alternate"
+          ? (team.alternateColor ?? team.color)
+          : choice;
   const glow = rgbToHex(liftForGlow(hexToRgb(hex)));
   const lifted = needsLift(hexToRgb(hex));
 
-  const options: { key: KitChoice; label: string; color: string }[] = [
+  const options: {
+    key: KitChoice | "auto";
+    label: string;
+    color: string;
+  }[] = [
+    ...(auto ? [{ key: "auto" as const, label: "Auto", color: auto }] : []),
     { key: "primary", label: "Main kit", color: team.color },
     ...(team.alternateColor
       ? [
@@ -62,6 +76,7 @@ export function KitPicker({
         ]
       : []),
   ];
+  const compact = options.length === 3;
 
   return (
     <div className="flex flex-col gap-4">
@@ -80,15 +95,20 @@ export function KitPicker({
         </p>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-2">
+      <div
+        className={cn("grid gap-2", compact ? "grid-cols-3" : "grid-cols-2")}
+      >
         {options.map((o) => (
           <button
             key={o.key}
             type="button"
-            onClick={() => onChange(o.key)}
+            onClick={() => onChange(o.key === "auto" ? null : o.key)}
             aria-pressed={choice === o.key}
             className={cn(
-              "flex h-12 items-center gap-2.5 rounded-xl border px-3 text-sm font-medium transition-colors",
+              "flex items-center rounded-xl border text-sm font-medium transition-colors",
+              compact
+                ? "h-16 flex-col justify-center gap-1.5 px-1"
+                : "h-12 gap-2.5 px-3",
               choice === o.key
                 ? "border-amber bg-amber/10"
                 : "border-border hover:bg-muted",
@@ -100,7 +120,7 @@ export function KitPicker({
               style={{ background: o.color }}
             />
             {o.label}
-            {choice === o.key ? (
+            {choice === o.key && !compact ? (
               <CheckIcon className="ml-auto size-4 text-amber" />
             ) : null}
           </button>
@@ -140,8 +160,9 @@ export function KitPicker({
         </label>
       </div>
       <p className="text-xs text-muted-foreground">
-        If both teams end up too alike, the away side still switches to its
-        second kit so you can tell them apart.
+        {auto
+          ? "Just for this match. Auto picks a colour that stands apart from the other team; anything else stays as you set it."
+          : "If both teams end up too alike, one side still switches to its second kit so you can tell them apart."}
       </p>
     </div>
   );
