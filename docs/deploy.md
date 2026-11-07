@@ -18,6 +18,13 @@ reaches the bridge. Local mode (self-hosted on your network) is in `docs/local-m
 
 The same values live in `.env.local` for local development.
 
+Functions run in London (`lhr1`, set in `vercel.json`), next to the Supabase project in
+eu-west-2. Keep the two in the same place: every signed-in request talks to Supabase, and a
+function on the other side of the Atlantic adds ~80 ms to each of those calls.
+
+Speed Insights (`<SpeedInsights />` in the root layout) needs turning on once in the Vercel
+project: Speed Insights tab → Enable.
+
 ## 2. Supabase
 
 1. Authentication → URL Configuration: Site URL `https://kicklight.alen.world`; add
