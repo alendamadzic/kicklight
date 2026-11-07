@@ -3,6 +3,7 @@
 import { useCallback, useSyncExternalStore } from "react";
 import type { KitOverrides } from "@/engine/colors";
 import type { StatKey } from "@/engine/stats";
+import { PREFERENCE_COLUMNS } from "@/lib/db-columns";
 import { getSupabase } from "@/lib/supabase/safe-client";
 import { authStore } from "./use-auth";
 
@@ -37,6 +38,8 @@ let state: Preferences = DEFAULT_PREFERENCES;
 /** Whose preferences `state` holds: a user id, or null when signed out. */
 let owner: string | null = null;
 let started = false;
+/** The server handed over the account's preferences: skip the signed-out start. */
+let seeded = false;
 const listeners = new Set<() => void>();
 let pushTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -72,9 +75,7 @@ async function pull(userId: string) {
   if (!sb) return;
   const { data, error } = await sb
     .from("preferences")
-    .select(
-      "followed_teams, tv_delay_ms, brightness, default_stat, auto_start, strip_reversed, kit_overrides",
-    )
+    .select(PREFERENCE_COLUMNS)
     .eq("user_id", userId)
     .maybeSingle();
   // The account may have changed while this was in flight.
@@ -116,7 +117,7 @@ function switchOwner(userId: string | null) {
 function start() {
   if (started) return;
   started = true;
-  emit(readLocal(null) ?? DEFAULT_PREFERENCES);
+  if (!seeded) emit(readLocal(null) ?? DEFAULT_PREFERENCES);
   const sync = () => {
     const { user, ready } = authStore.get();
     if (!ready) return;
@@ -125,6 +126,26 @@ function start() {
   };
   authStore.subscribe(sync);
   sync();
+}
+
+/**
+ * The account's preferences row as the server read it, so they show on the first paint
+ * instead of after a round trip. Null when the account has no row yet.
+ */
+export function seedPreferences(
+  userId: string,
+  row: Partial<Preferences> | null,
+) {
+  if (owner === userId) return;
+  if (pushTimer) clearTimeout(pushTimer);
+  const carried = owner === null ? state : DEFAULT_PREFERENCES;
+  const next = row
+    ? { ...DEFAULT_PREFERENCES, ...row }
+    : (readLocal(userId) ?? carried);
+  owner = userId;
+  seeded = true;
+  if (row) writeLocal(userId, next);
+  emit(next);
 }
 
 const store = {

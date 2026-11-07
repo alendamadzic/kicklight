@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import type { StatKey } from "@/engine/stats";
 import type { PauseReason, SessionMirror } from "@/lib/api-types";
+import { SESSION_COLUMNS } from "@/lib/db-columns";
 import { getSupabase } from "@/lib/supabase/safe-client";
 import { authStore, useAuth } from "./use-auth";
 
@@ -20,9 +21,6 @@ export interface SessionRow {
   updated_at: string;
 }
 
-const COLUMNS =
-  "id, league, event_id, stat, status, mode, delay_ms, snapshot, pause_reason, updated_at";
-
 export type SessionPatch = Partial<
   Pick<SessionRow, "stat" | "status" | "delay_ms">
 >;
@@ -39,6 +37,8 @@ const listeners = new Set<() => void>();
 let owner: string | null | undefined;
 let stop: (() => void) | null = null;
 let stopAuth: (() => void) | null = null;
+/** The live row the server read for this account, used once instead of the first load. */
+let seed: { userId: string; row: SessionRow | null } | null = null;
 
 function emit(patch: Partial<State>) {
   state = { ...state, ...patch };
@@ -50,7 +50,7 @@ async function load(userId: string) {
   if (!sb) return;
   const { data } = await sb
     .from("sessions")
-    .select(COLUMNS)
+    .select(SESSION_COLUMNS)
     .in("status", ["active", "paused"])
     .order("created_at", { ascending: false })
     .limit(1)
@@ -68,8 +68,13 @@ function follow(userId: string | null) {
     emit({ session: null, loading: false });
     return;
   }
-  emit({ session: null, loading: true });
-  void load(userId);
+  if (seed?.userId === userId) {
+    emit({ session: seed.row, loading: false });
+    seed = null;
+  } else {
+    emit({ session: null, loading: true });
+    void load(userId);
+  }
   const channel = sb
     .channel(`sessions:${userId}`)
     .on(
@@ -123,6 +128,18 @@ function subscribe(cb: () => void) {
       state = { session: null, loading: true };
     }
   };
+}
+
+/**
+ * The account's live session row as the server read it, so the remote and the tab's live dot
+ * show on the first paint. Realtime keeps it current from there.
+ */
+export function seedLiveSession(userId: string, row: SessionRow | null) {
+  if (owner === userId) {
+    if (state.loading) emit({ session: row, loading: false });
+    return;
+  }
+  seed = { userId, row };
 }
 
 const SERVER: State = { session: null, loading: true };

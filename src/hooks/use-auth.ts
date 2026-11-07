@@ -48,6 +48,15 @@ function start() {
   });
 }
 
+/**
+ * The signed-in user as the server saw it, so the app knows who you are before the browser
+ * has checked. The browser's own check still runs and has the last word.
+ */
+export function seedAuth(user: AuthUser | null) {
+  if (state.ready) return;
+  set({ user, ready: true, configured: true });
+}
+
 export const authStore = {
   get: () => state,
   subscribe(cb: () => void) {

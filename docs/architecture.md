@@ -46,7 +46,9 @@ Server-only modules start with `import "server-only"`. Pure modules that tests i
   `src/lib/api.ts`. Pages that show feed data (Matches, Remote, a match) also fetch it on the
   server from the cached getters in `server/match-data.ts` and hand it over with `DataSeed`
   (`components/data/`), keyed by `lib/swr-keys.ts`, so the first paint is full and SWR polls
-  from there. Pages keep working with no backend by falling back to `lib/sample-data.ts`.
+  from there. The `(app)` layout does the same for the signed-in viewer: `server/viewer.ts` reads
+  the claims, preferences row and live session, and `ViewerSeed` fills the browser stores before
+  their own loading runs. Pages keep working with no backend by falling back to `lib/sample-data.ts`.
 - **Cache Components is on** (`cacheComponents` in `next.config.ts`). Pages prerender to a
   static shell; anything that reads the URL, cookies or uncached data sits inside `<Suspense>`.
   Client code must not read the clock while rendering: use `useNow()` (0 until the browser takes
