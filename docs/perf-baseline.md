@@ -36,3 +36,30 @@ The Matches page asks for fixtures once per league: 22 requests on first load (t
 | setup | 20 | 1208 KB | 363 KB |
 
 Supabase (auth, Realtime, PostgREST) is a 254 KB raw chunk in every one of these, the 404 page included.
+
+## After the speed work (local production build, 8 Nov 2026)
+
+Same script, same exclusions. Live timings need a deploy; see the checklist below.
+
+| Route | Before (gzip) | After (gzip) | Change |
+|---|---|---|---|
+| _not-found | 279 KB | 214 KB | −65 KB |
+| demo | 347 KB | 292 KB | −55 KB |
+| lights | 300 KB | 243 KB | −57 KB |
+| matches | 354 KB | 272 KB | −82 KB |
+| remote | 377 KB | 322 KB | −55 KB |
+| setup | 363 KB | 310 KB | −53 KB |
+
+Requests a first visit makes before the page shows data:
+
+| Page | Before | After |
+|---|---|---|
+| Matches | 22 × `/api/matches` (each through an auth round trip when signed in) | none: fixtures arrive in the HTML |
+| Remote, nothing live | 44 × `/api/matches` | none |
+| A match | 1 × `/api/matches/…/…` after hydration | none |
+| Signed in, any page | session check, then preferences and live session from Supabase | arrive with the page |
+
+### To check after deploying
+- `x-vercel-id` reads `lhr1::lhr1::…` (function in London, no `iad1`).
+- Signed in: `/` redirects to `/matches`; ★ Mine and the live dot show without a flash.
+- Speed Insights: compare LCP and INP for a week either side of the deploy.
