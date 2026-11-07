@@ -4,7 +4,7 @@ import { useSyncExternalStore } from "react";
 import type { StatKey } from "@/engine/stats";
 import type { PauseReason, SessionMirror } from "@/lib/api-types";
 import { SESSION_COLUMNS } from "@/lib/db-columns";
-import { getSupabase } from "@/lib/supabase/safe-client";
+import { loadSupabase } from "@/lib/supabase/safe-client";
 import { authStore, useAuth } from "./use-auth";
 
 export interface SessionRow {
@@ -46,7 +46,7 @@ function emit(patch: Partial<State>) {
 }
 
 async function load(userId: string) {
-  const sb = getSupabase();
+  const sb = await loadSupabase();
   if (!sb) return;
   const { data } = await sb
     .from("sessions")
@@ -63,8 +63,7 @@ function follow(userId: string | null) {
   stop?.();
   stop = null;
   owner = userId;
-  const sb = getSupabase();
-  if (!sb || !userId) {
+  if (!userId) {
     emit({ session: null, loading: false });
     return;
   }
@@ -74,6 +73,17 @@ function follow(userId: string | null) {
   } else {
     emit({ session: null, loading: true });
     void load(userId);
+  }
+  void subscribeRealtime(userId);
+}
+
+/** Keep the row current over Realtime while this account is followed. */
+async function subscribeRealtime(userId: string) {
+  const sb = await loadSupabase();
+  // Signed out, or another account, while the client loaded.
+  if (!sb || owner !== userId) {
+    if (!sb) emit({ loading: false });
+    return;
   }
   const channel = sb
     .channel(`sessions:${userId}`)
@@ -146,7 +156,7 @@ const SERVER: State = { session: null, loading: true };
 
 /** Steer the live session. Optimistic; Realtime echoes the truth back. */
 async function steer(patch: SessionPatch): Promise<boolean> {
-  const sb = getSupabase();
+  const sb = await loadSupabase();
   const cur = state.session;
   if (!sb || !cur) return false;
   emit({ session: { ...cur, ...patch } });

@@ -4,7 +4,7 @@ import { useCallback, useSyncExternalStore } from "react";
 import type { KitOverrides } from "@/engine/colors";
 import type { StatKey } from "@/engine/stats";
 import { PREFERENCE_COLUMNS } from "@/lib/db-columns";
-import { getSupabase } from "@/lib/supabase/safe-client";
+import { loadSupabase } from "@/lib/supabase/safe-client";
 import { authStore } from "./use-auth";
 
 export interface Preferences {
@@ -71,7 +71,7 @@ function writeLocal(userId: string | null, p: Preferences) {
 }
 
 async function pull(userId: string) {
-  const sb = getSupabase();
+  const sb = await loadSupabase();
   if (!sb) return;
   const { data, error } = await sb
     .from("preferences")
@@ -94,7 +94,7 @@ function schedulePush() {
   const prefs = state;
   if (!userId) return;
   pushTimer = setTimeout(async () => {
-    const sb = getSupabase();
+    const sb = await loadSupabase();
     if (!sb || owner !== userId) return;
     await sb
       .from("preferences")

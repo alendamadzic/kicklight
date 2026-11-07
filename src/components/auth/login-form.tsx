@@ -21,8 +21,8 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { Spinner } from "@/components/ui/spinner";
-import { useAuth } from "@/hooks/use-auth";
-import { getSupabase } from "@/lib/supabase/safe-client";
+import { listenForAuth, useAuth } from "@/hooks/use-auth";
+import { loadSupabase, supabaseConfigured } from "@/lib/supabase/safe-client";
 import { cn } from "@/lib/utils";
 
 /** Supabase's email one-time code length (the project default). */
@@ -56,12 +56,14 @@ export function LoginForm({
       : null,
   );
   const [ios, setIos] = useState(false);
-  const sb = getSupabase();
   const router = useRouter();
   const { user } = useAuth();
+  const configured = supabaseConfigured();
 
   useEffect(() => {
     setIos(/iPhone|iPad|iPod/.test(navigator.userAgent));
+    // About to sign in: load the client now, and notice the session once it exists.
+    listenForAuth();
   }, []);
 
   // Signed in another way (the link opened in another tab): move on.
@@ -73,8 +75,13 @@ export function LoginForm({
 
   const send = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!sb || !email.trim()) return;
+    if (!email.trim()) return;
     setBusy(true);
+    const sb = await loadSupabase();
+    if (!sb) {
+      setBusy(false);
+      return;
+    }
     setProblem(null);
     const { error: err } = await sb.auth.signInWithOtp({
       email: email.trim(),
@@ -88,8 +95,12 @@ export function LoginForm({
   };
 
   const verify = async (token: string) => {
-    if (!sb) return;
     setBusy(true);
+    const sb = await loadSupabase();
+    if (!sb) {
+      setBusy(false);
+      return;
+    }
     setProblem(null);
     const { error: err } = await sb.auth.verifyOtp({
       email: email.trim(),
@@ -188,7 +199,7 @@ export function LoginForm({
       onSubmit={send}
       className={cn("kl-panel flex flex-col gap-5 p-5", className)}
     >
-      {!sb ? (
+      {!configured ? (
         <Alert>
           <AlertTitle>Sign-in isn't configured here</AlertTitle>
           <AlertDescription>
@@ -223,7 +234,7 @@ export function LoginForm({
       <Button
         type="submit"
         size="lg"
-        disabled={busy || !sb}
+        disabled={busy || !configured}
         className="h-12 rounded-xl text-base font-semibold"
       >
         {busy ? (

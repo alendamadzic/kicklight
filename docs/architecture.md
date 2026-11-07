@@ -60,6 +60,9 @@ Server-only modules start with `import "server-only"`. Pure modules that tests i
   locally against its ES256 signature, with no round trip to Supabase Auth. The proxy
   (`src/proxy.ts`) only refreshes the cookie and sends signed-in visitors from `/` to `/matches`;
   public routes (`/api/matches`, `/api/config`), the cron and router prefetches skip it.
+- **The browser Supabase client loads on demand** (`loadSupabase()` in `lib/supabase/safe-client.ts`):
+  only with a session cookie, on the sign-in form, or once signed in. Signed-out pages never
+  download it. Never import `lib/supabase/client.ts` directly from a component.
 - **Request bodies** are parsed by the pure functions in `server/validate.ts` (unit-tested);
   routes never trust `request.json()` directly.
 - **Database writes** check `{ error }` and throw; routes turn that into `db_error`.
