@@ -395,6 +395,7 @@ export function useRemoteViewModel(league: string, id: string) {
   const otherLive = !!session && !isMine;
 
   return {
+    now,
     mode,
     previewFor,
     autoReason,

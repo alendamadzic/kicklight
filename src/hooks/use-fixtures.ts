@@ -5,9 +5,9 @@ import useSWR from "swr";
 import { LEAGUES } from "@/engine/feed/leagues";
 import { ApiRequestError, api } from "@/lib/api";
 import type { MatchListItem } from "@/lib/api-types";
-import { dateKey } from "@/lib/format";
 import { REPLAY_LEAGUE, sampleMatches } from "@/lib/sample-data";
 import { rememberTeams } from "@/lib/team-cache";
+import { useDateKey } from "./use-date-key";
 
 export type FixturesSource = "api" | "sample";
 export type SampleReason = "signed_out" | "unavailable" | null;
@@ -63,13 +63,13 @@ async function loadDay(date: string, slugs: string[]): Promise<Fixtures> {
  * from the scripted scenarios, so the page is never empty.
  */
 export function useFixtures(dayOffset: number): FixturesState {
-  const date = dateKey(dayOffset);
+  const date = useDateKey(dayOffset);
   // Leagues with matches that day, once known: refreshes skip the empty ones.
   const active = useRef<{ date: string; slugs: string[] } | null>(null);
 
   const { data, isLoading } = useSWR(
-    ["fixtures", date],
-    async () => {
+    date ? ["fixtures", date] : null,
+    async ([, date]: [string, string]) => {
       const known = active.current?.date === date ? active.current.slugs : null;
       const day = await loadDay(date, known?.length ? known : ALL_SLUGS);
       // A refresh that got no answer keeps showing the last good list.
@@ -89,7 +89,7 @@ export function useFixtures(dayOffset: number): FixturesState {
 
   return {
     byLeague: data?.byLeague ?? {},
-    loading: isLoading,
+    loading: !date || isLoading,
     source: data?.source ?? "api",
     reason: data?.reason ?? null,
   };

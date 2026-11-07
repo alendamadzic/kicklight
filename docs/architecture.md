@@ -44,6 +44,11 @@ Server-only modules start with `import "server-only"`. Pure modules that tests i
   a `use-…-view-model.ts` hook next to it (see `components/remote/`).
 - **Client data** goes through SWR hooks in `src/hooks/` that call the typed client in
   `src/lib/api.ts`. Pages keep working with no backend by falling back to `lib/sample-data.ts`.
+- **Cache Components is on** (`cacheComponents` in `next.config.ts`). Pages prerender to a
+  static shell; anything that reads the URL, cookies or uncached data sits inside `<Suspense>`.
+  Client code must not read the clock while rendering: use `useNow()` (0 until the browser takes
+  over) and `useDateKey()`. Recently visited pages stay mounted but hidden, so transient overlays
+  close themselves with `useResetOnHide()`.
 - **API errors** are `{ error: ApiErrorCode, message? }`. Add a code to `ApiErrorCode` in
   `lib/api-types.ts` before using it; the client branches on codes, never on message text.
 - **Auth on the server** is `getAuthUser()` (`lib/supabase/server.ts`): the session token checked

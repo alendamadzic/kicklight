@@ -32,7 +32,9 @@ import { signOut, useAuth } from "@/hooks/use-auth";
 import { useDevicePrefs } from "@/hooks/use-device-prefs";
 import { useHueStatus } from "@/hooks/use-hue-status";
 import { useLiveSession } from "@/hooks/use-live-session";
+import { useNow } from "@/hooks/use-now";
 import { usePreferences } from "@/hooks/use-preferences";
+import { useResetOnHide } from "@/hooks/use-reset-on-hide";
 import { ApiRequestError, api } from "@/lib/api";
 import { healthProblem } from "@/lib/health";
 import { type CachedTeam, knownTeams } from "@/lib/team-cache";
@@ -59,6 +61,11 @@ export function SetupView() {
   const [kitFor, setKitFor] = useState<string | null>(null);
   const [testing, setTesting] = useState(false);
   const [confirm, setConfirm] = useState<"unlink" | "signout" | null>(null);
+  useResetOnHide(() => {
+    setPicker(false);
+    setKitFor(null);
+    setConfirm(null);
+  });
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -73,7 +80,12 @@ export function SetupView() {
   const live = session?.snapshot?.match;
   const liveName = live ? `${live.home.name} v ${live.away.name}` : null;
 
-  const problem = healthProblem(status, session?.pause_reason ?? null);
+  const now = useNow(60_000);
+  const problem = healthProblem(
+    status,
+    session?.pause_reason ?? null,
+    now || null,
+  );
   const health: HueHealth =
     result.phase === "loading"
       ? "checking"

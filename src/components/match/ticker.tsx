@@ -1,13 +1,14 @@
 "use client";
 
 import { RotateCcwIcon } from "lucide-react";
-import { type ReactNode, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { useNow } from "@/hooks/use-now";
 import { ago } from "@/lib/format";
 import {
   EFFECT_TINT,
@@ -42,11 +43,7 @@ export function Ticker({
   className?: string;
 }) {
   // Re-render each second so "12s ago" stays honest.
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, []);
+  const now = useNow(1000);
 
   const rows = items.filter(inTicker).slice(0, limit);
 
@@ -79,7 +76,9 @@ export function Ticker({
           ? "PAD"
           : item.minute != null
             ? `${Math.floor(item.minute)}'`
-            : ago(now - item.at);
+            : now
+              ? ago(now - item.at)
+              : "";
         return (
           <li key={item.id} className={cn(i === 0 && "kl-rise")}>
             <Row

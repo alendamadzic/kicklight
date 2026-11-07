@@ -27,6 +27,7 @@ import { leagueName } from "@/engine/feed/leagues";
 import type { Side } from "@/engine/model";
 import { statLabel } from "@/engine/stats";
 import { useHueStatus } from "@/hooks/use-hue-status";
+import { useResetOnHide } from "@/hooks/use-reset-on-hide";
 import { isLivePhase, minuteLabel, PHASE_LABEL } from "@/lib/format";
 import { healthProblem } from "@/lib/health";
 import { timelineEnd, timelineMarkers } from "@/lib/moments";
@@ -34,6 +35,17 @@ import { REPLAY_LEAGUE } from "@/lib/sample-data";
 import { RemoteControls } from "./remote-controls";
 import { RemoteHealthBanner } from "./remote-health-banner";
 import { useRemoteViewModel } from "./use-remote-view-model";
+
+/** The remote's shape while the match loads. */
+export function MatchRemoteSkeleton() {
+  return (
+    <div className="flex flex-col gap-4" aria-busy>
+      <Skeleton className="h-10 w-full rounded-xl" />
+      <Skeleton className="aspect-[16/10] w-full rounded-xl" />
+      <Skeleton className="h-12 w-full rounded-xl" />
+    </div>
+  );
+}
 
 /**
  * THE REMOTE. The TV with its strip is the hero, the score on its screen as on a
@@ -66,6 +78,7 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
   } = vm;
   const { result: hue } = useHueStatus();
   const [kitSide, setKitSide] = useState<Side | null>(null);
+  useResetOnHide(() => setKitSide(null));
 
   const markers = useMemo(
     () => timelineMarkers(ticker, timelineEnd(snapshot?.minute)),
@@ -74,11 +87,7 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
 
   if (!snapshot || !kit || !colors) {
     return preview.loading || sessionLoading ? (
-      <div className="flex flex-col gap-4" aria-busy>
-        <Skeleton className="h-10 w-full rounded-xl" />
-        <Skeleton className="aspect-[16/10] w-full rounded-xl" />
-        <Skeleton className="h-12 w-full rounded-xl" />
-      </div>
+      <MatchRemoteSkeleton />
     ) : (
       <Empty className="kl-panel">
         <EmptyHeader>
@@ -141,6 +150,7 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
       ? healthProblem(
           hue.phase === "ok" ? hue.status : null,
           session?.pause_reason ?? null,
+          vm.now || null,
         )
       : null;
   const otherMatch = session?.snapshot?.match;

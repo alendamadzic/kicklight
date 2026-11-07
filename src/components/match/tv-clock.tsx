@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { ClockReading, MatchPhase } from "@/engine/model";
+import { useNow } from "@/hooks/use-now";
 import {
   type ClockTrack,
   clockAt,
@@ -24,15 +25,6 @@ const STILL_LABEL: Partial<Record<MatchPhase, string>> = {
   shootout: "PENS",
   suspended: "—",
 };
-
-function useNow(intervalMs: number) {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), intervalMs);
-    return () => clearInterval(t);
-  }, [intervalMs]);
-  return now;
-}
 
 /**
  * TV delay, set by eye: the match clock as your TV should be showing it, nudged until
@@ -87,7 +79,7 @@ export function TvClock({
     }, COMMIT_MS);
   };
 
-  const mark = track ? markAt(track, now - delayS * 1000) : null;
+  const mark = track && now ? markAt(track, now - delayS * 1000) : null;
   const ticking = !!mark?.reading.running;
   const shown = mark
     ? ticking

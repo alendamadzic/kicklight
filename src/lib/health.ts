@@ -11,11 +11,14 @@ export interface HealthProblem {
   href: Route;
 }
 
-/** The one problem worth showing, most urgent first, or null. */
+/**
+ * The one problem worth showing, most urgent first, or null. `now` is null while the time
+ * isn't known yet (server render, hydration); the link's expiry is then left unchecked.
+ */
 export function healthProblem(
   status: HueStatus | null,
   pauseReason: PauseReason | null,
-  now = Date.now(),
+  now: number | null,
 ): HealthProblem | null {
   if (pauseReason === "bridge_unauthorized")
     return {
@@ -45,7 +48,7 @@ export function healthProblem(
       fix: "Setup",
       href: "/setup",
     };
-  if (status?.tokenExpiresAt) {
+  if (status?.tokenExpiresAt && now !== null) {
     const left = Date.parse(status.tokenExpiresAt) - now;
     if (left < EXPIRING_MS)
       return {

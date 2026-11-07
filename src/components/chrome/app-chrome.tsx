@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 import { Logo } from "@/components/chrome/logo";
 import { buttonVariants } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
@@ -61,9 +62,33 @@ function LiveDot({ paused }: { paused: boolean }) {
   );
 }
 
+/**
+ * Renders with the current path. On a route with a dynamic param (the match page) the path
+ * isn't known while prerendering, so the static shell shows the fallback (nothing marked as
+ * the current page) and the real path streams in.
+ */
+function PathAware({
+  render,
+}: {
+  render: (pathname: string) => React.ReactNode;
+}) {
+  return (
+    <Suspense fallback={render("")}>
+      <WithPathname render={render} />
+    </Suspense>
+  );
+}
+
+function WithPathname({
+  render,
+}: {
+  render: (pathname: string) => React.ReactNode;
+}) {
+  return render(usePathname());
+}
+
 /** Slim top bar (logo, desktop nav, sign in) plus a thumb-reach tab bar on phones. */
 export function AppChrome({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
   const { session } = useLiveSession();
   const lights = session ? { paused: session.status === "paused" } : null;
   const label = (item: (typeof NAV)[number]) =>
@@ -80,45 +105,53 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
             aria-label="Primary"
             className="ml-6 hidden items-center gap-1 sm:flex"
           >
-            {NAV.map((item) => {
-              const active = item.match(pathname);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={active ? "page" : undefined}
-                  aria-label={label(item)}
-                  className={cn(
-                    "relative rounded-lg px-3 py-2 text-sm font-medium leading-none transition-colors",
-                    active
-                      ? "bg-foreground text-background"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                  )}
-                >
-                  {item.label}
-                  {item.href === "/remote" && lights ? (
-                    <LiveDot paused={lights.paused} />
-                  ) : null}
-                </Link>
-              );
-            })}
+            <PathAware
+              render={(pathname) =>
+                NAV.map((item) => {
+                  const active = item.match(pathname);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      aria-current={active ? "page" : undefined}
+                      aria-label={label(item)}
+                      className={cn(
+                        "relative rounded-lg px-3 py-2 text-sm font-medium leading-none transition-colors",
+                        active
+                          ? "bg-foreground text-background"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      )}
+                    >
+                      {item.label}
+                      {item.href === "/remote" && lights ? (
+                        <LiveDot paused={lights.paused} />
+                      ) : null}
+                    </Link>
+                  );
+                })
+              }
+            />
           </nav>
           <div className="ml-auto flex items-center gap-1">
-            <Link
-              href="/lights"
-              aria-label="What the lights do"
-              aria-current={pathname === "/lights" ? "page" : undefined}
-              title="What the lights do"
-              className={cn(
-                buttonVariants({ variant: "ghost", size: "icon" }),
-                "size-10 rounded-lg",
-                pathname === "/lights"
-                  ? "text-amber"
-                  : "text-muted-foreground hover:text-foreground",
+            <PathAware
+              render={(pathname) => (
+                <Link
+                  href="/lights"
+                  aria-label="What the lights do"
+                  aria-current={pathname === "/lights" ? "page" : undefined}
+                  title="What the lights do"
+                  className={cn(
+                    buttonVariants({ variant: "ghost", size: "icon" }),
+                    "size-10 rounded-lg",
+                    pathname === "/lights"
+                      ? "text-amber"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <InfoIcon className="size-5" />
+                </Link>
               )}
-            >
-              <InfoIcon className="size-5" />
-            </Link>
+            />
             <AuthLink />
           </div>
         </div>
@@ -133,33 +166,37 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
         className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md sm:hidden"
       >
         <ul className="mx-auto grid h-[var(--tabbar-h)] max-w-md grid-cols-3">
-          {NAV.map((item) => {
-            const active = item.match(pathname);
-            const Icon = item.icon;
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  aria-current={active ? "page" : undefined}
-                  aria-label={label(item)}
-                  className={cn(
-                    "kl-press flex h-full flex-col items-center justify-center gap-1 outline-none transition-colors focus-visible:bg-muted",
-                    active ? "text-amber" : "text-muted-foreground",
-                  )}
-                >
-                  <span className="relative">
-                    <Icon className="size-[1.375rem]" />
-                    {item.href === "/remote" && lights ? (
-                      <LiveDot paused={lights.paused} />
-                    ) : null}
-                  </span>
-                  <span className="text-[0.6875rem] font-medium leading-none">
-                    {item.label}
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
+          <PathAware
+            render={(pathname) =>
+              NAV.map((item) => {
+                const active = item.match(pathname);
+                const Icon = item.icon;
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      aria-current={active ? "page" : undefined}
+                      aria-label={label(item)}
+                      className={cn(
+                        "kl-press flex h-full flex-col items-center justify-center gap-1 outline-none transition-colors focus-visible:bg-muted",
+                        active ? "text-amber" : "text-muted-foreground",
+                      )}
+                    >
+                      <span className="relative">
+                        <Icon className="size-[1.375rem]" />
+                        {item.href === "/remote" && lights ? (
+                          <LiveDot paused={lights.paused} />
+                        ) : null}
+                      </span>
+                      <span className="text-[0.6875rem] font-medium leading-none">
+                        {item.label}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })
+            }
+          />
         </ul>
       </nav>
     </div>
