@@ -207,6 +207,13 @@ export function tick(prev: RunnerState, input: TickInput): TickResult {
     }
   }
 
+  // Before kick-off there's nothing to follow yet: show both kits half and half, now, so the
+  // strip lights up as soon as you start. Every stat starts level, so kick-off doesn't jump.
+  if (snapshot.phase === "scheduled" && state.lastShare !== 0.5) {
+    pending = schedule(pending, now, { kind: "split", homeShare: 0.5 });
+    state.lastShare = 0.5;
+  }
+
   // 5. Nerves: stoppage time of a one-goal game.
   const oneGoal = Math.abs(snapshot.score.home - snapshot.score.away) === 1;
   if (

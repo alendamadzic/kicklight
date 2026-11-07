@@ -261,13 +261,53 @@ describe("runner", () => {
     ]);
   });
 
-  test("nothing is sent before kick-off", () => {
-    const r = tick(initialState(), {
+  test("before kick-off the strip shows both kits half and half, once, right away", () => {
+    for (const stat of ["auto", "possession", "clock"] as const) {
+      const pre = snap({
+        phase: "scheduled",
+        minute: null,
+        stats: { home: EMPTY_SIDE_STATS, away: EMPTY_SIDE_STATS },
+      });
+      const r1 = tick(initialState(stat), {
+        snapshot: pre,
+        events: [],
+        now: NOW,
+        delayMs: 30_000,
+        horizonMs: 0,
+      });
+      expect(r1.commands.map((c) => [c.at, c.item])).toEqual([
+        [NOW, { kind: "split", homeShare: 0.5 }],
+      ]);
+      const r2 = tick(r1.state, {
+        snapshot: pre,
+        events: [],
+        now: NOW + 10_000,
+        delayMs: 30_000,
+        horizonMs: 0,
+      });
+      expect(r2.commands).toHaveLength(0);
+    }
+  });
+
+  test("kick-off from the pre-match split only re-sends when the stat has moved", () => {
+    const pre = tick(initialState("possession"), {
       snapshot: snap({ phase: "scheduled", minute: null }),
       events: [],
       now: NOW,
       delayMs: 0,
-      horizonMs: 60_000,
+    });
+    const level = snap({
+      minute: 1,
+      stats: {
+        home: { ...EMPTY_SIDE_STATS, possession: 50 },
+        away: { ...EMPTY_SIDE_STATS, possession: 50 },
+      },
+    });
+    const r = tick(pre.state, {
+      snapshot: level,
+      events: [],
+      now: NOW + 10_000,
+      delayMs: 0,
     });
     expect(r.commands).toHaveLength(0);
   });
