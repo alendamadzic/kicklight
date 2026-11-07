@@ -16,9 +16,11 @@ const inter = Inter({
   variable: "--font-sans",
 });
 
+// Only small secondary text uses the mono face: let it load lazily rather than preload.
 const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-geist-mono",
+  preload: false,
 });
 
 export const metadata: Metadata = {
