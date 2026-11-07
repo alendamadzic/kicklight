@@ -2,12 +2,14 @@
 
 import { PlayIcon } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { LedBar } from "@/components/chrome/led-bar";
 import { OnscreenBug } from "@/components/match/score-bug";
 import { VirtualStrip } from "@/components/strip/virtual-strip";
 import { buttonVariants } from "@/components/ui/button";
 import { rgbToHex } from "@/engine/colors";
+import { useAuth } from "@/hooks/use-auth";
 import { useDemoEngine } from "@/hooks/use-demo-engine";
 import { minuteLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -32,6 +34,14 @@ const BEATS = [
  * A scripted match plays fast on a loop behind the pitch.
  */
 export function LandingView() {
+  // The proxy redirects signed-in visitors on a full load; this catches client navigations
+  // to "/" (the logo), which can be served from the router's cache without asking the server.
+  const { user } = useAuth();
+  const router = useRouter();
+  useEffect(() => {
+    if (user) router.replace("/matches");
+  }, [user, router]);
+
   const { ui, frame, controls } = useDemoEngine({
     scenarioId: "late-winner",
     autoplay: true,

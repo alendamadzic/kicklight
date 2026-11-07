@@ -46,6 +46,10 @@ Server-only modules start with `import "server-only"`. Pure modules that tests i
   `src/lib/api.ts`. Pages keep working with no backend by falling back to `lib/sample-data.ts`.
 - **API errors** are `{ error: ApiErrorCode, message? }`. Add a code to `ApiErrorCode` in
   `lib/api-types.ts` before using it; the client branches on codes, never on message text.
+- **Auth on the server** is `getAuthUser()` (`lib/supabase/server.ts`): the session token checked
+  locally against its ES256 signature, with no round trip to Supabase Auth. The proxy
+  (`src/proxy.ts`) only refreshes the cookie and sends signed-in visitors from `/` to `/matches`;
+  public routes (`/api/matches`, `/api/config`), the cron and router prefetches skip it.
 - **Request bodies** are parsed by the pure functions in `server/validate.ts` (unit-tested);
   routes never trust `request.json()` directly.
 - **Database writes** check `{ error }` and throw; routes turn that into `db_error`.

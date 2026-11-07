@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getUser } from "@/lib/supabase/server";
+import { getAuthUser } from "@/lib/supabase/server";
 import { exchangeCode, linkBridge } from "@/lights/remote";
 import { siteUrl } from "@/server/config";
 import { HUE_OAUTH_STATE_COOKIE, saveRemoteLink } from "@/server/hue-link";
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
   if (!code || !state || !expected || state !== expected) {
     return clear(done("/onboarding?error=state_mismatch"));
   }
-  const user = await getUser();
+  const user = await getAuthUser();
   if (!user) return clear(done("/login?next=/onboarding"));
 
   const clientId = process.env.HUE_CLIENT_ID;
