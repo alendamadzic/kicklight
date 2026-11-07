@@ -1,0 +1,244 @@
+<title>Kicklight Speed Audit</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column, a stat strip, a before/after waterfall, then ranked fix cards grouped by tier. Single true-black theme to match the app. */
+:root {
+  --bg: #000000;
+  --surface: #0e0d0b;
+  --line: #24211c;
+  --fg: #f3efe7;
+  --muted: #9a9387;
+  --amber: #ffb020;
+  --live: #3ddc84;
+  --warn: #ff5a4e;
+  --display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font: 15px/1.6 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+h1 { font: 800 clamp(40px, 8vw, 64px)/0.95 var(--display); text-transform: uppercase; letter-spacing: 0.01em; }
+h1 span { color: var(--amber); }
+h2 { font: 700 30px/1.1 var(--display); }
+h3 { font: 600 17px/1.35 var(--body); }
+p { margin: 0; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--muted); max-width: 65ch; font-size: 16px; }
+.lede strong { color: var(--fg); font-weight: 600; }
+code { font: 0.88em var(--mono); background: var(--surface); border: 1px solid var(--line); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+header { display: flex; flex-direction: column; gap: 14px; }
+.ledbar { height: 6px; border-radius: 3px; background: linear-gradient(90deg, #d0021b 0 18%, var(--amber) 18% 40%, var(--line) 40% 100%); max-width: 280px; }
+
+/* stat strip */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.stat { background: var(--bg); padding: 16px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.stat b { font: 700 34px/1 var(--display); font-variant-numeric: tabular-nums; }
+.stat b.bad { color: var(--warn); }
+.stat span { color: var(--muted); font-size: 13px; line-height: 1.4; }
+
+/* waterfall */
+section { display: flex; flex-direction: column; gap: 16px; }
+.fall { border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 22px; overflow-x: auto; }
+.lane { display: flex; flex-direction: column; gap: 8px; min-width: 560px; }
+.lane > .eyebrow { margin-bottom: 2px; }
+.row { display: grid; grid-template-columns: 170px 1fr; align-items: center; gap: 12px; font-size: 13px; }
+.row .lbl { color: var(--muted); }
+.track { position: relative; height: 16px; }
+.seg { position: absolute; top: 0; height: 16px; border-radius: 3px; }
+.seg.net { background: #5a5246; }
+.seg.js { background: #8c6a2a; }
+.seg.api { background: var(--warn); }
+.seg.ok { background: var(--live); }
+.axis { display: grid; grid-template-columns: 170px 1fr; gap: 12px; font: 11px var(--mono); color: var(--muted); }
+.axis div:last-child { display: flex; justify-content: space-between; }
+.note { font-size: 13px; color: var(--muted); }
+
+/* fixes */
+.tier { display: flex; flex-direction: column; gap: 12px; }
+.tier-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+.tier-head p { color: var(--muted); font-size: 14px; }
+.fix { display: grid; grid-template-columns: 44px 1fr; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.fix:last-child { border-bottom: 0; }
+.num { font: 800 30px/1 var(--display); color: var(--amber); font-variant-numeric: tabular-nums; }
+.fix-body { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { font: 500 11px/1 var(--mono); letter-spacing: 0.04em; text-transform: uppercase; padding: 5px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); }
+.chip.hi { color: #000; background: var(--amber); border-color: var(--amber); }
+.chip.md { color: var(--amber); border-color: #5c4310; }
+.chip.lo { color: var(--muted); }
+.chip.easy { color: var(--live); border-color: #17462c; }
+.fix p { color: #cfc8bb; max-width: 68ch; }
+.fix .why { color: var(--muted); font-size: 14px; }
+.fix .why b { color: var(--fg); font-weight: 500; }
+
+ol.seq { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; color: #cfc8bb; max-width: 68ch; }
+ol.seq b { color: var(--fg); font-weight: 600; }
+.qs { display: grid; gap: 10px; }
+.q { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+.q p { color: var(--muted); font-size: 14px; }
+footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 16px; }
+@media (max-width: 520px) { .fix { grid-template-columns: 1fr; gap: 6px; } .num { font-size: 24px; } }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="ledbar" aria-hidden="true"></div>
+  <p class="eyebrow">Performance audit · 7 Nov 2026 · Next 16.2.3 · React 19.2 · Supabase</p>
+  <h1>Why Kicklight <span>feels slow</span></h1>
+  <p class="lede">The code itself is fast. The time goes on <strong>where things run</strong> and <strong>the order things happen in</strong>. Every screen ships an empty shell, then downloads ~280 KB of JavaScript, then starts asking for its data, and each of those requests flies from London to Virginia and back to London again before anything shows. Fixing the region, the auth check and the data waterfall should take most first loads from seconds to well under one.</p>
+</header>
+
+<section aria-labelledby="m">
+  <h2 id="m">What I measured</h2>
+  <div class="stats">
+    <div class="stat"><b class="bad">iad1</b><span>Vercel functions run in Virginia. Supabase is in London (eu-west-2), and so are you (edge <code>lhr1</code>).</span></div>
+    <div class="stat"><b class="bad">22</b><span>Separate <code>/api/matches</code> calls the Matches page makes on first load, one per league.</span></div>
+    <div class="stat"><b>370 ms</b><span>Live <code>/api/config</code> and uncached <code>/api/matches</code> response time, signed out. A CDN hit is 69 ms.</span></div>
+    <div class="stat"><b>~280 KB</b><span>Gzipped JS on every route (excluding legacy polyfills). Supabase alone is a 254 KB chunk, even on the 404 page.</span></div>
+  </div>
+  <p class="note">Signed out, <code>/</code> takes 447 ms to first byte because it renders on the server just to decide whether to redirect. Signed in it is worse: the proxy calls Supabase Auth on every request, across the Atlantic, before the route even starts.</p>
+</section>
+
+<section aria-labelledby="w">
+  <h2 id="w">A first visit to Matches, signed in</h2>
+  <p class="lede">Rough model from the measurements above on a phone over 4G. The red bars are the part that is in our control.</p>
+  <div class="fall" role="img" aria-label="Today the fixtures appear after about 2.4 seconds; after the fixes, about 0.5 seconds.">
+    <div class="lane">
+      <p class="eyebrow">Today</p>
+      <div class="row"><span class="lbl">HTML shell (static)</span><div class="track"><div class="seg net" style="left:0;width:6%"></div></div></div>
+      <div class="row"><span class="lbl">Download + run 280 KB JS</span><div class="track"><div class="seg js" style="left:6%;width:28%"></div></div></div>
+      <div class="row"><span class="lbl">Auth, then prefs + session</span><div class="track"><div class="seg api" style="left:34%;width:14%"></div></div></div>
+      <div class="row"><span class="lbl">22 × proxy auth + ESPN</span><div class="track"><div class="seg api" style="left:34%;width:52%"></div></div></div>
+      <div class="row"><span class="lbl">Fixtures on screen</span><div class="track"><div class="seg ok" style="left:86%;width:2%"></div></div></div>
+    </div>
+    <div class="lane">
+      <p class="eyebrow">After tiers 1 and 2</p>
+      <div class="row"><span class="lbl">Shell + cached fixtures</span><div class="track"><div class="seg net" style="left:0;width:12%"></div></div></div>
+      <div class="row"><span class="lbl">Fixtures on screen</span><div class="track"><div class="seg ok" style="left:12%;width:2%"></div></div></div>
+      <div class="row"><span class="lbl">Smaller JS hydrates</span><div class="track"><div class="seg js" style="left:12%;width:18%"></div></div></div>
+      <div class="row"><span class="lbl">Live session over Realtime</span><div class="track"><div class="seg net" style="left:20%;width:8%"></div></div></div>
+    </div>
+    <div class="axis"><div></div><div><span>0 s</span><span>0.7</span><span>1.4</span><span>2.1</span><span>2.8 s</span></div></div>
+  </div>
+</section>
+
+<section aria-labelledby="f">
+  <h2 id="f">What to do, by impact</h2>
+
+  <div class="tier">
+    <div class="tier-head"><h3>Tier 1 · Where requests go</h3><p>Small changes, the biggest wins. Do these first.</p></div>
+
+    <article class="fix"><span class="num">1</span><div class="fix-body">
+      <h3>Run functions in London, next to Supabase</h3>
+      <div class="chips"><span class="chip hi">Huge impact</span><span class="chip easy">1 line</span></div>
+      <p>Set the function region to <code>lhr1</code> (a <code>vercel.json</code> with <code>"regions": ["lhr1"]</code>, or the project's Functions setting). Today every API call, every server render and every proxy run executes in Virginia, and each Supabase call from there is another ~80 ms round trip back to London.</p>
+      <p class="why"><b>Why it matters:</b> a signed-in API call makes 2–3 Supabase calls (proxy auth, route auth, query). That is roughly 250 ms of transatlantic waiting per request that simply disappears.</p>
+    </div></article>
+
+    <article class="fix"><span class="num">2</span><div class="fix-body">
+      <h3>Stop calling Supabase Auth on every request</h3>
+      <div class="chips"><span class="chip hi">High impact</span><span class="chip easy">Small</span></div>
+      <p><code>src/proxy.ts</code> runs <code>auth.getUser()</code>, a network call, for every page, every API call and every link prefetch. Routes then call it again in <code>requireUser()</code>. The project already signs tokens with ES256 keys, so <code>auth.getClaims()</code> verifies the session locally with a cached public key and no round trip. Use it in the proxy and in <code>requireUser()</code>, keep the proxy only for refreshing an expiring cookie, and drop public routes (<code>/api/matches</code>, <code>/api/config</code>) and prefetch requests from its matcher.</p>
+      <p class="why"><b>Why it matters:</b> removes 1–2 auth round trips from every signed-in request, and lets the CDN serve public API responses without a function in front of them.</p>
+    </div></article>
+
+    <article class="fix"><span class="num">3</span><div class="fix-body">
+      <h3>One cached fixtures load instead of 22 requests</h3>
+      <div class="chips"><span class="chip hi">High impact</span><span class="chip md">Medium</span></div>
+      <p>Move the per-league fan-out to the server: a <code>getFixtures(date)</code> function that fetches all leagues in parallel, marked <code>"use cache"</code> with a short <code>cacheLife</code> on today (about 15 s) and a long one on yesterday and tomorrow. Everyone shares the same cached result, so ESPN is asked once per window instead of 22 times per visitor. The 30 s poll then becomes one request too.</p>
+      <p class="why"><b>Why it matters:</b> 22 cold function invocations on first load is the single biggest reason Matches feels slow to fill in.</p>
+    </div></article>
+  </div>
+
+  <div class="tier">
+    <div class="tier-head"><h3>Tier 2 · Render data on the server</h3><p>Turn on Cache Components and remove the client waterfall.</p></div>
+
+    <article class="fix"><span class="num">4</span><div class="fix-body">
+      <h3>Enable <code>cacheComponents</code> and stream data into the first response</h3>
+      <div class="chips"><span class="chip hi">High impact</span><span class="chip md">Medium–large</span></div>
+      <p>Turn on <code>cacheComponents: true</code>. Each page keeps its static shell (served instantly from the edge) and gets a <code>&lt;Suspense&gt;</code> hole that streams the cached data in the same response. Matches renders <code>getFixtures()</code>; the match page renders the ESPN snapshot. Pass that into the existing SWR hooks as <code>fallbackData</code>, so polling and Realtime keep working exactly as now, they just start full instead of empty.</p>
+      <p class="why"><b>Why it matters:</b> data shows before the JavaScript has even loaded. Bonus: with Cache Components, Next keeps recently visited tabs alive with React <code>&lt;Activity&gt;</code>, so switching Matches → Remote → Matches is instant and keeps scroll and filters. This needs a check of anything that assumes a page unmounts (open sheets, the strip animation loop, intervals).</p>
+    </div></article>
+
+    <article class="fix"><span class="num">5</span><div class="fix-body">
+      <h3>Seed who you are from the server</h3>
+      <div class="chips"><span class="chip md">Medium impact</span><span class="chip md">Medium</span></div>
+      <p>Today auth, preferences and the live session all start loading only after hydration, one after the other, so the chrome flickers between signed-out and signed-in and ★ Mine fills in late. Read the claims, the preferences row and the live session row on the server (one dynamic hole in the layout, in parallel) and hand them to the client stores as their starting values.</p>
+      <p class="why"><b>Why it matters:</b> removes a client round trip chain of 2–3 Supabase calls and the layout shift that comes with it.</p>
+    </div></article>
+
+    <article class="fix"><span class="num">6</span><div class="fix-body">
+      <h3>Make the landing page static</h3>
+      <div class="chips"><span class="chip md">Medium impact</span><span class="chip easy">Small</span></div>
+      <p><code>/</code> renders on the server on every visit just to redirect signed-in users. Do the redirect in the proxy from the verified claims and let the landing page prerender. 447 ms to first byte becomes an edge cache hit.</p>
+    </div></article>
+
+    <article class="fix"><span class="num">7</span><div class="fix-body">
+      <h3>Cache the match summary for the UI</h3>
+      <div class="chips"><span class="chip md">Medium impact</span><span class="chip easy">Small</span></div>
+      <p><code>/api/matches/[league]/[id]</code> has no cache header and ESPN is fetched with <code>no-store</code>. Wrap the UI's read in <code>"use cache"</code> with a ~10 s life (or add <code>s-maxage=10</code>), so every phone watching the same match shares one fetch. Leave the cron tick reading fresh.</p>
+    </div></article>
+  </div>
+
+  <div class="tier">
+    <div class="tier-head"><h3>Tier 3 · Ship less JavaScript</h3><p>Matters most on phones, where parse time is the cost.</p></div>
+
+    <article class="fix"><span class="num">8</span><div class="fix-body">
+      <h3>Load Supabase only when it is needed</h3>
+      <div class="chips"><span class="chip md">Medium impact</span><span class="chip md">Medium</span></div>
+      <p>The tab bar subscribes to the live session, so the whole Supabase client (auth, Realtime, PostgREST) is in the shared bundle of every page, including Landing, Demo, What the lights do and 404. Import it with <code>await import()</code> inside the stores' <code>start()</code>, after the user is known to be signed in. Once auth comes from the server (#5), signed-out visitors never download it.</p>
+    </div></article>
+
+    <article class="fix"><span class="num">9</span><div class="fix-body">
+      <h3>Lazy-load what isn't on screen</h3>
+      <div class="chips"><span class="chip lo">Low–medium</span><span class="chip easy">Small</span></div>
+      <p>Nothing in the app uses dynamic imports today. Good candidates: the ⌘K search dialog (cmdk) on Matches, the kit picker and sheets in Setup, the moment overlay, and the onboarding steps after the first. Each one only needs to load when it opens.</p>
+    </div></article>
+
+    <article class="fix"><span class="num">10</span><div class="fix-body">
+      <h3>Drop the <code>/api/config</code> request</h3>
+      <div class="chips"><span class="chip lo">Low impact</span><span class="chip easy">Tiny</span></div>
+      <p>The app mode and site URL never change for a deployment. Render them into the layout (or read them from <code>NEXT_PUBLIC_</code> variables) instead of fetching them on every visit.</p>
+    </div></article>
+
+    <article class="fix"><span class="num">11</span><div class="fix-body">
+      <h3>Trim fonts</h3>
+      <div class="chips"><span class="chip lo">Low impact</span><span class="chip easy">Tiny</span></div>
+      <p>Three Google families load on every page. Keep Barlow Condensed preloaded since it is the scoreboard, and set <code>preload: false</code> on Geist Mono, which only appears in a few secondary spots.</p>
+    </div></article>
+  </div>
+</section>
+
+<section aria-labelledby="s">
+  <h2 id="s">Suggested order</h2>
+  <ol class="seq">
+    <li><b>Measure first.</b> Add Vercel Speed Insights so we have real-user LCP and INP before and after.</li>
+    <li><b>Tier 1 as one small PR</b> (#1, #2, #6, #10). Low risk, and should already halve signed-in load times.</li>
+    <li><b>Cache Components across the app</b> (#3, #4, #7): turn it on, move fixtures and match data to cached server functions, and check every page with kept-alive tabs.</li>
+    <li><b>Seed auth and preferences from the server</b> (#5).</li>
+    <li><b>Bundle work</b> (#8, #9, #11), checked with a before and after build.</li>
+  </ol>
+</section>
+
+<section aria-labelledby="q">
+  <h2 id="q">Decisions</h2>
+  <div class="qs">
+    <div class="q"><h3>Users are mostly UK and Europe</h3><p>Functions move to London (<code>lhr1</code>), next to Supabase.</p></div>
+    <div class="q"><h3>Cache Components for the whole app at once</h3><p>Turned on everywhere in one pass. Every page gets checked for the kept-alive tabs behaviour.</p></div>
+    <div class="q"><h3>Fixtures may lag by up to about 15 s</h3><p>One shared cached load per window. The remote stays real time over Realtime.</p></div>
+    <div class="q"><h3>Measure first</h3><p>Speed Insights goes in before anything else changes, so we have a baseline.</p></div>
+  </div>
+</section>
+
+<footer>Measured against the live site at kicklight.alen.world and a local production build of <code>main</code> at 9621e03. Timings are single samples from London and are a guide, not a benchmark.</footer>
+</div>
