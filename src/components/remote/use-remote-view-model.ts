@@ -14,6 +14,7 @@ import {
 } from "@/engine/colors";
 import type { MatchSnapshot, Side } from "@/engine/model";
 import { STAT_MODES, type StatKey } from "@/engine/stats";
+import { useBrightnessSender } from "@/hooks/use-brightness-sender";
 import { useDemoEngine } from "@/hooks/use-demo-engine";
 import { buzz, useDevicePrefs } from "@/hooks/use-device-prefs";
 import { useLiveSession } from "@/hooks/use-live-session";
@@ -361,7 +362,15 @@ export function useRemoteViewModel(league: string, id: string) {
     else if (fx?.kind === "red") buzz(80);
   }, [fx]);
 
-  const setBrightness = (v: number) => update({ brightness: v });
+  // Live: the strip follows the slider as it moves, not on the next pass.
+  const sendBrightness = useBrightnessSender();
+  const previewBrightness = (v: number) => {
+    if (mode === "live") sendBrightness(v);
+  };
+  const setBrightness = (v: number) => {
+    update({ brightness: v });
+    previewBrightness(v);
+  };
 
   // ---------- kit colours, this match only ----------
   /** The viewer's choice for one side in this match; undefined is Auto. */
@@ -403,6 +412,7 @@ export function useRemoteViewModel(league: string, id: string) {
     fx,
     brightness: prefs.brightness,
     setBrightness,
+    previewBrightness,
     kitChoice,
     autoKit,
     setKitChoice,

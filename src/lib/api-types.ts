@@ -125,6 +125,12 @@ export interface SetLightsBody {
   transitionMs?: number;
 }
 
+/** PUT /api/lights/brightness: save the master brightness and show it on the strip now. */
+export interface SetBrightnessBody {
+  /** 1-100. */
+  brightness: number;
+}
+
 /** POST /api/lights/effect: fire one effect on the user's strip. */
 export interface FireEffectBody {
   effect: EffectKey;

@@ -13,16 +13,18 @@ import { cn } from "@/lib/utils";
 
 /**
  * Strip brightness, right on the remote. A horizontal slider in the dock on desktop;
- * on a phone a button that opens a tall slider, like Control Center. The lights pick
- * the new level up on their next update.
+ * on a phone a button that opens a tall slider, like Control Center. `onInput` fires on
+ * every step while dragging (the strip follows it); `onChange` once it's let go.
  */
 export function BrightnessControl({
   value,
   onChange,
+  onInput,
   className,
 }: {
   value: number;
   onChange: (v: number) => void;
+  onInput?: (v: number) => void;
   className?: string;
 }) {
   const desktop = useMediaQuery(DESKTOP_QUERY);
@@ -38,7 +40,11 @@ export function BrightnessControl({
       max={100}
       step={1}
       value={[draft]}
-      onValueChange={(v) => setDraft(read(v as number | number[]))}
+      onValueChange={(v) => {
+        const next = read(v as number | number[]);
+        setDraft(next);
+        onInput?.(next);
+      }}
       onValueCommitted={(v) => onChange(read(v as number | number[]))}
     />
   );

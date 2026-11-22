@@ -12,6 +12,7 @@ import type {
   PairBody,
   PairResponse,
   SelectLightBody,
+  SetBrightnessBody,
   SetLightsBody,
   StartSessionBody,
   StartSessionResponse,
@@ -107,6 +108,11 @@ export const api = {
     request<{ ok?: boolean }>("/api/hue/unlink", { method: "POST" }),
   setLights: (body: SetLightsBody) =>
     request<{ ok?: boolean }>("/api/lights/set", post(body)),
+  setBrightness: (body: SetBrightnessBody) =>
+    request<{ ok?: boolean }>("/api/lights/brightness", {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
   fireEffect: (body: FireEffectBody) =>
     request<{ ok?: boolean }>("/api/lights/effect", post(body)),
   localDiscover: () =>

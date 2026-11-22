@@ -24,6 +24,7 @@ export function RemoteControls({
   otherLive,
   brightness,
   onBrightness,
+  onBrightnessInput,
   onStart,
   onTogglePause,
   onStop,
@@ -37,6 +38,8 @@ export function RemoteControls({
   otherLive: { from: string; to: string; delaySec: number } | null;
   brightness: number;
   onBrightness: (v: number) => void;
+  /** Every step while the slider moves, so the strip can follow it. */
+  onBrightnessInput?: (v: number) => void;
   onStart: () => void;
   onTogglePause: () => void;
   onStop: () => void;
@@ -79,7 +82,11 @@ export function RemoteControls({
             )}
             {paused ? "Resume" : "Pause"}
           </Button>
-          <BrightnessControl value={brightness} onChange={onBrightness} />
+          <BrightnessControl
+            value={brightness}
+            onChange={onBrightness}
+            onInput={onBrightnessInput}
+          />
           <HoldButton
             onHold={onStop}
             label="Hold to stop and restore your lights"

@@ -142,6 +142,7 @@ in `src/lib/api-types.ts`.
 | `POST /api/hue/identify` | blink one light `{ lightId }` on the linked bridge, before a strip is chosen |
 | `POST /api/hue/unlink` | end live sessions, then forget the link |
 | `POST /api/lights/set` | steady gradient `{ colors, transitionMs }` (demo "send to my lights") |
+| `PUT /api/lights/brightness` | save `{ brightness }` and repaint the live strip at it (the remote's slider, throttled while dragging) |
 | `POST /api/lights/effect` | fire one effect (event pad, ticker replays) |
 | `POST /api/hue/local/discover` | find bridges on the LAN (local mode only) |
 | `POST /api/hue/local/pair` | one pairing attempt; the app polls it while you press the link button |

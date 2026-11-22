@@ -7,6 +7,7 @@ import {
   parseIdentifyLight,
   parseKitOverrides,
   parseSelectLight,
+  parseSetBrightness,
   parseSetLights,
   parseStartSession,
 } from "./validate";
@@ -97,6 +98,20 @@ describe("parseSetLights", () => {
         ?.transitionMs,
     ).toBe(5000);
     expect(parseSetLights({ colors: [] })).toBeNull();
+  });
+});
+
+describe("parseSetBrightness", () => {
+  test("rounds and clamps to 1-100", () => {
+    expect(parseSetBrightness({ brightness: 42.6 })).toEqual({
+      brightness: 43,
+    });
+    expect(parseSetBrightness({ brightness: 0 })).toEqual({ brightness: 1 });
+    expect(parseSetBrightness({ brightness: 400 })).toEqual({
+      brightness: 100,
+    });
+    expect(parseSetBrightness({ brightness: "50" })).toBeNull();
+    expect(parseSetBrightness(null)).toBeNull();
   });
 });
 

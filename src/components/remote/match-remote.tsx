@@ -329,6 +329,7 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
         }
         brightness={vm.brightness}
         onBrightness={vm.setBrightness}
+        onBrightnessInput={vm.previewBrightness}
         onStart={vm.start}
         onTogglePause={vm.togglePause}
         onStop={vm.stop}

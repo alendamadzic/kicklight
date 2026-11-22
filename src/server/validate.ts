@@ -8,6 +8,7 @@ import type {
   FireEffectBody,
   IdentifyLightBody,
   SelectLightBody,
+  SetBrightnessBody,
   SetLightsBody,
   StartSessionBody,
 } from "@/lib/api-types";
@@ -87,6 +88,12 @@ export function parseSetLights(b: Body): Required<SetLightsBody> | null {
         ? Math.min(5000, Math.max(0, b.transitionMs))
         : 300,
   };
+}
+
+export function parseSetBrightness(b: Body): SetBrightnessBody | null {
+  const v = b?.brightness;
+  if (typeof v !== "number" || !Number.isFinite(v)) return null;
+  return { brightness: Math.min(100, Math.max(1, Math.round(v))) };
 }
 
 /** Hue CLIP v2 resource ids are UUIDs. */
