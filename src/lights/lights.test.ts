@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import type { Rgb } from "@/engine/colors";
 import { CommandQueue } from "./queue";
-import { fillPoints, splitPoints } from "./render";
+import { fillPoints, HALFWAY, splitPoints } from "./render";
 import { clampToGamut, GAMUT_C, rgbToXy } from "./xy";
 
 const H: Rgb = [108, 171, 221];
@@ -33,6 +33,25 @@ describe("render", () => {
     const p = splitPoints(0.7, 5, colors);
     expect(p.filter((c) => c === H)).toHaveLength(4);
     expect(p.filter((c) => c === A)).toHaveLength(1);
+  });
+
+  test("an even split on an odd strip puts the halfway line in the middle", () => {
+    for (const share of [0.5, 0.46, 0.54, 0.45, 0.55]) {
+      expect(splitPoints(share, 5, colors)).toEqual([H, H, HALFWAY, A, A]);
+    }
+    expect(splitPoints(0.5, 7, colors)).toEqual([H, H, H, HALFWAY, A, A, A]);
+    // Past the centre point the break moves a whole point, as before.
+    expect(splitPoints(0.57, 5, colors)).toEqual([H, H, H, A, A]);
+    expect(splitPoints(0.43, 5, colors)).toEqual([H, H, A, A, A]);
+  });
+
+  test("the virtual strip draws the line over the same range as a 5-point strip", () => {
+    const p = splitPoints(0.5, 30, colors);
+    expect(p.slice(0, 14).every((c) => c === H)).toBe(true);
+    expect(p.slice(14, 16)).toEqual([HALFWAY, HALFWAY]);
+    expect(p.slice(16).every((c) => c === A)).toBe(true);
+    expect(splitPoints(0.55, 30, colors)).toContain(HALFWAY);
+    expect(splitPoints(0.57, 30, colors)).not.toContain(HALFWAY);
   });
 
   test("a tiny share still shows a team, and 0/100 shows only one", () => {

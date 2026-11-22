@@ -95,6 +95,10 @@ Server-only modules start with `import "server-only"`. Pure modules that tests i
 - **Kit colours** mark anything that belongs to a team; amber is the app's own actions. The UI always shows
   the colours the strip shows (`pickStripColors` after overrides), never raw feed colours. Clashes are judged
   in CIE xy, as the strip renders them: a dark red and a bright red glow the same.
+- **The halfway line.** Real strips take 5 or 7 gradient points, so an even split can't break between
+  two of them. Near 50/50 the centre point becomes a warm-white halfway line (`splitPoints` in
+  `lights/render.ts`); the 30-LED virtual strip draws it over the same range. There is no midpoint
+  calibration setting; add one only if a real setup still looks off-centre with the line.
 - **Overlays** use `ResponsiveOverlay`: a bottom sheet on phones, a popover on desktop.
 - **Copy.** Say it the way a fan would: "Moments", "Lights follow", "Set up your lights",
   "Lights off", "Stop and restore lights", "Lights restored". Buttons say exactly what happens.

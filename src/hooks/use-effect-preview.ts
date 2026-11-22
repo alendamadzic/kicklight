@@ -18,7 +18,7 @@ import {
 import { splitPoints } from "@/lights/render";
 
 /** The resting split the guide plays effects over: home a little on top. */
-export const PREVIEW_SHARE = 0.55;
+export const PREVIEW_SHARE = 0.6;
 
 export interface PreviewPlaying {
   /** Which guide row started it, so only that row shows as playing. */

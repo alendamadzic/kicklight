@@ -78,10 +78,10 @@ describe("composeFrame", () => {
 
 describe("mirror replay", () => {
   test("a split command sets the resting share", () => {
-    const m = mirror([{ at: 500, kind: "split", homeShare: 0.5 }]);
+    const m = mirror([{ at: 500, kind: "split", homeShare: 0.6 }]);
     const v = resolveMirror(m, 1_000, 10);
-    expect(v.share).toBe(0.5);
-    expect(v.resting.filter((c) => c === HOME)).toHaveLength(5);
+    expect(v.share).toBe(0.6);
+    expect(v.resting.filter((c) => c === HOME)).toHaveLength(6);
   });
 
   test("commands due in the future (TV delay) haven't happened yet", () => {
