@@ -364,12 +364,16 @@ export function useRemoteViewModel(league: string, id: string) {
 
   // Live: the strip follows the slider as it moves, not on the next pass.
   const sendBrightness = useBrightnessSender();
+  // The level mid-drag, so the virtual strip dims along with the real one.
+  const [dragBrightness, setDragBrightness] = useState<number | null>(null);
   const previewBrightness = (v: number) => {
+    setDragBrightness(v);
     if (mode === "live") sendBrightness(v);
   };
   const setBrightness = (v: number) => {
     update({ brightness: v });
-    previewBrightness(v);
+    setDragBrightness(null);
+    if (mode === "live") sendBrightness(v);
   };
 
   // ---------- kit colours, this match only ----------
@@ -410,7 +414,7 @@ export function useRemoteViewModel(league: string, id: string) {
     autoReason,
     autoSide,
     fx,
-    brightness: prefs.brightness,
+    brightness: dragBrightness ?? prefs.brightness,
     setBrightness,
     previewBrightness,
     kitChoice,

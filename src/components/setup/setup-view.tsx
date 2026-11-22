@@ -184,7 +184,11 @@ export function SetupView() {
             aria-labelledby="s-strip"
             className="kl-panel flex flex-col gap-4 p-4"
           >
-            <VirtualStrip colors={stripColors} label="Your strip" />
+            <VirtualStrip
+              colors={stripColors}
+              brightness={prefs.brightness}
+              label="Your strip"
+            />
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0">
                 <h2 id="s-strip" className="truncate text-base font-semibold">

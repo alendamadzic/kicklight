@@ -209,6 +209,7 @@ export function MatchRemote({ league, id }: { league: string; id: string }) {
         <div className="flex flex-col gap-3 lg:sticky lg:top-[calc(4.5rem+env(safe-area-inset-top))] lg:self-start">
           <VirtualStrip
             {...stripProps}
+            brightness={vm.brightness}
             label={`Virtual strip: ${snapshot.home.name} v ${snapshot.away.name}`}
             className="aspect-[16/10]"
             screen={

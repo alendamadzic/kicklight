@@ -25,7 +25,17 @@ export interface VirtualStripProps {
    * corner as on a real broadcast. Positioned to the screen the canvas draws.
    */
   screen?: ReactNode;
+  /**
+   * The strip's master brightness, 1-100, so the picture dims with the real lights.
+   * Floored so even 1% still reads clearly on screen.
+   */
+  brightness?: number;
 }
+
+/** On-screen dimming for a brightness: 1% still shows at 40%, 100% is untouched. */
+const MIN_SCALE = 0.4;
+export const visibleScale = (brightness = 100) =>
+  MIN_SCALE + (1 - MIN_SCALE) * (Math.min(100, Math.max(1, brightness)) / 100);
 
 interface Geometry {
   w: number;
@@ -36,8 +46,8 @@ interface Geometry {
   radius: number;
 }
 
-const lift = (c: readonly number[]) =>
-  c.map((v) => Math.min(255, v * 1.1 + 20));
+const lift = (c: readonly number[], scale = 1) =>
+  c.map((v) => Math.min(255, v * 1.1 + 20) * scale);
 
 function layout(
   w: number,
@@ -86,6 +96,7 @@ function draw(
   g: Geometry,
   cols: readonly Rgb[],
   variant: "tv" | "linear",
+  scale: number,
 ) {
   ctx.setTransform(g.dpr, 0, 0, g.dpr, 0, 0);
   ctx.globalCompositeOperation = "source-over";
@@ -97,7 +108,7 @@ function draw(
   const n = Math.min(cols.length, g.leds.length);
   for (let i = 0; i < n; i++) {
     const [x, y] = g.leds[i];
-    const c = cols[i];
+    const c = cols[i].map((v) => v * scale);
     const r = g.radius;
     const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
     grad.addColorStop(0, rgba(c, variant === "linear" ? 0.55 : 0.32));
@@ -142,7 +153,7 @@ function draw(
   const s = variant === "linear" ? 0 : Math.max(4, g.w * 0.011);
   for (let i = 0; i < n; i++) {
     const [x, y] = g.leds[i];
-    ctx.fillStyle = rgba(lift(cols[i]), 0.98);
+    ctx.fillStyle = rgba(lift(cols[i], scale), 0.98);
     if (variant === "linear") {
       const cw = g.w / n;
       ctx.fillRect(i * cw + 1, g.h / 2 - 4, Math.max(1, cw - 2), 8);
@@ -167,12 +178,19 @@ export function VirtualStrip({
   label = "Virtual light strip",
   className,
   screen,
+  brightness,
 }: VirtualStripProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const screenRef = useRef<HTMLDivElement>(null);
   const colorsRef = useRef(colors);
   const frameRef = useRef(frame);
   const wakeRef = useRef<() => void>(() => {});
+  const scaleRef = useRef(visibleScale(brightness));
+
+  useEffect(() => {
+    scaleRef.current = visibleScale(brightness);
+    wakeRef.current();
+  }, [brightness]);
 
   useEffect(() => {
     colorsRef.current = colors;
@@ -249,7 +267,7 @@ export function VirtualStrip({
           } else s[k] = t[k];
         }
       }
-      draw(ctx, geom, shown, variant);
+      draw(ctx, geom, shown, variant, scaleRef.current);
       if (live || !settled) raf = requestAnimationFrame(step);
       else last = 0;
     };
