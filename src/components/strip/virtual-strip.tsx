@@ -16,7 +16,7 @@ export interface VirtualStripProps {
   frame?: (now: number, reduced: boolean) => readonly Rgb[];
   /** LED count when neither `colors` nor `frame` is set. */
   count?: number;
-  /** `tv` wraps the strip round a TV outline (3 sides); `linear` is a compact bar. */
+  /** `tv` wraps the strip all the way round a TV outline; `linear` is a compact bar. */
   variant?: "tv" | "linear";
   label?: string;
   className?: string;
@@ -67,12 +67,22 @@ function layout(
   const tw = w * 0.58;
   const th = (tw * 9) / 16;
   const x = (w - tw) / 2;
-  const y = (h - th) / 2 + h * 0.04;
+  const y = (h - th) / 2;
   const off = Math.max(6, w * 0.014);
+  // A closed loop starting and ending at bottom centre, running clockwise from the
+  // left: the first half of the strip (home) wraps the left, the second (away) the
+  // right, so the halfway split lands at top and bottom centre.
+  const l = x - off;
+  const r = x + tw + off;
+  const t = y - off;
+  const b = y + th + off;
+  const mid = x + tw / 2;
   const path: [number, number, number, number][] = [
-    [x - off, y + th * 0.92, x - off, y - off],
-    [x - off, y - off, x + tw + off, y - off],
-    [x + tw + off, y - off, x + tw + off, y + th * 0.92],
+    [mid, b, l, b],
+    [l, b, l, t],
+    [l, t, r, t],
+    [r, t, r, b],
+    [r, b, mid, b],
   ];
   const lens = path.map((s) => Math.hypot(s[2] - s[0], s[3] - s[1]));
   const total = lens.reduce((a, b) => a + b, 0);
